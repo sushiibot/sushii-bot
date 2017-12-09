@@ -1,0 +1,17 @@
+[package]
+name = "rust-sbot2"
+version = "0.1.0"
+authors = ["drklee3 <drklee3@users.noreply.github.com>"]
+
+[dependencies]
+serenity = "0.4.3"
+kankyo = "~0.1"
+env_logger = "0.4.3"
+log = "0.3"
+chrono = "0.4.0"
+typemap = "0.3.3"
+serde = "1.0.15"
+serde_json = "1.0"
+serde_derive = "1.0.15"
+lazy_static = "0.2.9"
+reqwest = "0.8.1"
