@@ -10,5 +10,7 @@ services:
   - postgresql
 before_script:
   - psql -c 'create database travisdb;' -U postgres
+env:
+  DATABASE_URL=postgres://postgres@localhost/travisdb
 script:
   - cargo build --verbose --all
