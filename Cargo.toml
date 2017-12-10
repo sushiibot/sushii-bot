@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["drklee3 <drklee3@users.noreply.github.com>"]
 
 [dependencies]
-serenity = "0.4.3"
+serenity = "0.4"
 kankyo = "~0.1"
 env_logger = "0.4.3"
 log = "0.3"
