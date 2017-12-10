@@ -9,20 +9,34 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
+#[macro_use]
+extern crate diesel;
+extern crate r2d2;
+extern crate r2d2_diesel;
+
 extern crate env_logger;
 extern crate kankyo;
 extern crate reqwest;
+extern crate typemap;
 
 mod commands;
 mod plugins;
 mod handler;
+mod database;
 
 use serenity::framework::StandardFramework;
 use serenity::model::UserId;
 use serenity::prelude::*;
+
 use std::collections::HashSet;
 use std::env;
 
+use typemap::Key;
+use database::ConnectionPool;
+
+impl Key for ConnectionPool {
+    type Value = ConnectionPool;
+}
 
 
 fn main() {
@@ -41,6 +55,13 @@ fn main() {
             &env::var("DISCORD_TOKEN").expect("Expected a discord token in the environment."),
             handler::Handler,
         );
+
+    {
+        let mut data = client.data.lock();
+        let pool = database::init();
+
+        data.insert::<ConnectionPool>(pool);
+    }
 
     let owners: HashSet<UserId> = env::var("OWNER")
         .expect("Expected owner IDs in the environment.")
