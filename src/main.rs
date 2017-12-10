@@ -1,3 +1,5 @@
+#![recursion_limit="128"]
+
 #[macro_use]
 extern crate log;
 
@@ -14,10 +16,16 @@ extern crate diesel;
 extern crate r2d2;
 extern crate r2d2_diesel;
 
+#[macro_use]
+extern crate diesel_infer_schema;
+
+extern crate dotenv;
 extern crate env_logger;
-extern crate kankyo;
 extern crate reqwest;
 extern crate typemap;
+
+pub mod schema;
+pub mod models;
 
 mod commands;
 mod plugins;
@@ -30,6 +38,7 @@ use serenity::prelude::*;
 
 use std::collections::HashSet;
 use std::env;
+use dotenv::dotenv;
 
 use typemap::Key;
 use database::ConnectionPool;
@@ -40,9 +49,7 @@ impl Key for ConnectionPool {
 
 
 fn main() {
-    // This will load the environment variables located at `./.env`, relative to
-    // the CWD. See `./.env.example` for an example on how to structure this.
-    kankyo::load().expect("Failed to load .env file");
+    dotenv().ok();
 
     // Initialize the logger to use environment variables.
     //
