@@ -1,32 +1,29 @@
 #[macro_use]
 extern crate log;
+
 #[macro_use]
 extern crate serenity;
 
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
+
 extern crate env_logger;
 extern crate kankyo;
+extern crate reqwest;
 
 mod commands;
+mod plugins;
+mod handler;
 
 use serenity::framework::StandardFramework;
-use serenity::model::event::ResumedEvent;
-use serenity::model::Ready;
+use serenity::model::UserId;
 use serenity::prelude::*;
-use serenity::http;
 use std::collections::HashSet;
 use std::env;
 
-struct Handler;
 
-impl EventHandler for Handler {
-    fn on_ready(&self, _: Context, ready: Ready) {
-        info!("Connected as {}", ready.user.name);
-    }
-
-    fn on_resume(&self, _: Context, _: ResumedEvent) {
-        info!("Resumed");
-    }
-}
 
 fn main() {
     // This will load the environment variables located at `./.env`, relative to
@@ -39,24 +36,41 @@ fn main() {
     // `RUST_LOG` to debug`.
     env_logger::init().expect("Failed to initialize env_logger");
 
-    let mut client = Client::new(&env::var("DISCORD_TOKEN").unwrap(), Handler);
+    let mut client =
+        Client::new(
+            &env::var("DISCORD_TOKEN").expect("Expected a discord token in the environment."),
+            handler::Handler,
+        );
 
-    let owners = match http::get_current_application_info() {
-        Ok(info) => {
-            let mut set = HashSet::new();
-            set.insert(info.owner.id);
-
-            set
-        }
-        Err(why) => panic!("Couldn't get application info: {:?}", why),
-    };
+    let owners: HashSet<UserId> = env::var("OWNER")
+        .expect("Expected owner IDs in the environment.")
+        .split(",")
+        .map(|x| UserId(x.parse::<u64>().unwrap()))
+        .collect();
 
     client.with_framework(
         StandardFramework::new()
             .configure(|c| c.owners(owners).prefix("~"))
-            .command("ping", |c| c.exec(commands::meta::ping))
-            .command("latency", |c| c.exec(commands::meta::latency))
-            .command("quit", |c| c.exec(commands::owner::quit).owners_only(true)),
+            .group("Meta", |g| {
+                g.command("ping", |c| c.exec_str("Pong!"))
+                    .command("latency", |c| {
+                        c.desc(
+                            "Calculates the heartbeat latency between the shard and the gateway.",
+                        ).exec(commands::meta::latency)
+                    })
+                    .command("quit", |c| {
+                        c.desc("Gracefully shuts down the bot.")
+                            .owners_only(true)
+                            .exec(commands::owner::quit)
+                    })
+            })
+            .group("Misc", |g| {
+                g.command("play", |c| {
+                    c.usage("[rust code]")
+                        .desc("Evaluates Rust code in the playground.")
+                        .exec(commands::misc::play)
+                })
+            }),
     );
 
     if let Err(why) = client.start() {
