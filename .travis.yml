@@ -6,5 +6,9 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database travisdb;' -U postgres
 script:
   - cargo build --verbose --all
