@@ -9,7 +9,10 @@ matrix:
 services:
   - postgresql
 before_script:
+  - cargo install diesel_cli
   - psql -c 'create database travisdb;' -U postgres
+script:
+  - diesel migration run
 env:
   DATABASE_URL=postgres://postgres@localhost/travisdb
 script:
