@@ -1,7 +1,7 @@
 use schema::guilds;
 
 #[derive(Queryable)]
-pub struct Guild {
+pub struct GuildConfig {
     pub id: i64,
     pub name: String,
     pub join_msg: String,
@@ -13,7 +13,7 @@ pub struct Guild {
 
 #[derive(Insertable)]
 #[table_name = "guilds"]
-pub struct NewGuild<'a> {
+pub struct NewGuildConfig<'a> {
     pub id: i64,
     pub name: &'a str,
     pub join_msg: Option<String>,

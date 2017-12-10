@@ -9,7 +9,7 @@ use std::env;
 use std::sync::Arc;
 
 use serenity::model::Guild;
-use models::NewGuild;
+use models::NewGuildConfig;
 
 pub struct ConnectionPool {
     pool: Arc<Pool<ConnectionManager<PgConnection>>>,
@@ -32,7 +32,7 @@ impl ConnectionPool {
     pub fn new_guild<'a>(&self, guild: &'a Guild) {
         use schema::guilds;
 
-        let new_guild_obj = NewGuild {
+        let new_guild_obj = NewGuildConfig {
             id: guild.id.0 as i64,
             name: &guild.name,
             join_msg: None,
