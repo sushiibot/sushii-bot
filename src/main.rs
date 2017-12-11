@@ -33,6 +33,7 @@ mod handler;
 mod database;
 
 use serenity::framework::StandardFramework;
+use serenity::framework::standard::DispatchError::{NotEnoughArguments, TooManyArguments};
 use serenity::model::UserId;
 use serenity::prelude::*;
 
@@ -79,6 +80,19 @@ fn main() {
     client.with_framework(
         StandardFramework::new()
             .configure(|c| c.owners(owners).prefix("~"))
+            .on_dispatch_error(|_, msg, error| match error {
+                NotEnoughArguments { min, given } => {
+                    let s = format!("Need {} arguments, but only got {}.", min, given);
+
+                    let _ = msg.channel_id.say(&s);
+                }
+                TooManyArguments { max, given } => {
+                    let s = format!("Too many arguments, need {}, but got {}.", max, given);
+
+                    let _ = msg.channel_id.say(&s);
+                }
+                _ => println!("Unhandled dispatch error."),
+            })
             .group("Meta", |g| {
                 g.command("ping", |c| c.exec_str("Pong!"))
                     .command("latency", |c| {
