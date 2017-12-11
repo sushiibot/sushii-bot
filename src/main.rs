@@ -81,6 +81,9 @@ fn main() {
         StandardFramework::new()
             .configure(|c| c.owners(owners).prefix("~"))
             .on_dispatch_error(|_, msg, error| match error {
+                // react x whenever an error occurs
+                let _ = msg.react("❌");
+
                 NotEnoughArguments { min, given } => {
                     let s = format!("Need {} arguments, but only got {}.", min, given);
 
@@ -93,6 +96,15 @@ fn main() {
                 }
                 _ => println!("Unhandled dispatch error."),
             })
+            .after(|ctx, msg, cmd_name, error| {
+                // react x whenever an error occurs
+                let _ = msg.react("❌");
+                
+                //  Print out an error if it happened
+                if let Err(why) = error {
+                    println!("Error in {}: {:?}", cmd_name, why);
+                }
+            }));
             .group("Meta", |g| {
                 g.command("ping", |c| c.exec_str("Pong!"))
                     .command("latency", |c| {
