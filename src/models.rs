@@ -1,4 +1,5 @@
 use schema::guilds;
+use schema::events;
 
 #[derive(Queryable)]
 pub struct GuildConfig {
@@ -21,4 +22,18 @@ pub struct NewGuildConfig<'a> {
     pub invite_guard: bool,
     pub log_msg: Option<i64>,
     pub log_mod: Option<i64>,
+}
+
+
+#[derive(Queryable)]
+pub struct EventCounter {
+    pub name: String,
+    pub count: i64,
+}
+
+#[derive(Insertable)]
+#[table_name = "events"]
+pub struct NewEventCounter<'a> {
+    pub name: &'a str,
+    pub count: i64,
 }
