@@ -122,7 +122,9 @@ fn main() {
                 if let Err(why) = error {
                     // react x whenever an error occurs
                     let _ = msg.react("❌");
+                    let s = format!("Error: {}", why.0);
 
+                    let _ = msg.channel_id.say(&s);
                     println!("Error in {}: {:?}", cmd_name, why);
                 }
             })
