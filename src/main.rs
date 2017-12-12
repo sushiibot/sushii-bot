@@ -33,8 +33,9 @@ mod handler;
 mod database;
 
 use serenity::framework::StandardFramework;
-use serenity::framework::standard::DispatchError::{NotEnoughArguments, TooManyArguments,
-                                                   LackOfPermissions, OnlyForGuilds, RateLimited};
+use serenity::framework::standard::help_commands;
+use serenity::framework::standard::DispatchError::*;
+
 use serenity::model::UserId;
 use serenity::prelude::*;
 
@@ -117,16 +118,17 @@ fn main() {
                 }
             })
             .after(|_ctx, msg, cmd_name, error| {
-                // react x whenever an error occurs
-                let _ = msg.react("❌");
-
                 //  Print out an error if it happened
                 if let Err(why) = error {
+                    // react x whenever an error occurs
+                    let _ = msg.react("❌");
+
                     println!("Error in {}: {:?}", cmd_name, why);
                 }
             })
             .group("Meta", |g| {
-                g.command("ping", |c| c.exec_str("Pong!"))
+                g.command("help", |c| c.exec_help(help_commands::with_embeds))
+                    .command("ping", |c| c.exec_str("Pong!"))
                     .command("latency", |c| {
                         c.desc(
                             "Calculates the heartbeat latency between the shard and the gateway.",
@@ -142,6 +144,7 @@ fn main() {
                 g.command("play", |c| {
                     c.usage("[rust code]")
                         .desc("Evaluates Rust code in the playground.")
+                        .min_args(1)
                         .exec(commands::misc::play)
                 })
             }),
