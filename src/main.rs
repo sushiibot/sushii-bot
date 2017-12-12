@@ -33,7 +33,8 @@ mod handler;
 mod database;
 
 use serenity::framework::StandardFramework;
-use serenity::framework::standard::DispatchError::{NotEnoughArguments, TooManyArguments};
+use serenity::framework::standard::DispatchError::{NotEnoughArguments, TooManyArguments,
+                                                   LackOfPermissions, OnlyForGuilds, RateLimited};
 use serenity::model::UserId;
 use serenity::prelude::*;
 
@@ -79,7 +80,7 @@ fn main() {
 
     client.with_framework(
         StandardFramework::new()
-            .configure(|c| c.owners(owners).prefix("~"))
+            .configure(|c| c.owners(owners).prefix("-"))
             .on_dispatch_error(|_, msg, error| {
                 // react x whenever an error occurs
                 let _ = msg.react("❌");
@@ -91,6 +92,24 @@ fn main() {
                     }
                     TooManyArguments { max, given } => {
                         let s = format!("Too many arguments, need {}, but got {}.", max, given);
+
+                        let _ = msg.channel_id.say(&s);
+                    }
+                    LackOfPermissions(permissions) => {
+                        let s = format!(
+                            "You do not have permission for this command.  Requires `{:?}`.",
+                            permissions
+                        );
+
+                        let _ = msg.channel_id.say(&s);
+                    }
+                    OnlyForGuilds => {
+                        let s = format!("This command can only be used in guilds.");
+
+                        let _ = msg.channel_id.say(&s);
+                    }
+                    RateLimited(seconds) => {
+                        let s = format!("Try this again in {} seconds.", seconds);
 
                         let _ = msg.channel_id.say(&s);
                     }
