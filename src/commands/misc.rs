@@ -1,3 +1,4 @@
+use serenity::framework::standard::CommandError;
 use reqwest;
 use reqwest::header::ContentType;
 
@@ -13,7 +14,7 @@ command!(play(_ctx, msg, args) {
     // check if using code block
     if !code.starts_with("```") || !code.ends_with("```") {
         let _ = msg.channel_id.say("Missing code block");
-        return Ok(());
+        return Err(CommandError("Missing code block".to_string()));
     }
 
     let _ = msg.react("👌");
@@ -40,8 +41,8 @@ command!(play(_ctx, msg, args) {
         Ok(mut val) => {
             let res_obj: Response = val.json()?;
 
-            let mut clean = res_obj.stdout.replace("@", "@\u{200B}");
-            clean = clean.replace("`", "'");
+            let mut clean = res_obj.stdout.replace("@", "@\u{200B}"); // add zws to possible mentions
+            clean = clean.replace("`", "'");                          // replace comment ticks to single quotes
 
             let _ = msg.channel_id.say(format!("```rust\n{}\n{}\n```", res_obj.stderr, clean));
         },
