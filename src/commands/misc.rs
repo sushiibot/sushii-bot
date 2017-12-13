@@ -13,7 +13,7 @@ command!(play(_ctx, msg, args) {
 
     // check if using code block
     if !code.starts_with("```") || !code.ends_with("```") {
-        return Err(CommandError("Missing code block".to_string()));
+        return Err(CommandError("Missing code block".to_owned()));
     }
 
     let _ = msg.react("👌");
@@ -25,7 +25,7 @@ command!(play(_ctx, msg, args) {
     code = code.replace("\n", "\\n");   // escape new lines
 
     // create json data
-    let mut data = r#"{"channel":"stable","mode":"debug","crateType":"bin","tests":false,"code": "{CODE}"}"#.to_string();
+    let mut data = r#"{"channel":"stable","mode":"debug","crateType":"bin","tests":false,"code": "{CODE}"}"#.to_owned();
     data = data.replace("{CODE}", &code);
 
     // send data

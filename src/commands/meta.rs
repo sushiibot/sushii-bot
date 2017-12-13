@@ -6,7 +6,7 @@ use database;
 command!(latency(ctx, msg) {
     let latency = ctx.shard.lock()
         .latency()
-        .map_or_else(|| "N/A".to_string(), |s| {
+        .map_or_else(|| "N/A".to_owned(), |s| {
             format!("{}.{}s", s.as_secs(), s.subsec_nanos())
         });
 
@@ -18,7 +18,7 @@ command!(events(ctx, msg) {
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
     if let Ok(events) = pool.get_events() {
-        let mut s = "```ruby\n".to_string();
+        let mut s = "```ruby\n".to_owned();
         let mut total = 0;
         // go through each events, add to string and sum total
         for event in events {
@@ -30,7 +30,7 @@ command!(events(ctx, msg) {
         let _ = write!(s, "```");
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError("Failed to get events.".to_string()));
+        return Err(CommandError("Failed to get events.".to_owned()));
     }
 });
 
