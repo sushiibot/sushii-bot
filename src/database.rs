@@ -59,7 +59,7 @@ impl ConnectionPool {
     }
 
     /// Logs a counter for each event that is handled
-    pub fn log_event(&self, event_name: String) {
+    pub fn log_event(&self, event_name: &str) {
         use schema::events;
         use schema::events::dsl::*;
 
@@ -75,7 +75,10 @@ impl ConnectionPool {
         // check if a row was found
         if rows.len() == 1 {
             // increment the counter
-            diesel::update(events).set(count.eq(rows[0].count + 1));
+            diesel::update(events)
+                .set(count.eq(rows[0].count + 1))
+                .execute(&*conn)
+                .expect("Failed to update the event.");
         } else {
             let new_event_obj = NewEventCounter {
                 name: &event_name,
