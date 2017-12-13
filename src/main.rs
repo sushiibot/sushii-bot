@@ -145,6 +145,11 @@ fn main() {
                         c.desc("Shows the number of events handled by the bot.")
                             .exec(commands::meta::events)
                     })
+                    .command("reset events", |c| {
+                        c.desc("Resets the events counter.")
+                            .owners_only(true)
+                            .exec(commands::meta::reset_events)
+                    })
             })
             .group("Misc", |g| {
                 g.command("play", |c| {
