@@ -106,4 +106,19 @@ impl ConnectionPool {
 
         Ok(results)
     }
+
+    pub fn reset_events(&self) -> Result<(), Error> {
+        use schema::events;
+        use schema::events::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        diesel::update(events)
+            .set(count.eq(0))
+            .execute(&*conn)
+            .expect("Failed to reset the events.");
+
+        Ok(())
+    }
 }

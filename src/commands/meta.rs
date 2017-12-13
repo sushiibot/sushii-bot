@@ -33,3 +33,12 @@ command!(events(ctx, msg) {
         return Err(CommandError("Failed to get events.".to_string()));
     }
 });
+
+command!(reset_events(ctx, msg) {
+    let mut data = ctx.data.lock();
+    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+    if let Ok(()) = pool.reset_events() {
+        let _ = msg.channel_id.say("Events have been reset.");
+    }
+});
