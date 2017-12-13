@@ -1,101 +1,168 @@
-use serenity::model::event::ResumedEvent;
-use serenity::model::Ready;
-use serenity::model::Message;
-use serenity::prelude::*;
+use serenity::model::event::*;
+use serenity::model::*;
+use serenity::prelude::Context;
+use serenity::prelude::EventHandler;
+use std::sync::RwLock;
+
+use std::collections::HashMap;
+use std::sync::Arc;
 
 use database;
 
 pub struct Handler;
 
 impl EventHandler for Handler {
-    fn on_ready(&self, _: Context, ready: Ready) {
+    fn on_ready(&self, ctx: Context, ready: Ready) {
         info!("Connected as {}", ready.user.tag());
+        update_event(&ctx, "READY");
     }
 
-    fn on_resume(&self, _: Context, _: ResumedEvent) {
+    fn on_resume(&self, ctx: Context, _: ResumedEvent) {
+        update_event(&ctx, "RESUMED");
         info!("Resumed");
     }
 
-    // fn on_channel_create(&self, _: Context, _: Arc<RwLock<GuildChannel>>) {}
-
-    // fn on_category_create(&self, _: Context, _: Arc<RwLock<ChannelCategory>>) {}
-
-    // fn on_category_delete(&self, _: Context, _: Arc<RwLock<ChannelCategory>>) {}
-
-    // fn on_private_channel_create(&self, _: Context, _: Arc<RwLock<PrivateChannel>>) {}
-
-    // fn on_channel_delete(&self, _: Context, _: Arc<RwLock<GuildChannel>>) {}
-
-    // fn on_channel_pins_update(&self, _: Context, _: ChannelPinsUpdateEvent) {}
-
-    // fn on_channel_recipient_addition(&self, _: Context, _: ChannelId, _: User) {}
-
-    // fn on_channel_recipient_removal(&self, _: Context, _: ChannelId, _: User) {}
-
-    // fn on_channel_update(&self, _: Context, _: Option<Channel>, _: Channel) {}
-
-    // fn on_guild_ban_addition(&self, _: Context, _: GuildId, _: User) {}
-
-    // fn on_guild_ban_removal(&self, _: Context, _: GuildId, _: User) {}
-
-    // fn on_guild_create(&self, _: Context, _: Guild, _: bool) {}
-
-    // fn on_guild_delete(&self, _: Context, _: PartialGuild, _: Option<Arc<RwLock<Guild>>>) {}
-
-    // fn on_guild_emojis_update(&self, _: Context, _: GuildId, _: HashMap<EmojiId, Emoji>) {}
-
-    // fn on_guild_integrations_update(&self, _: Context, _: GuildId) {}
-
-    // fn on_guild_member_addition(&self, _: Context, _: GuildId, _: Member) {}
-
-    // fn on_guild_member_removal(&self, _: Context, _: GuildId, _: User, _: Option<Member>) {}
-
-    // fn on_guild_member_update(&self, _: Context, _: Option<Member>, _: Member) {}
-
-    // fn on_guild_members_chunk(&self, _: Context, _: GuildId, _: HashMap<UserId, Member>) {}
-
-    // fn on_guild_role_create(&self, _: Context, _: GuildId, _: Role) {}
-
-    // fn on_guild_role_delete(&self, _: Context, _: GuildId, _: RoleId, _: Option<Role>) {}
-
-    // fn on_guild_role_update(&self, _: Context, _: GuildId, _: Option<Role>, _: Role) {}
-
-    // fn on_guild_unavailable(&self, _: Context, _: GuildId) {}
-
-    // fn on_guild_update(&self, _: Context, _: Option<Arc<RwLock<Guild>>>, _: PartialGuild) {}
-
-    fn on_message(&self, ctx: Context, _: Message) {
-        let mut data = ctx.data.lock();
-        let pool = data.get_mut::<database::ConnectionPool>().unwrap();
-
-        pool.log_event("MESSAGE_CREATE");
+    fn on_channel_create(&self, ctx: Context, _: Arc<RwLock<GuildChannel>>) {
+        update_event(&ctx, "CHANNEL_CREATE");
     }
 
-    // fn on_message_delete(&self, _: Context, _: ChannelId, _: MessageId) {}
+    // fn on_category_create(&self, ctx: Context, _: Arc<RwLock<ChannelCategory>>) {}
 
-    // fn on_message_delete_bulk(&self, _: Context, _: ChannelId, _: Vec<MessageId>) {}
+    // fn on_category_delete(&self, ctx: Context, _: Arc<RwLock<ChannelCategory>>) {}
 
-    // fn on_reaction_add(&self, _: Context, _: Reaction) {}
+    // fn on_private_channel_create(&self, ctx: Context, _: Arc<RwLock<PrivateChannel>>) {}
 
-    // fn on_reaction_remove(&self, _: Context, _: Reaction) {}
+    fn on_channel_delete(&self, ctx: Context, _: Arc<RwLock<GuildChannel>>) {
+        update_event(&ctx, "CHANNEL_DELETE");
+    }
 
-    // fn on_reaction_remove_all(&self, _: Context, _: ChannelId, _: MessageId) {}
+    fn on_channel_pins_update(&self, ctx: Context, _: ChannelPinsUpdateEvent) {
+        update_event(&ctx, "CHANNEL_PINS_UPDATE");
+    }
 
-    // fn on_message_update(&self, _: Context, _: MessageUpdateEvent) {}
+    // fn on_channel_recipient_addition(&self, ctx: Context, _: ChannelId, _: User) {}
 
-    // fn on_presence_replace(&self, _: Context, _: Vec<Presence>) {}
+    // fn on_channel_recipient_removal(&self, ctx: Context, _: ChannelId, _: User) {}
 
-    // fn on_presence_update(&self, _: Context, _: PresenceUpdateEvent) {}
+    fn on_channel_update(&self, ctx: Context, _: Option<Channel>, _: Channel) {
+        update_event(&ctx, "CHANNEL_UPDATE");
+    }
 
-    // fn on_typing_start(&self, _: Context, _: TypingStartEvent) {}
+    fn on_guild_ban_addition(&self, ctx: Context, _: GuildId, _: User) {
+        update_event(&ctx, "GUILD_BAN_ADD");
+    }
 
-    // fn on_unknown(&self, _: Context, _: String, _: Value) {}
+    fn on_guild_ban_removal(&self, ctx: Context, _: GuildId, _: User) {
+        update_event(&ctx, "GUILD_BAN_REMOVE");
+    }
 
-    // fn on_user_update(&self, _: Context, _: CurrentUser, _: CurrentUser) {}
+    fn on_guild_create(&self, ctx: Context, _: Guild, _: bool) {
+        update_event(&ctx, "GUILD_CREATE");
+    }
 
-    // fn on_voice_server_update(&self, _: Context, _: VoiceServerUpdateEvent) {}
+    fn on_guild_delete(&self, ctx: Context, _: PartialGuild, _: Option<Arc<RwLock<Guild>>>) {
+        update_event(&ctx, "GUILD_DELETE");
+    }
 
-    // fn on_voice_state_update(&self, _: Context, _: Option<GuildId>, _: VoiceState) {}
+    fn on_guild_emojis_update(&self, ctx: Context, _: GuildId, _: HashMap<EmojiId, Emoji>) {
+        update_event(&ctx, "GUILD_EMOJIS_UPDATE");
+    }
 
-    // fn on_webhook_update(&self, _: Context, _: GuildId, _: ChannelId) {}
+    fn on_guild_integrations_update(&self, ctx: Context, _: GuildId) {
+        update_event(&ctx, "GUILD_INTEGRATIONS_UPDATE");
+    }
+
+    fn on_guild_member_addition(&self, ctx: Context, _: GuildId, _: Member) {
+        update_event(&ctx, "GUILD_MEMBER_ADD");
+    }
+
+    fn on_guild_member_removal(&self, ctx: Context, _: GuildId, _: User, _: Option<Member>) {
+        update_event(&ctx, "GUILD_MEMBER_REMOVE");
+    }
+
+    fn on_guild_member_update(&self, ctx: Context, _: Option<Member>, _: Member) {
+        update_event(&ctx, "GUILD_MEMBER_UPDATE");
+    }
+
+    // fn on_guild_members_chunk(&self, ctx: Context, _: GuildId, _: HashMap<UserId, Member>) {}
+
+    fn on_guild_role_create(&self, ctx: Context, _: GuildId, _: Role) {
+        update_event(&ctx, "GUILD_ROLE_CREATE");
+    }
+
+    fn on_guild_role_delete(&self, ctx: Context, _: GuildId, _: RoleId, _: Option<Role>) {
+        update_event(&ctx, "GUILD_ROLE_DELETE");
+    }
+
+    fn on_guild_role_update(&self, ctx: Context, _: GuildId, _: Option<Role>, _: Role) {
+        update_event(&ctx, "GUILD_ROLE_UPDATE");
+    }
+
+    // fn on_guild_unavailable(&self, ctx: Context, _: GuildId) {}
+
+    fn on_guild_update(&self, ctx: Context, _: Option<Arc<RwLock<Guild>>>, _: PartialGuild) {
+        update_event(&ctx, "GUILD_UPDATE");
+    }
+
+    fn on_message(&self, ctx: Context, _: Message) {
+        update_event(&ctx, "MESSAGE_CREATE");
+    }
+
+    fn on_message_delete(&self, ctx: Context, _: ChannelId, _: MessageId) {
+        update_event(&ctx, "MESSAGE_DELETE");
+    }
+
+    fn on_message_delete_bulk(&self, ctx: Context, _: ChannelId, _: Vec<MessageId>) {
+        update_event(&ctx, "MESSAGE_DELETE_BULK");
+    }
+
+    fn on_reaction_add(&self, ctx: Context, _: Reaction) {
+        update_event(&ctx, "MESSAGE_REACTION_ADD");
+    }
+
+    fn on_reaction_remove(&self, ctx: Context, _: Reaction) {
+        update_event(&ctx, "MESSAGE_REACTION_REMOVE");
+    }
+
+    fn on_reaction_remove_all(&self, ctx: Context, _: ChannelId, _: MessageId) {
+        update_event(&ctx, "MESSAGE_REACTION_REMOVE_ALL");
+    }
+
+    fn on_message_update(&self, ctx: Context, _: MessageUpdateEvent) {
+        update_event(&ctx, "MESSAGE_UPDATE");
+    }
+
+    // fn on_presence_replace(&self, ctx: Context, _: Vec<Presence>) {}
+
+    fn on_presence_update(&self, ctx: Context, _: PresenceUpdateEvent) {
+        update_event(&ctx, "PRESENCE_UPDATE");
+    }
+
+    fn on_typing_start(&self, ctx: Context, _: TypingStartEvent) {
+        update_event(&ctx, "TYPING_START");
+    }
+
+    // fn on_unknown(&self, ctx: Context, _: String, _: Value) {}
+
+    // fn on_user_update(&self, ctx: Context, _: CurrentUser, _: CurrentUser) {}
+
+    fn on_voice_server_update(&self, ctx: Context, _: VoiceServerUpdateEvent) {
+        update_event(&ctx, "VOICE_SERVER_UPDATE");
+    }
+
+    fn on_voice_state_update(&self, ctx: Context, _: Option<GuildId>, _: VoiceState) {
+        update_event(&ctx, "VOICE_STATE_UPDATE");
+    }
+
+    fn on_webhook_update(&self, ctx: Context, _: GuildId, _: ChannelId) {
+        update_event(&ctx, "WEBHOOK_UPDATE");
+    }
+}
+
+/// Updates a counter for each event
+fn update_event(ctx: &Context, event_name: &str) {
+    let mut data = ctx.data.lock();
+    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+    pool.log_event(event_name);
 }
