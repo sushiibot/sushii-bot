@@ -1,6 +1,9 @@
 use serenity::model::event::ResumedEvent;
 use serenity::model::Ready;
+use serenity::model::Message;
 use serenity::prelude::*;
+
+use database;
 
 pub struct Handler;
 
@@ -61,7 +64,12 @@ impl EventHandler for Handler {
 
     // fn on_guild_update(&self, _: Context, _: Option<Arc<RwLock<Guild>>>, _: PartialGuild) {}
 
-    // fn on_message(&self, _: Context, _: Message) {}
+    fn on_message(&self, ctx: Context, _: Message) {
+        let mut data = ctx.data.lock();
+        let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+        pool.log_event("MESSAGE_CREATE");
+    }
 
     // fn on_message_delete(&self, _: Context, _: ChannelId, _: MessageId) {}
 
