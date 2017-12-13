@@ -141,6 +141,10 @@ fn main() {
                             .owners_only(true)
                             .exec(commands::owner::quit)
                     })
+                    .command("events", |c| {
+                        c.desc("Shows the number of events handled by the bot.")
+                            .exec(commands::meta::events)
+                    })
             })
             .group("Misc", |g| {
                 g.command("play", |c| {
