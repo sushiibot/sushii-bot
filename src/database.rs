@@ -75,7 +75,7 @@ impl ConnectionPool {
         // check if a row was found
         if rows.len() == 1 {
             // increment the counter
-            diesel::update(events)
+            diesel::update(events.filter(name.eq(&event_name)))
                 .set(count.eq(rows[0].count + 1))
                 .execute(&*conn)
                 .expect("Failed to update the event.");
@@ -99,9 +99,10 @@ impl ConnectionPool {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        let results = events.load::<EventCounter>(&*conn).expect(
-            "Error loading events",
-        );
+        let results = events
+            .order(name.asc())
+            .load::<EventCounter>(&*conn)
+            .expect("Error loading events");
 
         Ok(results)
     }
