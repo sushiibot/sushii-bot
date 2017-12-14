@@ -28,6 +28,7 @@ pub mod schema;
 pub mod models;
 
 mod commands;
+#[macro_use]
 mod plugins;
 mod handler;
 mod database;

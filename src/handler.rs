@@ -12,15 +12,6 @@ use plugins::*;
 
 use database;
 
-
-macro_rules! exec_on_message {
-    ( [$ctx:expr, $msg:expr], $( $plugin:ident ),* ) => {
-        $(
-            $plugin::on_message($ctx, $msg);
-        )*
-    }
-}
-
 pub struct Handler;
 
 impl EventHandler for Handler {
