@@ -2,12 +2,24 @@ use serenity::model::event::*;
 use serenity::model::*;
 use serenity::prelude::Context;
 use serenity::prelude::EventHandler;
-use std::sync::RwLock;
 
+use std::sync::RwLock;
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::vec::Vec;
+
+use plugins::*;
 
 use database;
+
+
+macro_rules! exec_on_message {
+    ( [$ctx:expr, $msg:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_message($ctx, $msg);
+        )*
+    }
+}
 
 pub struct Handler;
 
@@ -18,8 +30,8 @@ impl EventHandler for Handler {
     }
 
     fn on_resume(&self, ctx: Context, _: ResumedEvent) {
-        update_event(&ctx, "RESUMED");
         info!("Resumed");
+        update_event(&ctx, "RESUMED");
     }
 
     fn on_channel_create(&self, ctx: Context, _: Arc<RwLock<GuildChannel>>) {
@@ -104,8 +116,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_UPDATE");
     }
 
-    fn on_message(&self, ctx: Context, _: Message) {
+    fn on_message(&self, ctx: Context, msg: Message) {
         update_event(&ctx, "MESSAGE_CREATE");
+        exec_on_message!([ctx, msg], levels);
     }
 
     fn on_message_delete(&self, ctx: Context, _: ChannelId, _: MessageId) {
