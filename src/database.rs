@@ -181,6 +181,25 @@ impl ConnectionPool {
 
         Ok(())
     }
+
+    pub fn get_level(&self, id_user: u64, id_guild: u64) -> Option<UserLevel> {
+        use schema::levels::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let results = levels
+            .filter(user_id.eq(id_user as i64))
+            .filter(guild_id.eq(id_guild as i64))
+            .load::<UserLevel>(&*conn)
+            .expect("Error loading level");
+
+        if results.len() == 1 {
+            return Some(results[0].clone());
+        } else {
+            return None;
+        }
+    }
 }
 
 pub struct UserLevelInterval {
