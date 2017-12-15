@@ -1,5 +1,8 @@
 use schema::guilds;
 use schema::events;
+use schema::levels;
+
+use chrono::naive::NaiveDateTime;
 
 #[derive(Queryable)]
 pub struct GuildConfig {
@@ -36,4 +39,29 @@ pub struct EventCounter {
 pub struct NewEventCounter<'a> {
     pub name: &'a str,
     pub count: i64,
+}
+
+
+#[derive(Queryable)]
+pub struct UserLevel {
+    pub id: i32,
+    pub user_id: i64,
+    pub guild_id: i64,
+    pub msg_all_time: i64,
+    pub msg_month: i64,
+    pub msg_week: i64,
+    pub msg_day: i64,
+    pub last_msg: NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[table_name = "levels"]
+pub struct NewUserLevel<'a> {
+    pub user_id: i64,
+    pub guild_id: i64,
+    pub msg_all_time: i64,
+    pub msg_month: i64,
+    pub msg_week: i64,
+    pub msg_day: i64,
+    pub last_msg: &'a NaiveDateTime,
 }
