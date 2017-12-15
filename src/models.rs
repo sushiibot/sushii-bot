@@ -42,7 +42,7 @@ pub struct NewEventCounter<'a> {
 }
 
 
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct UserLevel {
     pub id: i32,
     pub user_id: i64,
