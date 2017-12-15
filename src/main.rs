@@ -23,6 +23,7 @@ extern crate dotenv;
 extern crate env_logger;
 extern crate reqwest;
 extern crate typemap;
+extern crate chrono;
 
 pub mod schema;
 pub mod models;
