@@ -130,6 +130,13 @@ fn main() {
                     println!("Error in {}: {:?}", cmd_name, why);
                 }
             })
+            .group("Ranking", |g| {
+                g.command("rank", |c| {
+                    c.desc("Shows your current rank.").exec(
+                        commands::levels::rank,
+                    )
+                })
+            })
             .group("Meta", |g| {
                 g.command("help", |c| c.exec_help(help_commands::with_embeds))
                     .command("ping", |c| c.exec_str("Pong!"))
