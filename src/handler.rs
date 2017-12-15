@@ -17,11 +17,15 @@ pub struct Handler;
 impl EventHandler for Handler {
     fn on_ready(&self, ctx: Context, ready: Ready) {
         info!("Connected as {}", ready.user.tag());
+        util::bot_update_info(&format!("READY: Connected as {}", ready.user.tag()));
+
         update_event(&ctx, "READY");
     }
 
     fn on_resume(&self, ctx: Context, _: ResumedEvent) {
         info!("Resumed");
+        util::bot_update_info("RESUMED");
+
         update_event(&ctx, "RESUMED");
     }
 
