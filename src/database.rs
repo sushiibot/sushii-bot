@@ -18,7 +18,7 @@ use models::NewEventCounter;
 use models::UserLevel;
 use models::NewUserLevel;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, Datelike};
 
 pub struct ConnectionPool {
     pool: Arc<Pool<ConnectionManager<PgConnection>>>,
@@ -143,6 +143,8 @@ impl ConnectionPool {
         let now = utc.naive_utc();
 
         if user.len() == 1 {
+            let new_interval_user = level_interval(&user[0]);
+
             // found a user object
             diesel::update(levels.filter(user_id.eq(id_user as i64)).filter(
                 guild_id.eq(
@@ -151,9 +153,9 @@ impl ConnectionPool {
                 ),
             )).set((
                 msg_all_time.eq(user[0].msg_all_time + 1),
-                msg_month.eq(user[0].msg_month + 1),
-                msg_week.eq(user[0].msg_week + 1),
-                msg_day.eq(user[0].msg_day + 1),
+                msg_month.eq(new_interval_user.msg_month + 1),
+                msg_week.eq(new_interval_user.msg_week + 1),
+                msg_day.eq(new_interval_user.msg_day + 1),
                 last_msg.eq(now),
             ))
                 .execute(&*conn)
@@ -178,5 +180,43 @@ impl ConnectionPool {
         }
 
         Ok(())
+    }
+}
+
+pub struct UserLevelInterval {
+    pub msg_month: i64,
+    pub msg_week: i64,
+    pub msg_day: i64,
+}
+
+/// checks if a new interval has passed and reset message counts accordingly
+pub fn level_interval(user_level: &UserLevel) -> UserLevelInterval {
+    let utc: DateTime<Utc> = Utc::now();
+    let now = utc.naive_utc();
+
+    let last_msg = user_level.last_msg;
+    let mut msg_day = user_level.msg_day;
+    let mut msg_week = user_level.msg_week;
+    let mut msg_month = user_level.msg_month;
+
+    // check if day is different and month (could possible be same day 1 year apart but unlikey)
+    if now.day() != last_msg.day() && now.month() != last_msg.month() {
+        msg_day = 0;
+    }
+
+    // check if new week
+    if now.iso_week() != last_msg.iso_week() {
+        msg_week = 0;
+    }
+
+    // check if new month
+    if now.month() != last_msg.month() {
+        msg_month = 0;
+    }
+
+    UserLevelInterval {
+        msg_month,
+        msg_week,
+        msg_day,
     }
 }
