@@ -15,6 +15,10 @@ use serenity::model::Guild;
 use models::NewGuildConfig;
 use models::EventCounter;
 use models::NewEventCounter;
+use models::UserLevel;
+use models::NewUserLevel;
+
+use chrono::{DateTime, Utc};
 
 pub struct ConnectionPool {
     pool: Arc<Pool<ConnectionManager<PgConnection>>>,
@@ -108,7 +112,6 @@ impl ConnectionPool {
     }
 
     pub fn reset_events(&self) -> Result<(), Error> {
-        use schema::events;
         use schema::events::dsl::*;
 
         // get a connection from the pool
@@ -118,6 +121,61 @@ impl ConnectionPool {
             .set(count.eq(0))
             .execute(&*conn)
             .expect("Failed to reset the events.");
+
+        Ok(())
+    }
+
+    pub fn update_level(&self, id_user: u64, id_guild: u64) -> Result<(), Error> {
+        use schema::levels;
+        use schema::levels::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let user = levels
+            .filter(user_id.eq(id_user as i64))
+            .filter(guild_id.eq(id_guild as i64))
+            .load::<UserLevel>(&*conn)
+            .expect("Error loading user's level.");
+
+        // get current timestamp
+        let utc: DateTime<Utc> = Utc::now();
+        let now = utc.naive_utc();
+
+        if user.len() == 1 {
+            // found a user object
+            diesel::update(levels.filter(user_id.eq(id_user as i64)).filter(
+                guild_id.eq(
+                    id_guild as
+                        i64,
+                ),
+            )).set((
+                msg_all_time.eq(user[0].msg_all_time + 1),
+                msg_month.eq(user[0].msg_month + 1),
+                msg_week.eq(user[0].msg_week + 1),
+                msg_day.eq(user[0].msg_day + 1),
+                last_msg.eq(now),
+            ))
+                .execute(&*conn)
+                .expect("Failed to update level row.");
+        } else {
+
+            // create a new level row for the user + guild
+            let new_level_obj = NewUserLevel {
+                user_id: id_user as i64,
+                guild_id: id_guild as i64,
+                msg_all_time: 1,
+                msg_month: 1,
+                msg_week: 1,
+                msg_day: 1,
+                last_msg: &now,
+            };
+
+            diesel::insert_into(levels::table)
+                .values(&new_level_obj)
+                .execute(&*conn)
+                .expect("Failed to insert new user level row.");
+        }
 
         Ok(())
     }
