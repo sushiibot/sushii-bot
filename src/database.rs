@@ -218,8 +218,8 @@ pub fn level_interval(user_level: &UserLevel) -> UserLevelInterval {
     let mut msg_week = user_level.msg_week;
     let mut msg_month = user_level.msg_month;
 
-    // check if day is different and month (could possible be same day 1 year apart but unlikey)
-    if now.day() != last_msg.day() && now.month() != last_msg.month() {
+    // check if new day (could possible be same day 1 year apart but unlikey)
+    if now.ordinal() != last_msg.ordinal() {
         msg_day = 0;
     }
 
