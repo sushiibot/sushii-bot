@@ -11,12 +11,7 @@ use r2d2_diesel::ConnectionManager;
 use std::env;
 use std::sync::Arc;
 
-use serenity::model::Guild;
-use models::NewGuildConfig;
-use models::EventCounter;
-use models::NewEventCounter;
-use models::UserLevel;
-use models::NewUserLevel;
+use models::*;
 
 use chrono::{DateTime, Utc, Datelike};
 
@@ -40,17 +35,19 @@ pub fn init() -> ConnectionPool {
 impl ConnectionPool {
     /// Creates a new config for a guild,
     /// ie when the bot joins a new guild.
-    pub fn new_guild<'a>(&self, guild: &'a Guild) {
+    pub fn new_guild(&self, guild_id: u64) {
         use schema::guilds;
 
         let new_guild_obj = NewGuildConfig {
-            id: guild.id.0 as i64,
-            name: &guild.name,
+            id: guild_id as i64,
+            name: None,
             join_msg: None,
+            join_react: None,
             leave_msg: None,
-            invite_guard: false,
+            invite_guard: Some(false),
             log_msg: None,
             log_mod: None,
+            prefix: None,
         };
 
         // get a connection from the pool
@@ -60,6 +57,59 @@ impl ConnectionPool {
             .values(&new_guild_obj)
             .execute(&*conn)
             .expect("Error saving new guild.");
+    }
+
+    /// Gets the prefix for a guild
+    pub fn get_prefix(&self, guild_id: u64) -> Option<String> {
+        use schema::guilds::dsl::*;
+
+        let conn = (*&self.pool).get().unwrap();
+
+        let rows = guilds
+            .filter(id.eq(guild_id as i64))
+            .load::<GuildConfig>(&*conn)
+            .expect("Error loading guild");
+
+        if rows.len() == 1 {
+            rows[0].prefix.clone()
+        } else {
+            None
+        }
+    }
+
+    // sets the prefix for a guild
+    pub fn set_prefix(&self, guild_id: u64, new_prefix: &str) -> bool {
+        use schema::guilds::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        // fetch event
+        let rows = guilds
+            .filter(id.eq(guild_id as i64))
+            .load::<GuildConfig>(&*conn)
+            .expect("Error loading guild");
+
+        // check if this is a new guild
+        if rows.len() == 0 {
+            self.new_guild(guild_id);
+        } else {
+            let guild = rows[0].clone();
+            // check if guild has same prefix
+            if let Some(existing_prefix) = guild.prefix {
+                if new_prefix == existing_prefix {
+                    return false;
+                }
+            }
+        }
+
+        // update the guild row
+        diesel::update(guilds.filter(id.eq(guild_id as i64)))
+            .set(prefix.eq(new_prefix))
+            .execute(&*conn)
+            .expect("Failed to update the guild prefix.");
+
+        true
     }
 
     /// Logs a counter for each event that is handled
