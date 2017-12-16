@@ -84,7 +84,22 @@ fn main() {
 
     client.with_framework(
         StandardFramework::new()
-            .configure(|c| c.owners(owners).prefix("-"))
+            .configure(|c| c.owners(owners).dynamic_prefix(|ctx, msg| {
+                let mut data = ctx.data.lock();
+                let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+                // get guild id
+                if let Some(guild_id) = msg.guild_id() {
+                    // get guild config prefix
+                    if let Some(prefix) = pool.get_prefix(guild_id.0) {
+                        return Some(prefix);
+                    }
+                }
+
+                // either no guild found or no prefix set for guild, use default
+                let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
+                Some(default_prefix)
+            }))
             .on_dispatch_error(|_, msg, error| {
                 // react x whenever an error occurs
                 let _ = msg.react("❌");
