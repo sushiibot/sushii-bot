@@ -150,6 +150,10 @@ fn main() {
                         c.desc("Shows the number of events handled by the bot.")
                             .exec(commands::meta::events)
                     })
+                    .command("prefix", |c| {
+                        c.desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
+                            .exec(commands::settings::prefix)
+                    })
             })
             .group("Misc", |g| {
                 g.command("play", |c| {
