@@ -43,7 +43,9 @@ command!(prefix(ctx, msg, args) {
         }
         
     } else {
-        return Err(CommandError("No guild found.".to_owned()));
+        // no guild found, probably in DMs
+        let prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
+        let _ = msg.channel_id.say(format!("The default prefix is set to `{}`", prefix));
     }
 
     
