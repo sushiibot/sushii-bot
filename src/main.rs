@@ -24,6 +24,7 @@ extern crate env_logger;
 extern crate reqwest;
 extern crate typemap;
 extern crate chrono;
+extern crate rand;
 
 pub mod schema;
 pub mod models;
