@@ -21,7 +21,8 @@ command!(rank(ctx, msg) {
     let _ = write!(s, "Month: {}\n", level_data.msg_month);
     let _ = write!(s, "Week: {}\n", level_data.msg_week);
     let _ = write!(s, "Day: {}\n", level_data.msg_day);
-    let _ = write!(s, "All Time: {}\n", level_data.msg_all_time);
+    let _ = write!(s, "All Time: {}\n\n", level_data.msg_all_time);
+    let _ = write!(s, "Last Message: {}\n", level_data.last_msg.format("%Y-%m-%d %H:%M:%S"));
     let _ = write!(s, "```");
 
     let _ = msg.channel_id.say(&s);
