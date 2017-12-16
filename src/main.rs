@@ -145,19 +145,9 @@ fn main() {
                             "Calculates the heartbeat latency between the shard and the gateway.",
                         ).exec(commands::meta::latency)
                     })
-                    .command("quit", |c| {
-                        c.desc("Gracefully shuts down the bot.")
-                            .owners_only(true)
-                            .exec(commands::owner::quit)
-                    })
                     .command("events", |c| {
                         c.desc("Shows the number of events handled by the bot.")
                             .exec(commands::meta::events)
-                    })
-                    .command("reset events", |c| {
-                        c.desc("Resets the events counter.")
-                            .owners_only(true)
-                            .exec(commands::meta::reset_events)
                     })
             })
             .group("Misc", |g| {
@@ -167,6 +157,22 @@ fn main() {
                         .min_args(1)
                         .exec(commands::misc::play)
                 })
+            })
+            .group("Owner", |g| {
+                g.command("quit", |c| {
+                    c.desc("Gracefully shuts down the bot.")
+                        .owners_only(true)
+                        .exec(commands::owner::quit)
+                }).command("reset events", |c| {
+                        c.desc("Resets the events counter.")
+                            .owners_only(true)
+                            .exec(commands::meta::reset_events)
+                    })
+                    .command("username", |c| {
+                        c.desc("Changes the bot's username.")
+                            .owners_only(true)
+                            .exec(commands::owner::username)
+                    })
             }),
     );
 
