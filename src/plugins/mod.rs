@@ -9,3 +9,4 @@ pub mod levels;
 #[macro_use]
 pub mod macros;
 pub mod util;
+pub mod random_hi;
