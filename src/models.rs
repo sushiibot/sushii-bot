@@ -4,27 +4,31 @@ use schema::levels;
 
 use chrono::naive::NaiveDateTime;
 
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct GuildConfig {
     pub id: i64,
-    pub name: String,
-    pub join_msg: String,
-    pub leave_msg: String,
-    pub invite_guard: bool,
-    pub log_msg: i64,
-    pub log_mod: i64,
+    pub name: Option<String>,
+    pub join_msg: Option<String>,
+    pub join_react: Option<String>,
+    pub leave_msg: Option<String>,
+    pub invite_guard: Option<bool>,
+    pub log_msg: Option<i64>,
+    pub log_mod: Option<i64>,
+    pub prefix: Option<String>,
 }
 
 #[derive(Insertable)]
 #[table_name = "guilds"]
-pub struct NewGuildConfig<'a> {
+pub struct NewGuildConfig {
     pub id: i64,
-    pub name: &'a str,
+    pub name: Option<String>,
     pub join_msg: Option<String>,
+    pub join_react: Option<String>,
     pub leave_msg: Option<String>,
-    pub invite_guard: bool,
+    pub invite_guard: Option<bool>,
     pub log_msg: Option<i64>,
     pub log_mod: Option<i64>,
+    pub prefix: Option<String>,
 }
 
 
