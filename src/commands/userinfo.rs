@@ -1,15 +1,40 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::GameType;
+use serenity::utils::parse_username;
+use serenity::model::UserId;
+
 use inflector::Inflector;
 
 use database;
 
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
-    let name = match args.single::<String>() {
+    let mut name = match args.single::<String>() {
         Ok(val) => val,
         Err(_) => msg.author.tag(),
     };
+
+    let user_from_id = match parse_username(&name) {
+        Some(id) => {
+            match UserId(id).get() {
+                Ok(user) => {
+                    Some(format!("{}#{}", user.name, user.discriminator))
+                },
+                Err(_) => {
+                    None
+                }
+            }
+        },
+        None => {
+            None
+        }
+    };
+
+
+    // replace name if it's a mention
+    if let Some(name_from_id) = user_from_id {
+        name = name_from_id;
+    }
 
     // from https://github.com/zeyla/serenity/blob/7fa4df324bcc68f9c0c1c1322eb94931aa267cf0/src/model/guild/mod.rs#L727-L737
     // as a workaround for currently non-working guild.member_named() function
@@ -28,6 +53,7 @@ command!(userinfo(ctx, msg, args) {
     if let Some(guild) = msg.guild() {
         let guild = guild.read().unwrap();
 
+        // fetch user by name containing
         let members = guild.members_containing(&name, false, true);
 
         let member = members.iter().find(|member| {
