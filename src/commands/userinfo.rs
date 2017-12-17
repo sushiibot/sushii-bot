@@ -1,4 +1,6 @@
 use serenity::framework::standard::CommandError;
+use serenity::model::GameType;
+use inflector::Inflector;
 
 use database;
 
@@ -50,18 +52,58 @@ command!(userinfo(ctx, msg, args) {
             let _ = msg.channel_id.send_message(|m| 
                 m.embed(|e| {
                     let mut e = e
-                        .author(|a|
-                            a.name(&user.tag())
-                            .icon_url(&user.face())
-                        )
                         .field(|f| f
                             .name("ID")
                             .value(user.id)
                         )
                         .field(|f| f
                             .name("Created At")
-                            .value(user.created_at().format("%Y-%m-%d %H:%M:%S"))
+                            .value(user.created_at().format("%Y-%m-%d %H:%M:%S UTC"))
                         );
+
+                    if let Some(joined_date) = member.joined_at {
+                        e = e.field(|f| f
+                            .name("Joined At")
+                            .value(joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC")));
+                    }
+
+                    if let Some(presence) = guild.presences.get(&user.id) {
+                        let mut full_status = presence.status.name().to_owned().to_sentence_case();
+
+                        if let Some(ref game) = presence.game {
+                            let kind = match game.kind {
+                                GameType::Playing => "Playing",
+                                GameType::Streaming => "Streaming",
+                            };
+
+                            let game = match game.url {
+                                Some(ref url) => format!("{} {}\n{}", kind, game.name, url),
+                                None => format!("{} {}", kind, game.name),
+                            };
+
+                            full_status = format!("{} - {}", full_status, game);
+                        }
+
+                        e = e.field(|f| f
+                            .name("Status")
+                            .value(full_status));
+                    } else {
+                        e = e.field(|f| f
+                            .name("Status")
+                            .value("Offline"));
+                    }
+
+                    if let Some(ref nick) = member.nick {
+                        e = e.author(|a|
+                            a.name(&format!("{} - {}", nick, user.tag()))
+                            .icon_url(&user.face())
+                        );
+                    } else {
+                        e = e.author(|a|
+                            a.name(&user.tag())
+                            .icon_url(&user.face())
+                        );
+                    }
 
                     e
                 })
