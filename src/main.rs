@@ -178,6 +178,13 @@ fn main() {
                         .exec(commands::misc::play)
                 })
             })
+            .group("User Info", |g| {
+                g.command("userinfo", |c| {
+                    c.usage("[user]")
+                        .desc("Gets information about a user.")
+                        .exec(commands::userinfo::userinfo)
+                })
+            })
             .group("Owner", |g| {
                 g.command("quit", |c| {
                     c.desc("Gracefully shuts down the bot.")
