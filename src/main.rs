@@ -25,6 +25,7 @@ extern crate reqwest;
 extern crate typemap;
 extern crate chrono;
 extern crate rand;
+extern crate inflector;
 
 pub mod schema;
 pub mod models;
