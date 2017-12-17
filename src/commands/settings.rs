@@ -28,7 +28,7 @@ command!(prefix(ctx, msg, args) {
                     }
                 }
             },
-        };    
+        };
 
         let has_manage_guild = guild.member_permissions(msg.author.id).manage_guild();
 
