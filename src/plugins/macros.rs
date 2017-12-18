@@ -6,3 +6,12 @@ macro_rules! exec_on_message {
         )*
     }
 }
+
+
+macro_rules! exec_on_ready {
+    ( [$ctx:expr, $ready:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_ready($ctx, $ready);
+        )*
+    }
+}
