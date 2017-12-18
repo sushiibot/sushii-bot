@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::vec::Vec;
 
 use plugins::*;
+use tasks::*;
 
 use database;
 
@@ -18,6 +19,8 @@ impl EventHandler for Handler {
     fn on_ready(&self, ctx: Context, ready: Ready) {
         info!("Connected as {}", ready.user.tag());
         util::bot_update_info(&format!("READY: Connected as {}", ready.user.tag()));
+
+        exec_on_ready!([&ctx, &ready], reminders);
 
         update_event(&ctx, "READY");
     }
