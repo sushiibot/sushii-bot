@@ -9,14 +9,13 @@ use r2d2::Pool;
 use r2d2_diesel::ConnectionManager;
 
 use std::env;
-use std::sync::Arc;
 
 use models::*;
 
 use chrono::{DateTime, Utc, Datelike};
 
 pub struct ConnectionPool {
-    pool: Arc<Pool<ConnectionManager<PgConnection>>>,
+    pool: Pool<ConnectionManager<PgConnection>>,
 }
 
 pub fn init() -> ConnectionPool {
@@ -28,7 +27,7 @@ pub fn init() -> ConnectionPool {
         "Failed to create pool.",
     );
 
-    ConnectionPool { pool: Arc::new(pool) }
+    ConnectionPool { pool }
 }
 
 
