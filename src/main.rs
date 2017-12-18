@@ -24,8 +24,10 @@ extern crate env_logger;
 extern crate reqwest;
 extern crate typemap;
 extern crate chrono;
+extern crate chrono_humanize;
 extern crate rand;
 extern crate inflector;
+extern crate regex;
 
 pub mod schema;
 pub mod models;
@@ -33,6 +35,7 @@ pub mod models;
 mod commands;
 #[macro_use]
 mod plugins;
+mod tasks;
 mod handler;
 mod database;
 
@@ -178,6 +181,15 @@ fn main() {
                         .desc("Evaluates Rust code in the playground.")
                         .min_args(1)
                         .exec(commands::misc::play)
+                })
+                .command("reminder", |c| {
+                    c.usage("[time] [description]")
+                        .desc("Reminds you to do something after some time.")
+                        .exec(commands::misc::reminder)
+                })
+                .command("reminders", |c| {
+                    c.desc("Shows your pending reminders.")
+                        .exec(commands::misc::reminders)
                 })
             })
             .group("User Info", |g| {
