@@ -10,7 +10,7 @@ use database;
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
     let mut name = match args.single::<String>() {
-        Ok(val) => val,
+        Ok(val) => val.to_lowercase(),
         Err(_) => msg.author.tag(),
     };
 
@@ -18,7 +18,7 @@ command!(userinfo(ctx, msg, args) {
         Some(id) => {
             match UserId(id).get() {
                 Ok(user) => {
-                    Some(format!("{}#{}", user.name, user.discriminator))
+                    Some(format!("{}#{}", user.name.to_lowercase(), user.discriminator))
                 },
                 Err(_) => {
                     None
@@ -54,10 +54,10 @@ command!(userinfo(ctx, msg, args) {
         let guild = guild.read().unwrap();
 
         // fetch user by name containing
-        let members = guild.members_containing(&name, false, true);
+        let members = guild.members_containing(&name, false, false);
 
         let member = members.iter().find(|member| {
-                let name_matches = member.user.read().unwrap().name == name;
+                let name_matches = member.user.read().unwrap().name.to_lowercase() == name;
                 let discrim_matches = match discrim {
                     Some(discrim) => member.user.read().unwrap().discriminator == discrim,
                     None => true,
@@ -67,7 +67,7 @@ command!(userinfo(ctx, msg, args) {
             })
             .or_else(|| {
                 members.iter().find(|member| {
-                    member.nick.as_ref().map_or(false, |nick| nick == name)
+                    member.nick.as_ref().map_or(false, |nick| nick.to_lowercase() == name)
                 })
         });
 
@@ -81,6 +81,7 @@ command!(userinfo(ctx, msg, args) {
                         .field(|f| f
                             .name("ID")
                             .value(user.id)
+                            .inline(false)
                         )
                         .field(|f| f
                             .name("Created At")
@@ -119,17 +120,22 @@ command!(userinfo(ctx, msg, args) {
                             .value("Offline"));
                     }
 
+                    let mut author_name;
+
                     if let Some(ref nick) = member.nick {
-                        e = e.author(|a|
-                            a.name(&format!("{} - {}", nick, user.tag()))
-                            .icon_url(&user.face())
-                        );
+                        author_name = format!("{} - {}", nick, user.tag());
                     } else {
-                        e = e.author(|a|
-                            a.name(&user.tag())
-                            .icon_url(&user.face())
-                        );
+                        author_name = user.tag();
                     }
+
+                    if user.bot {
+                        author_name = format!("{} [BOT]", author_name);
+                    }
+
+                    e = e.author(|a|
+                        a.name(&author_name)
+                        .icon_url(&user.face())
+                    );
 
                     e
                 })
