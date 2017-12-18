@@ -100,7 +100,8 @@ fn main() {
                 // either no guild found or no prefix set for guild, use default
                 let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
                 Some(default_prefix)
-            }))
+            }).allow_whitespace(true)
+            )
             .on_dispatch_error(|_, msg, error| {
                 // react x whenever an error occurs
                 let _ = msg.react("❌");
@@ -191,6 +192,7 @@ fn main() {
                     c.desc("Gracefully shuts down the bot.")
                         .owners_only(true)
                         .exec(commands::owner::quit)
+                        .known_as("shutdown")
                 }).command("reset events", |c| {
                         c.desc("Resets the events counter.")
                             .owners_only(true)
