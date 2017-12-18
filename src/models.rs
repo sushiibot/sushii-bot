@@ -1,6 +1,7 @@
 use schema::guilds;
 use schema::events;
 use schema::levels;
+use schema::reminders;
 
 use chrono::naive::NaiveDateTime;
 
@@ -68,4 +69,22 @@ pub struct NewUserLevel<'a> {
     pub msg_week: i64,
     pub msg_day: i64,
     pub last_msg: &'a NaiveDateTime,
+}
+
+#[derive(Queryable)]
+pub struct Reminder {
+    pub id: i32,
+    pub user_id: i64,
+    pub description: String,
+    pub time_set: NaiveDateTime,
+    pub time_to_remind: NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[table_name = "reminders"]
+pub struct NewReminder<'a> {
+    pub user_id: i64,
+    pub description: &'a str,
+    pub time_set: &'a NaiveDateTime,
+    pub time_to_remind: &'a NaiveDateTime,
 }
