@@ -13,7 +13,9 @@ use std::env;
 use models::*;
 
 use chrono::{DateTime, Utc, Datelike};
+use chrono::naive::NaiveDateTime;
 
+#[derive(Clone)]
 pub struct ConnectionPool {
     pool: Pool<ConnectionManager<PgConnection>>,
 }
@@ -256,6 +258,80 @@ impl ConnectionPool {
             return Some(results[0].clone());
         } else {
             return None;
+        }
+    }
+
+    pub fn add_reminder(&self, id_user: u64, content: &str, time: &NaiveDateTime) {
+        use schema::reminders;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        // get current timestamp
+        let utc: DateTime<Utc> = Utc::now();
+        let now = utc.naive_utc();
+
+        let new_reminder_obj = NewReminder {
+            user_id: id_user as i64,
+            description: content,
+            time_set: &now,
+            time_to_remind: time,
+        };
+
+        diesel::insert_into(reminders::table)
+            .values(&new_reminder_obj)
+            .execute(&*conn)
+            .expect("Failed to insert new reminder.");
+    }
+
+    pub fn get_overdue_reminders(&self) -> Option<Vec<Reminder>> {
+        use schema::reminders::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        // get current timestamp
+        let utc: DateTime<Utc> = Utc::now();
+        let now = utc.naive_utc();
+
+        let rows = reminders
+            .filter(time_to_remind.lt(now))
+            .load::<Reminder>(&*conn)
+            .expect("Error loading reminders");
+
+        if rows.len() == 0 {
+            return None;
+        } else {
+            return Some(rows);
+        }
+    }
+
+    pub fn remove_reminder(&self, reminder_id: i32) {
+        use schema::reminders::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        diesel::delete(reminders.filter(id.eq(reminder_id)))
+            .execute(&*conn)
+            .expect("Error deleting reminder.");
+    }
+
+    pub fn get_reminders(&self, id_user: u64) -> Option<Vec<Reminder>> {
+        use schema::reminders::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let rows = reminders
+            .filter(user_id.eq(id_user as i64))
+            .load::<Reminder>(&*conn)
+            .expect("Error loading reminders.");
+
+        if rows.len() == 0 {
+            return None;
+        } else {
+            return Some(rows);
         }
     }
 }
