@@ -59,19 +59,28 @@ impl ConnectionPool {
             .expect("Error saving new guild.");
     }
 
-    /// Gets the prefix for a guild
-    pub fn get_prefix(&self, guild_id: u64) -> Option<String> {
+    pub fn get_guild_config(&self, guild_id: u64) -> Option<GuildConfig> {
         use schema::guilds::dsl::*;
 
+        // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
         let rows = guilds
             .filter(id.eq(guild_id as i64))
             .load::<GuildConfig>(&*conn)
-            .expect("Error loading guild");
+            .expect("Error loading guild config");
 
         if rows.len() == 1 {
-            rows[0].prefix.clone()
+            Some(rows[0].clone())
+        } else {
+            None
+        }
+    }
+
+    /// Shortcut function to get the prefix for a guild
+    pub fn get_prefix(&self, guild_id: u64) -> Option<String> {
+        if let Some(guild) = self.get_guild_config(guild_id) {
+            guild.prefix
         } else {
             None
         }
