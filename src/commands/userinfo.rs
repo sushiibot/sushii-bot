@@ -2,6 +2,7 @@ use serenity::framework::standard::CommandError;
 use serenity::model::GameType;
 use serenity::utils::parse_username;
 use serenity::model::UserId;
+use serenity::model::Role;
 
 use inflector::Inflector;
 
@@ -120,14 +121,18 @@ command!(userinfo(ctx, msg, args) {
                             .value("Offline"));
                     }
 
+                    // AUTHOR - nick - tag [bot]
+
                     let mut author_name;
 
+                    // check if user has a nickname
                     if let Some(ref nick) = member.nick {
                         author_name = format!("{} - {}", nick, user.tag());
                     } else {
                         author_name = user.tag();
                     }
 
+                    // append [BOT] to author if bot
                     if user.bot {
                         author_name = format!("{} [BOT]", author_name);
                     }
@@ -136,6 +141,33 @@ command!(userinfo(ctx, msg, args) {
                         a.name(&author_name)
                         .icon_url(&user.face())
                     );
+
+                    // roles
+                    let roles = match member.roles() {
+                        Some(roles) => {
+                            let mut roles = roles.clone();
+                            // sort roles by position
+                            roles.sort_by(|a, b| b.position.cmp(&a.position));
+
+                            // set the color of embed to highest role color
+                            if roles.len() > 0 {
+                                e = e.color(roles[0].colour);
+                            }
+
+                            // convert roles to string
+                            roles.iter().map(|role| {
+                                role.name.clone()
+                            }).collect::<Vec<String>>().join(", ")
+                        },
+                        None => "".to_owned(),
+                    };
+
+                    e = e.field(|f| f
+                        .name("Roles")
+                        .value(roles)
+                        .inline(false)
+                    );
+
 
                     e
                 })
