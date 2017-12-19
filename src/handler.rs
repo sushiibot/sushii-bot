@@ -82,11 +82,21 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_INTEGRATIONS_UPDATE");
     }
 
-    fn on_guild_member_addition(&self, ctx: Context, _: GuildId, _: Member) {
+    fn on_guild_member_addition(&self, ctx: Context, guild: GuildId, member: Member) {
+        exec_on_guild_member_addition!([&ctx, &guild, &member], join_leave_message);
+
         update_event(&ctx, "GUILD_MEMBER_ADD");
     }
 
-    fn on_guild_member_removal(&self, ctx: Context, _: GuildId, _: User, _: Option<Member>) {
+    fn on_guild_member_removal(
+        &self,
+        ctx: Context,
+        guild: GuildId,
+        user: User,
+        member: Option<Member>,
+    ) {
+        exec_on_guild_member_removal!([&ctx, &guild, &user, &member], join_leave_message);
+
         update_event(&ctx, "GUILD_MEMBER_REMOVE");
     }
 
