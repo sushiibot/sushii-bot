@@ -15,3 +15,20 @@ macro_rules! exec_on_ready {
         )*
     }
 }
+
+macro_rules! exec_on_guild_member_addition {
+    ( [$ctx:expr, $GuildId:expr, $member:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_guild_member_addition($ctx, $GuildId, $member);
+        )*
+    }
+}
+
+
+macro_rules! exec_on_guild_member_removal {
+    ( [$ctx:expr, $GuildId:expr, $user:expr, $member:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_guild_member_removal($ctx, $GuildId, $user, $member);
+        )*
+    }
+}
