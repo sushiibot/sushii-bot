@@ -31,10 +31,11 @@ extern crate regex;
 
 pub mod schema;
 pub mod models;
+pub mod util;
 
-mod commands;
 #[macro_use]
 mod plugins;
+mod commands;
 mod tasks;
 mod handler;
 mod database;
@@ -218,6 +219,11 @@ fn main() {
                     c.usage("[user]")
                         .desc("Gets information about a user.")
                         .exec(commands::userinfo::userinfo)
+                })
+                .command("avatar", |c| {
+                    c.usage("[user]")
+                        .desc("Gets the avatar for a user.")
+                        .exec(commands::userinfo::avatar)
                 })
             })
             .group("Owner", |g| {
