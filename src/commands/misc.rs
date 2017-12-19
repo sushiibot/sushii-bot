@@ -5,6 +5,7 @@ use regex::Regex;
 use std::fmt::Write;
 
 use chrono::{DateTime, Utc, Duration};
+use chrono_humanize::HumanTime;
 use database;
 
 #[derive(Deserialize)]
@@ -97,8 +98,8 @@ command!(reminder(ctx, msg, args) {
     let remind_date = remind_date.naive_utc();
 
     // check if offset is great enough
-    if offset.num_minutes() < 1 {
-        return Err(CommandError("Reminder must be at least 1 minute from now".to_owned()));
+    if offset.num_seconds() < 5 {
+        return Err(CommandError("Reminder must be at least 5 seconds from now".to_owned()));
     }
 
     let content = args.full();
@@ -109,7 +110,14 @@ command!(reminder(ctx, msg, args) {
 
     pool.add_reminder(msg.author.id.0, &content, &remind_date);
 
-    let s = format!("I'll remind you at `{}` to `{}`", remind_date.format("%Y-%m-%d %H:%M:%S UTC"), content);
+    let now = now.naive_utc();
+    let since = remind_date.signed_duration_since(
+        now,
+    );
+
+    let ht = HumanTime::from(since);
+
+    let s = format!("I'll remind you at `{}` ({}) to `{}`", remind_date.format("%Y-%m-%d %H:%M:%S UTC"), ht, content);
     let _ = msg.channel_id.say(&s);
 });
 
@@ -121,10 +129,19 @@ command!(reminders(ctx, msg, _args) {
     let reminders = pool.get_reminders(msg.author.id.0);
 
     if let Some(reminders) = reminders {
-        let mut s = format!("You have {} reminders:\n```rust", reminders.len());
+        let mut s = format!("You have {} reminders:\n```rust\n", reminders.len());
+
+        // get current timestamp
+        let utc: DateTime<Utc> = Utc::now();
+        let now = utc.naive_utc();
 
         for reminder in reminders {
-            let _ = write!(s, "{} - {}\n", reminder.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), reminder.description);
+            let since = reminder.time_to_remind.signed_duration_since(
+                now
+            );
+
+            let ht = HumanTime::from(since);
+            let _ = write!(s, "{} ({})\n    {}\n", reminder.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), ht, reminder.description);
         }
 
         // get current timestamp
