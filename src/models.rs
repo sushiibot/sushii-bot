@@ -13,9 +13,12 @@ pub struct GuildConfig {
     pub join_msg: Option<String>,
     pub join_react: Option<String>,
     pub leave_msg: Option<String>,
+    pub msg_channel: Option<i64>,
     pub invite_guard: Option<bool>,
     pub log_msg: Option<i64>,
     pub log_mod: Option<i64>,
+    pub log_member: Option<i64>,
+    pub mute_role: Option<i64>,
     pub prefix: Option<String>,
 }
 
@@ -27,9 +30,12 @@ pub struct NewGuildConfig {
     pub join_msg: Option<String>,
     pub join_react: Option<String>,
     pub leave_msg: Option<String>,
+    pub msg_channel: Option<i64>,
     pub invite_guard: Option<bool>,
     pub log_msg: Option<i64>,
     pub log_mod: Option<i64>,
+    pub log_member: Option<i64>,
+    pub mute_role: Option<i64>,
     pub prefix: Option<String>,
 }
 

@@ -45,9 +45,12 @@ impl ConnectionPool {
             join_msg: None,
             join_react: None,
             leave_msg: None,
+            msg_channel: None,
             invite_guard: Some(false),
             log_msg: None,
             log_mod: None,
+            log_member: None,
+            mute_role: None,
             prefix: None,
         };
 
@@ -402,9 +405,12 @@ fn new_guild_to_guild_config(config: NewGuildConfig) -> GuildConfig {
         join_msg: config.join_msg,
         join_react: config.join_react,
         leave_msg: config.leave_msg,
+        msg_channel: config.msg_channel,
         invite_guard: config.invite_guard,
         log_msg: config.log_msg,
         log_mod: config.log_mod,
+        log_member: config.log_member,
+        mute_role: config.mute_role,
         prefix: config.prefix,
     }
 }
