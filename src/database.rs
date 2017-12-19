@@ -36,7 +36,7 @@ pub fn init() -> ConnectionPool {
 impl ConnectionPool {
     /// Creates a new config for a guild,
     /// ie when the bot joins a new guild.
-    pub fn new_guild(&self, guild_id: u64) {
+    pub fn new_guild(&self, guild_id: u64) -> GuildConfig {
         use schema::guilds;
 
         let new_guild_obj = NewGuildConfig {
@@ -58,9 +58,12 @@ impl ConnectionPool {
             .values(&new_guild_obj)
             .execute(&*conn)
             .expect("Error saving new guild.");
+
+        new_guild_to_guild_config(new_guild_obj)
     }
 
-    pub fn get_guild_config(&self, guild_id: u64) -> Option<GuildConfig> {
+    // gets a guild's config if it exists, or create one if it doesn't
+    pub fn get_guild_config(&self, guild_id: u64) -> GuildConfig {
         use schema::guilds::dsl::*;
 
         // get a connection from the pool
@@ -72,19 +75,31 @@ impl ConnectionPool {
             .expect("Error loading guild config");
 
         if rows.len() == 1 {
-            Some(rows[0].clone())
+            rows[0].clone()
         } else {
-            None
+            self.new_guild(guild_id)
         }
     }
 
+    pub fn save_guild_config(&self, config: &GuildConfig) {
+        use schema::guilds;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        diesel::update(guilds::table)
+            .set(config)
+            .execute(&*conn)
+            .expect("Error updating guild.");
+    }
+
+    /// PREFIX
+
     /// Shortcut function to get the prefix for a guild
     pub fn get_prefix(&self, guild_id: u64) -> Option<String> {
-        if let Some(guild) = self.get_guild_config(guild_id) {
-            guild.prefix
-        } else {
-            None
-        }
+        let guild = self.get_guild_config(guild_id);
+
+        guild.prefix
     }
 
     // sets the prefix for a guild
@@ -121,6 +136,8 @@ impl ConnectionPool {
 
         true
     }
+
+    /// EVENTS
 
     /// Logs a counter for each event that is handled
     pub fn log_event(&self, event_name: &str) {
@@ -184,6 +201,8 @@ impl ConnectionPool {
 
         Ok(())
     }
+
+    /// LEVELS
 
     pub fn update_level(&self, id_user: u64, id_guild: u64) -> Result<(), Error> {
         use schema::levels;
@@ -260,6 +279,8 @@ impl ConnectionPool {
             return None;
         }
     }
+
+    /// REMINDERS
 
     pub fn add_reminder(&self, id_user: u64, content: &str, time: &NaiveDateTime) {
         use schema::reminders;
@@ -371,5 +392,19 @@ pub fn level_interval(user_level: &UserLevel) -> UserLevelInterval {
         msg_month,
         msg_week,
         msg_day,
+    }
+}
+
+fn new_guild_to_guild_config(config: NewGuildConfig) -> GuildConfig {
+    GuildConfig {
+        id: config.id,
+        name: config.name,
+        join_msg: config.join_msg,
+        join_react: config.join_react,
+        leave_msg: config.leave_msg,
+        invite_guard: config.invite_guard,
+        log_msg: config.log_msg,
+        log_mod: config.log_mod,
+        prefix: config.prefix,
     }
 }
