@@ -10,3 +10,4 @@ pub mod levels;
 pub mod macros;
 pub mod util;
 pub mod random_hi;
+pub mod join_leave_message;
