@@ -5,7 +5,8 @@ use schema::reminders;
 
 use chrono::naive::NaiveDateTime;
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, AsChangeset, Clone)]
+#[table_name = "guilds"]
 pub struct GuildConfig {
     pub id: i64,
     pub name: Option<String>,
