@@ -2,11 +2,11 @@ use serenity::framework::standard::CommandError;
 use serenity::model::GameType;
 use serenity::utils::parse_username;
 use serenity::model::UserId;
-use serenity::model::Role;
 
 use inflector::Inflector;
 
 use database;
+use util;
 
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
@@ -168,7 +168,7 @@ command!(userinfo(ctx, msg, args) {
                         .inline(false)
                     );
 
-
+                    // return embed
                     e
                 })
             );
@@ -177,5 +177,23 @@ command!(userinfo(ctx, msg, args) {
             let s = format!("I cant find a member named `{}`.", name);
             return Err(CommandError(s.to_owned()));
         }
+    }
+});
+
+command!(avatar(_ctx, msg, args) {
+    let name = match args.single::<String>() {
+        Ok(val) => val,
+        Err(_) => return Err(CommandError("Missing user.".to_owned())),
+    };
+
+    let id = match util::get_id(&name) {
+        Some(id) => id,
+        None => return Err(CommandError("Invalid mention.".to_owned())),
+    };
+
+    if let Ok(user) = UserId(id).get() {
+        let _ = msg.channel_id.say(user.face());
+    } else {
+        return Err(CommandError("Can't find user.".to_owned()));
     }
 });
