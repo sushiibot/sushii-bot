@@ -44,6 +44,7 @@ use serenity::framework::StandardFramework;
 use serenity::framework::standard::help_commands;
 use serenity::framework::standard::DispatchError::*;
 
+use serenity::model::permissions::Permissions;
 use serenity::model::UserId;
 use serenity::prelude::*;
 
@@ -192,9 +193,16 @@ fn main() {
                         c.desc("Shows the number of events handled by the bot.")
                             .exec(commands::meta::events)
                     })
-                    .command("prefix", |c| {
-                        c.desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
-                            .exec(commands::settings::prefix)
+            })
+            .group("Settings", |g| {
+                g.command("prefix", |c| {
+                    c.desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
+                        .exec(commands::settings::prefix)
+                    })
+                    .command("joinmsg", |c| {
+                        c.desc("Gets the guild's current join message or sets one if given.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::joinmsg)
                     })
             })
             .group("Misc", |g| {

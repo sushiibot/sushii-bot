@@ -1,5 +1,4 @@
 use serenity::framework::standard::CommandError;
-use serenity::model::permissions::Permissions;
 
 use std::env;
 use database;
@@ -50,6 +49,35 @@ command!(prefix(ctx, msg, args) {
         let prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
         let _ = msg.channel_id.say(format!("The default prefix is set to `{}`", prefix));
     }
+});
 
-    
+command!(joinmsg(ctx, msg, args) {
+    let mut data = ctx.data.lock();
+    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+    let message = args.full();
+
+    if let Some(guild_id) = msg.guild_id() {
+        let guild_id = guild_id.0;
+        let config = pool.get_guild_config(guild_id);
+
+        // no message given, just print out the current message
+        if args.len() == 0 {
+            if let Some(current_message) = config.join_msg {
+                let s = format!("The current join message is: {}", current_message);
+                let _ = msg.channel_id.say(&s);
+            } else {
+                let _ = msg.channel_id.say("There is no join message set.");
+            }
+        } else {
+            let mut config = config;
+            config.join_msg = Some(message.clone());
+
+            pool.save_guild_config(&config);
+            let s = format!("The current join message has been set to: {}", message);
+            let _ = msg.channel_id.say(&s);
+        }
+    } else {
+        return Err(CommandError("No guild found.".to_owned()));
+    }
 });
