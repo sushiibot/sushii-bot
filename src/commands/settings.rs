@@ -1,4 +1,5 @@
 use serenity::framework::standard::CommandError;
+use serenity::model::permissions::Permissions;
 
 use std::env;
 use database;
@@ -40,6 +41,8 @@ command!(prefix(ctx, msg, args) {
             } else {
                 let _ = msg.channel_id.say(format!("The prefix for this server is already: `{}`", prefix));
             }
+        } else {
+            return Err(CommandError("You need `MANAGE_GUILD` permissions to set the prefix.".to_owned()));
         }
         
     } else {
