@@ -86,28 +86,38 @@ fn main() {
         .map(|x| UserId(x.parse::<u64>().unwrap()))
         .collect();
 
+    let blocked_users: HashSet<UserId> = match env::var("BLOCKED_USERS") {
+        Ok(val) => {
+            val.split(",").map(|x| UserId(x.parse::<u64>().unwrap())).collect()
+        },
+        Err(_) => HashSet::new(),
+    };
+
+
     client.with_framework(
         StandardFramework::new()
-            .configure(|c| c.owners(owners).dynamic_prefix(|ctx, msg| {
-                let mut data = ctx.data.lock();
-                let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+            .configure(|c| c
+                .owners(owners)
+                .dynamic_prefix(|ctx, msg| {
+                    let mut data = ctx.data.lock();
+                    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-                // get guild id
-                if let Some(guild_id) = msg.guild_id() {
-                    // get guild config prefix
-                    if let Some(prefix) = pool.get_prefix(guild_id.0) {
-                        return Some(prefix);
+                    // get guild id
+                    if let Some(guild_id) = msg.guild_id() {
+                        // get guild config prefix
+                        if let Some(prefix) = pool.get_prefix(guild_id.0) {
+                            return Some(prefix);
+                        }
                     }
-                }
 
-                // either no guild found or no prefix set for guild, use default
-                let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
-                Some(default_prefix)
-            }).allow_whitespace(true)
+                    // either no guild found or no prefix set for guild, use default
+                    let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
+                    Some(default_prefix)
+                })
+                .blocked_users(blocked_users)
+                .allow_whitespace(true)
             )
             .on_dispatch_error(|_, msg, error| {
-                // react x whenever an error occurs
-                let _ = msg.react("❌");
                 match error {
                     NotEnoughArguments { min, given } => {
                         let s = format!("Need {} arguments, but only got {}.", min, given);
@@ -127,18 +137,29 @@ fn main() {
 
                         let _ = msg.channel_id.say(&s);
                     }
+                    OnlyForOwners => {
+                        let _ = msg.channel_id.say("no.");
+                    }
                     OnlyForGuilds => {
-                        let s = format!("This command can only be used in guilds.");
-
-                        let _ = msg.channel_id.say(&s);
+                        let _ = msg.channel_id.say("This command can only be used in guilds.");
                     }
                     RateLimited(seconds) => {
                         let s = format!("Try this again in {} seconds.", seconds);
 
                         let _ = msg.channel_id.say(&s);
                     }
+                    BlockedUser => {
+                        println!("Blocked user {} attemped to use command.", msg.author.tag());
+                    }
                     _ => println!("Unhandled dispatch error."),
                 }
+
+                // react x whenever an error occurs
+                let _ = msg.react("❌");
+            })
+            .before(|_ctx, msg, cmd_name| {
+                println!("{}: {} ", msg.author.tag(), cmd_name);
+                true
             })
             .after(|_ctx, msg, cmd_name, error| {
                 //  Print out an error if it happened
