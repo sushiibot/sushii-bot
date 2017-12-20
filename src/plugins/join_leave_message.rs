@@ -17,8 +17,12 @@ pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &Memb
                 Err(_) => return,
             };
 
+            let user = member.user.read().unwrap().clone();
+
             let _ = channel.send_message(|m| {
-                let mut m = m.content(joinmsg);
+                let msg = format_message(joinmsg, guild_id, &user);
+
+                let mut m = m.content(msg);
 
                 if let Some(join_react) = config.join_react.clone() {
                     m = m.reactions(vec![ReactionType::from(join_react)])
@@ -40,7 +44,30 @@ pub fn on_guild_member_removal(ctx: &Context, guild_id: &GuildId, user: &User, _
                 Err(_) => return,
             };
 
-            let _ = channel.send_message(|m| m.content(leavemsg));
+            let msg = format_message(leavemsg, guild_id, user);
+
+            let _ = channel.say(&msg);
         }
     }
+}
+
+/// Formats a string for join / leave messages, replaces placeholders for
+/// member name, mention, and guild names
+fn format_message(msg: String, guild: &GuildId, user: &User) -> String {
+    let guild_name = match guild.find() {
+        Some(guild) => guild.read().unwrap().name.clone(),
+        None => {
+            match guild.get() {
+                Ok(guild) => guild.name,
+                Err(_) => "".to_owned(),
+            }
+        }
+    };
+
+
+    let mut s = msg.replace("<mention>", &user.mention());
+    s = s.replace("<username>", &user.name);
+    s = s.replace("<server>", &guild_name);
+
+    s
 }
