@@ -227,6 +227,10 @@ fn main() {
                     c.desc("Shows your pending reminders.")
                         .exec(commands::misc::reminders)
                 })
+                .command("crypto", |c| {
+                    c.desc("Gets the prices for current cryptocurrency prices.")
+                        .exec(commands::crypto::crypto)
+                })
             })
             .group("User Info", |g| {
                 g.command("userinfo", |c| {

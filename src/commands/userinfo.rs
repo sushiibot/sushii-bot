@@ -75,7 +75,6 @@ command!(userinfo(ctx, msg, args) {
         if let Some(member) = member {
             let user = member.user.read().unwrap();
 
-            // user id but not in server
             let _ = msg.channel_id.send_message(|m| 
                 m.embed(|e| {
                     let mut e = e
