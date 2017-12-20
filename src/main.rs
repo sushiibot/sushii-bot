@@ -14,6 +14,7 @@ extern crate serde_json;
 #[macro_use]
 extern crate diesel;
 extern crate r2d2;
+#[macro_use]
 extern crate r2d2_diesel;
 
 #[macro_use]
@@ -200,9 +201,14 @@ fn main() {
                         .exec(commands::settings::prefix)
                     })
                     .command("joinmsg", |c| {
-                        c.desc("Gets the guild's current join message or sets one if given.")
+                        c.desc("Gets the guild's join message or sets one if given.")
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::joinmsg)
+                    })
+                    .command("leavemsg", |c| {
+                        c.desc("Gets the guild's leave message or sets one if given.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::leavemsg)
                     })
             })
             .group("Misc", |g| {

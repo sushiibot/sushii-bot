@@ -67,15 +67,64 @@ command!(joinmsg(ctx, msg, args) {
                 let s = format!("The current join message is: {}", current_message);
                 let _ = msg.channel_id.say(&s);
             } else {
-                let _ = msg.channel_id.say("There is no join message set.");
+                let _ = msg.channel_id.say("There is no join message set.  \
+                    You can set one with the placeholders <mention>, <username>, <server>.");
             }
         } else {
             let mut config = config;
-            config.join_msg = Some(message.clone());
+
+            if message == "off" {
+                config.join_msg = None;
+
+                let _ = msg.channel_id.say("Join messages have been disabled.");
+            } else {
+                config.join_msg = Some(message.clone());
+
+                let s = format!("The current join message has been set to: {}", message);
+                let _ = msg.channel_id.say(&s);
+            }
 
             pool.save_guild_config(&config);
-            let s = format!("The current join message has been set to: {}", message);
-            let _ = msg.channel_id.say(&s);
+        }
+    } else {
+        return Err(CommandError("No guild found.".to_owned()));
+    }
+});
+
+command!(leavemsg(ctx, msg, args) {
+    let mut data = ctx.data.lock();
+    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+    let message = args.full();
+
+    if let Some(guild_id) = msg.guild_id() {
+        let guild_id = guild_id.0;
+        let config = pool.get_guild_config(guild_id);
+
+        // no message given, just print out the current message
+        if args.len() == 0 {
+            if let Some(current_message) = config.leave_msg {
+                let s = format!("The current leave message is: {}", current_message);
+                let _ = msg.channel_id.say(&s);
+            } else {
+                let _ = msg.channel_id.say("There is no leave message set.  \
+                    You can set one with the placeholders <mention>, <username>, <server>.");
+            }
+        } else {
+            let mut config = config;
+
+            if message == "off" {
+                config.leave_msg = None;
+
+                let _ = msg.channel_id.say("Leave messages have been disabled.");
+            } else {
+                config.leave_msg = Some(message.clone());
+
+                let s = format!("The current leave message has been set to: {}", message);
+                let _ = msg.channel_id.say(&s);
+            }
+
+            pool.save_guild_config(&config);
         }
     } else {
         return Err(CommandError("No guild found.".to_owned()));
