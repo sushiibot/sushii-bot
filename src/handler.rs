@@ -25,9 +25,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "READY");
     }
 
-    fn on_resume(&self, ctx: Context, _: ResumedEvent) {
+    fn on_resume(&self, ctx: Context, resume: ResumedEvent) {
         info!("Resumed");
-        util::bot_update_info("RESUMED");
+        util::bot_update_info(&format!("RESUMED: \n```{:?}```", resume));
 
         update_event(&ctx, "RESUMED");
     }
