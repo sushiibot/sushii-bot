@@ -277,7 +277,7 @@ impl ConnectionPool {
             .expect("Error loading level");
 
         if results.len() == 1 {
-            return Some(results[0].clone());
+            return Some(level_interval(&results[0]));
         } else {
             return None;
         }
@@ -360,14 +360,9 @@ impl ConnectionPool {
     }
 }
 
-pub struct UserLevelInterval {
-    pub msg_month: i64,
-    pub msg_week: i64,
-    pub msg_day: i64,
-}
 
 /// checks if a new interval has passed and reset message counts accordingly
-pub fn level_interval(user_level: &UserLevel) -> UserLevelInterval {
+pub fn level_interval(user_level: &UserLevel) -> UserLevel {
     let utc: DateTime<Utc> = Utc::now();
     let now = utc.naive_utc();
 
@@ -391,10 +386,15 @@ pub fn level_interval(user_level: &UserLevel) -> UserLevelInterval {
         msg_month = 0;
     }
 
-    UserLevelInterval {
-        msg_month,
-        msg_week,
-        msg_day,
+    UserLevel {
+        id: user_level.id,
+        user_id: user_level.user_id,
+        guild_id: user_level.guild_id,
+        msg_all_time: user_level.msg_all_time,
+        msg_month: msg_month,
+        msg_week: msg_week,
+        msg_day: msg_day,
+        last_msg: user_level.last_msg,
     }
 }
 
