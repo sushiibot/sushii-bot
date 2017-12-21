@@ -3,16 +3,28 @@ use serenity::framework::standard::CommandError;
 use std::fmt::Write;
 use database;
 
-command!(rank(ctx, msg) {
+use util;
+
+command!(rank(ctx, msg, args) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+    let id = match args.single::<String>() {
+        Ok(val) => {
+            match util::get_id(&val) {
+                Some(id) => id,
+                None => return Err(CommandError("Invalid mention.".to_owned())),
+            }
+        },
+        Err(_) => msg.author.id.0,
+    };
 
     let guild_id = match msg.guild_id() {
         Some(guild) => guild.0,
         None => return Err(CommandError("No guild found.".to_owned())),
     };
 
-    let level_data = match pool.get_level(msg.author.id.0, guild_id) {
+    let level_data = match pool.get_level(id, guild_id) {
         Some(level_data) => level_data,
         None => return Err(CommandError("No level data found.".to_owned())),
     };
