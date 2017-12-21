@@ -2,7 +2,7 @@ use std::error::Error;
 use serenity::framework::standard::CommandError;
 
 command!(quit(ctx, msg, _args) {
-    let _ = msg.channel_id.say("Shutting down!");
+    let _ = msg.channel_id.say("cya");
 
     match ctx.quit() {
         Err(why) => {
