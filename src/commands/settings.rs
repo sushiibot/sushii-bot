@@ -1,4 +1,6 @@
 use serenity::framework::standard::CommandError;
+use serenity::utils::parse_channel;
+use util::get_config_from_context;
 
 use std::env;
 use database;
@@ -126,6 +128,33 @@ command!(leavemsg(ctx, msg, args) {
 
             pool.save_guild_config(&config);
         }
+    } else {
+        return Err(CommandError("No guild found.".to_owned()));
+    }
+});
+
+command!(modlog(ctx, msg, args) {
+    let channel = match args.single::<String>() {
+        Ok(val) => parse_channel(&val).unwrap_or(0),
+        Err(_) => return Err(CommandError("No channel given.".to_owned())),
+    };
+
+    if channel == 0 {
+        return Err(CommandError("Invalid channel.".to_owned()));
+    }
+
+    if let Some(guild_id) = msg.guild_id() {
+        let mut data = ctx.data.lock();
+        let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+
+        let mut config = pool.get_guild_config(guild_id.0);
+
+        config.log_mod = Some(channel as i64);
+
+        pool.save_guild_config(&config);
+
+        let s = format!("The moderation log channel has been set to: <#{}>", channel);
+        let _ = msg.channel_id.say(&s);
     } else {
         return Err(CommandError("No guild found.".to_owned()));
     }

@@ -210,6 +210,11 @@ fn main() {
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::leavemsg)
                     })
+                    .command("modlog", |c| {
+                        c.desc("Sets the moderation log channel.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::modlog)
+                    })
             })
             .group("Misc", |g| {
                 g.command("play", |c| {
@@ -228,7 +233,8 @@ fn main() {
                         .exec(commands::misc::reminders)
                 })
                 .command("crypto", |c| {
-                    c.desc("Gets the prices for current cryptocurrency prices.")
+                    c.usage("(symbol)")
+                        .desc("Gets current cryptocurrency prices.")
                         .exec(commands::crypto::crypto)
                 })
             })
