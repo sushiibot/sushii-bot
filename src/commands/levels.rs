@@ -62,7 +62,12 @@ command!(rank(ctx, msg, args) {
 
     let mut img = match res {
         Ok(val) => val,
-        Err(e) => return Err(CommandError(format!("Error: {}", e))),
+        Err(e) => {
+            // in case webserver down or something?
+            // fallback to text
+            let _ = msg.channel_id.say(&s);
+            return Ok(());
+        },
     };
 
     let mut buf: Vec<u8> = vec![];
