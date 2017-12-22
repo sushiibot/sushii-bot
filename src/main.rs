@@ -215,6 +215,16 @@ fn main() {
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::modlog)
                     })
+                    .command("msglog", |c| {
+                        c.desc("Sets the message log channel.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::msglog)
+                    })
+                    .command("memberlog", |c| {
+                        c.desc("Sets the member log channel.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::memberlog)
+                    })
             })
             .group("Misc", |g| {
                 g.command("play", |c| {
