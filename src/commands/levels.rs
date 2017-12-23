@@ -56,9 +56,13 @@ command!(rank(ctx, msg, args) {
     json.insert("height", "300".to_owned());
 
     let client = reqwest::Client::new();
-    let res = client.post("http://127.0.0.1:3000/html")
-        .json(&json)
-        .send()?.error_for_status();
+    let res = match client.post("http://127.0.0.1:3000/html").json(&json).send() {
+        Ok(val) => val.error_for_status(),
+        Err(_) => {
+            let _ = msg.channel_id.say(&s);
+            return Ok(());
+        }
+    };
 
     let mut img = match res {
         Ok(val) => val,
@@ -75,5 +79,5 @@ command!(rank(ctx, msg, args) {
 
     let files = vec![(&buf[..], "level.png")];
 
-    let _ = msg.channel_id.send_files(files, |m| m.content(&s));
+    let _ = msg.channel_id.send_files(files, |m| m.content(""));
 });
