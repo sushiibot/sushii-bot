@@ -4,10 +4,11 @@ use std::fmt::Write;
 use database;
 
 command!(add_notification(ctx, msg, args) {
-    let keyword = match args.single::<String>() {
-        Ok(val) => val,
-        Err(_) => return Err(CommandError("Missing keyword".to_owned())),
-    };
+    let keyword = args.full();
+
+    if keyword.is_empty() {
+        return Err(CommandError("Missing keyword".to_owned()));
+    }
 
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
