@@ -182,6 +182,13 @@ fn main() {
                     )
                 })
             })
+            .group("Notifications", |g| {
+                g.prefix("notification")
+                .command("add", |c| {
+                    c.desc("Adds a notification.")
+                        .exec(commands::notifications::add_notification)
+                })
+            })
             .group("Meta", |g| {
                 g.command("help", |c| c.exec_help(help_commands::with_embeds))
                     .command("ping", |c| c.exec_str("Pong!"))
