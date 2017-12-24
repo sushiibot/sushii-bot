@@ -2,6 +2,7 @@ use schema::guilds;
 use schema::events;
 use schema::levels;
 use schema::reminders;
+use schema::notifications;
 
 use chrono::naive::NaiveDateTime;
 
@@ -94,4 +95,21 @@ pub struct NewReminder<'a> {
     pub description: &'a str,
     pub time_set: &'a NaiveDateTime,
     pub time_to_remind: &'a NaiveDateTime,
+}
+
+
+#[derive(Queryable)]
+pub struct Notification {
+    pub id: i32,
+    pub user_id: i64,
+    pub guild_id: i64,
+    pub keyword: String,
+}
+
+#[derive(Insertable)]
+#[table_name = "notifications"]
+pub struct NewNotification<'a> {
+    pub user_id: i64,
+    pub guild_id: i64,
+    pub keyword: &'a str,
 }
