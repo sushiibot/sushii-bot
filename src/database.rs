@@ -32,7 +32,6 @@ pub fn init() -> ConnectionPool {
     ConnectionPool { pool }
 }
 
-
 impl ConnectionPool {
     /// Creates a new config for a guild,
     /// ie when the bot joins a new guild.
@@ -351,6 +350,45 @@ impl ConnectionPool {
             .filter(user_id.eq(id_user as i64))
             .load::<Reminder>(&*conn)
             .expect("Error loading reminders.");
+
+        if rows.len() == 0 {
+            return None;
+        } else {
+            return Some(rows);
+        }
+    }
+
+    pub fn new_notification(&self, user: u64, guild: u64, keyword: &str) {
+        use schema::notifications;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let new_notification = NewNotification {
+            user_id: user as i64,
+            guild_id: guild as i64,
+            keyword: keyword,
+        };
+
+        diesel::insert_into(notifications::table)
+            .values(&new_notification)
+            .execute(&*conn)
+            .expect("Failed to insert new notification.");
+    }
+
+    pub fn get_notifications(&self, msg: &str, guild: u64) -> Option<Vec<Notification>> {
+        use schema::notifications::dsl::*;
+
+        sql_function!(strpos, strpos_t, (string: diesel::types::Text, substring: diesel::types::Text) -> diesel::types::Integer);
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let rows = notifications
+            .filter(guild_id.eq(guild as i64))
+            .filter(strpos(msg, keyword).gt(0))
+            .load::<Notification>(&*conn)
+            .expect("Error loading notifications.");
 
         if rows.len() == 0 {
             return None;
