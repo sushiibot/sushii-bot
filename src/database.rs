@@ -358,6 +358,7 @@ impl ConnectionPool {
         }
     }
 
+    /// Creates a new notification
     pub fn new_notification(&self, user: u64, guild: u64, keyword: &str) {
         use schema::notifications;
 
@@ -376,6 +377,7 @@ impl ConnectionPool {
             .expect("Failed to insert new notification.");
     }
 
+    /// Gets notifications that have been triggered
     pub fn get_notifications(&self, msg: &str, guild: u64) -> Option<Vec<Notification>> {
         use schema::notifications::dsl::*;
 
@@ -389,6 +391,25 @@ impl ConnectionPool {
             .filter(strpos(msg, keyword).gt(0))
             .load::<Notification>(&*conn)
             .expect("Error loading notifications.");
+
+        if rows.len() == 0 {
+            return None;
+        } else {
+            return Some(rows);
+        }
+    }
+
+    /// Lists the notification's of a user
+    pub fn list_notifications(&self, user: u64) -> Option<Vec<Notification>> {
+        use schema::notifications::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let rows = notifications
+            .filter(user_id.eq(user as i64))
+            .load::<Notification>(&*conn)
+            .expect("Error loading user's notifications.");
 
         if rows.len() == 0 {
             return None;
