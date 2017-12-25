@@ -188,6 +188,10 @@ fn main() {
                     c.desc("Adds a notification.")
                         .exec(commands::notifications::add_notification)
                 })
+                .command("list", |c| {
+                    c.desc("Lists your set notifications")
+                        .exec(commands::notifications::list_notifications)
+                })
             })
             .group("Meta", |g| {
                 g.command("help", |c| c.exec_help(help_commands::with_embeds))
