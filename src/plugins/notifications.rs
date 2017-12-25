@@ -10,6 +10,10 @@ pub fn on_message(ctx: &Context, msg: &Message) {
         return;
     }
 
+    if msg.author.bot {
+        return;
+    }
+
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
