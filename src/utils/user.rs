@@ -1,9 +1,3 @@
-use chrono::{DateTime, Utc};
-use chrono::naive::NaiveDateTime;
-use serenity::prelude::Context;
-use database;
-use models::GuildConfig;
-
 pub fn get_id(value: &str) -> Option<u64> {
     // check if it's already an ID
     if let Ok(id) = value.parse::<u64>() {
@@ -20,16 +14,4 @@ pub fn get_id(value: &str) -> Option<u64> {
     } else {
         None
     }
-}
-
-pub fn get_now_utc() -> NaiveDateTime {
-    // get current timestamp
-    Utc::now().naive_utc()
-}
-
-pub fn get_config_from_context(ctx: &Context, guild_id: u64) -> GuildConfig {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
-
-    pool.get_guild_config(guild_id)
 }

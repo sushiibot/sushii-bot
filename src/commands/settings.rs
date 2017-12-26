@@ -1,6 +1,6 @@
 use serenity::framework::standard::CommandError;
 use serenity::utils::parse_channel;
-use util::get_config_from_context;
+use utils::config::get_config_from_context;
 
 use std::env;
 use database;
