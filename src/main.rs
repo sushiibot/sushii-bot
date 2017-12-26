@@ -32,7 +32,7 @@ extern crate regex;
 
 pub mod schema;
 pub mod models;
-pub mod util;
+pub mod utils;
 
 #[macro_use]
 mod plugins;
