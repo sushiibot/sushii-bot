@@ -1,11 +1,12 @@
 use serenity::framework::standard::CommandError;
+use serenity::model::UserId;
 use reqwest;
 use reqwest::header::ContentType;
 use std::fmt::Write;
 use std::collections::HashMap;
 use database;
 
-use util;
+use utils;
 
 const LEVEL_HTML: &'static str = include_str!("../../html/rank.html");
 
@@ -15,7 +16,7 @@ command!(rank(ctx, msg, args) {
 
     let id = match args.single::<String>() {
         Ok(val) => {
-            match util::get_id(&val) {
+            match utils::user::get_id(&val) {
                 Some(id) => id,
                 None => return Err(CommandError("Invalid mention.".to_owned())),
             }
@@ -33,6 +34,16 @@ command!(rank(ctx, msg, args) {
         None => return Err(CommandError("No level data found.".to_owned())),
     };
 
+    let activity = match pool.get_user_activity_message(id) {
+        Some(activity) => activity.msg_activity,
+        None => vec![0; 24],
+    };
+
+    let user = match UserId(id).get() {
+        Ok(val) => val,
+        Err(_) => return Err(CommandError("Could not fetch user.".to_owned())),
+    };
+
     let mut s = "```ruby\nMessage Count\n".to_owned();
     let _ = write!(s, "Month: {}\n", level_data.msg_month);
     let _ = write!(s, "Week: {}\n", level_data.msg_week);
@@ -43,14 +54,14 @@ command!(rank(ctx, msg, args) {
 
     let mut html = LEVEL_HTML.clone();
 
-    let html = html.replace("{USERNAME}", &msg.author.tag());
-    let html = html.replace("{AVATAR_URL}", &msg.author.face());
+    let html = html.replace("{USERNAME}", &user.tag());
+    let html = html.replace("{AVATAR_URL}", &user.face());
     let html = html.replace("{DAILY}", &level_data.msg_day.to_string());
     let html = html.replace("{WEEKLY}", &level_data.msg_week.to_string());
     let html = html.replace("{MONTHLY}", &level_data.msg_month.to_string());
     let html = html.replace("{ALL}", &level_data.msg_all_time.to_string());
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
-
+    let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", activity));
 
     let mut json = HashMap::new();
     json.insert("html", html);
