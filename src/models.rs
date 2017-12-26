@@ -3,6 +3,7 @@ use schema::events;
 use schema::levels;
 use schema::reminders;
 use schema::notifications;
+use schema::users;
 
 use chrono::naive::NaiveDateTime;
 
@@ -112,4 +113,23 @@ pub struct NewNotification<'a> {
     pub user_id: i64,
     pub guild_id: i64,
     pub keyword: &'a str,
+}
+
+#[derive(Queryable, Clone)]
+pub struct User {
+    pub id: i64,
+    pub last_msg: NaiveDateTime,
+    pub msg_activity: Vec<i32>,
+    pub rep: i32,
+    pub last_rep: Option<NaiveDateTime>,
+}
+
+#[derive(Insertable)]
+#[table_name = "users"]
+pub struct NewUser<'a> {
+    pub id: i64,
+    pub last_msg: &'a NaiveDateTime,
+    pub msg_activity: &'a Vec<i32>,
+    pub rep: i32,
+    pub last_rep: Option<&'a NaiveDateTime>,
 }
