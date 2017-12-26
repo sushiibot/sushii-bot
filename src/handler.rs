@@ -126,7 +126,13 @@ impl EventHandler for Handler {
 
     fn on_message(&self, ctx: Context, msg: Message) {
         update_event(&ctx, "MESSAGE_CREATE");
-        exec_on_message!([&ctx, &msg], levels, random_hi, notifications);
+        exec_on_message!(
+            [&ctx, &msg],
+            levels,
+            random_hi,
+            notifications,
+            user_info_activity
+        );
     }
 
     fn on_message_delete(&self, ctx: Context, _: ChannelId, _: MessageId) {
