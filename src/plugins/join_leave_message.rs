@@ -5,7 +5,7 @@ use serenity::model::User;
 use serenity::model::ReactionType;
 use serenity::prelude::*;
 
-use util::get_config_from_context;
+use utils::config::get_config_from_context;
 
 pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &Member) {
     let config = get_config_from_context(&ctx, guild_id.0);

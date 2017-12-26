@@ -6,7 +6,7 @@ use serenity::model::UserId;
 use inflector::Inflector;
 
 use database;
-use util;
+use utils;
 
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
@@ -185,7 +185,7 @@ command!(avatar(_ctx, msg, args) {
         Err(_) => return Err(CommandError("Missing user.".to_owned())),
     };
 
-    let id = match util::get_id(&name) {
+    let id = match utils::user::get_id(&name) {
         Some(id) => id,
         None => return Err(CommandError("Invalid mention.".to_owned())),
     };
