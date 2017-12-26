@@ -12,7 +12,7 @@ use std::env;
 
 use models::*;
 
-use chrono::{DateTime, Utc, Datelike};
+use chrono::{DateTime, Utc, Datelike, Timelike};
 use chrono::naive::NaiveDateTime;
 
 #[derive(Clone)]
@@ -277,6 +277,77 @@ impl ConnectionPool {
 
         if results.len() == 1 {
             return Some(level_interval(&results[0]));
+        } else {
+            return None;
+        }
+    }
+
+    pub fn update_user_activity_message(&self, id_user: u64) {
+        use schema::users;
+        use schema::users::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let user = users
+            .filter(id.eq(id_user as i64))
+            .load::<User>(&*conn)
+            .expect("Error loading user.");
+
+        // get current timestamp
+        let utc: DateTime<Utc> = Utc::now();
+        let now = utc.naive_utc();
+
+        let hour = now.hour();
+
+        if user.len() == 1 {
+            // update the useractivity
+            let mut updated_activity = user[0].msg_activity.clone();
+            if let Some(elem) = updated_activity.get_mut(hour as usize) {
+                *elem = *elem + 1;
+            } else {
+                error!("Error incrementing user {} activity", id_user);
+            }
+            // update the user
+            diesel::update(users.filter(id.eq(id_user as i64)))
+            .set((
+                msg_activity.eq(updated_activity),
+                last_msg.eq(now),
+            ))
+                .execute(&*conn)
+                .expect("Failed to update user row.");
+        } else {
+            // create vector of 24 0's
+            let init_activity = vec![0; 24];
+            // create new user
+            let new_user = NewUser {
+                id: id_user as i64,
+                last_msg: &now,
+                msg_activity: &init_activity,
+                rep: 0,
+                last_rep: None,
+            };
+
+            diesel::insert_into(users::table)
+                .values(&new_user)
+                .execute(&*conn)
+                .expect("Failed to insert new user row.");
+        }
+    }
+
+    pub fn get_user_activity_message(&self, id_user: u64) -> Option<User> {
+        use schema::users::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let results = users
+            .filter(id.eq(id_user as i64))
+            .load::<User>(&*conn)
+            .expect("Error loading user");
+
+        if results.len() == 1 {
+            return Some(results[0].clone());
         } else {
             return None;
         }
