@@ -43,6 +43,8 @@ command!(rank(ctx, msg, args) {
 
     let mut html = LEVEL_HTML.clone();
 
+    let html = html.replace("{USERNAME}", &msg.author.tag());
+    let html = html.replace("{AVATAR_URL}", &msg.author.face());
     let html = html.replace("{DAILY}", &level_data.msg_day.to_string());
     let html = html.replace("{WEEKLY}", &level_data.msg_week.to_string());
     let html = html.replace("{MONTHLY}", &level_data.msg_month.to_string());
@@ -52,7 +54,7 @@ command!(rank(ctx, msg, args) {
 
     let mut json = HashMap::new();
     json.insert("html", html);
-    json.insert("width", "400".to_owned());
+    json.insert("width", "500".to_owned());
     json.insert("height", "300".to_owned());
 
     let client = reqwest::Client::new();
