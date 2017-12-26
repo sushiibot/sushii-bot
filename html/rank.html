@@ -1,25 +1,117 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
     <title></title>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <style type="text/css">
-    body {
-        font-family: 'Open Sans', sans-serif;
-        background-color: #1b1b1b;
-        color: #fff;
+    @font-face {
+        font-family: Avenir;
+        font-weight: 200;
+        src: url("../fonts/AvenirLTPro-Light.otf") format("opentype");
     }
-    h1,h2 {
-        line-height: 10px;
+    @font-face {
+        font-family: Avenir;
+        font-weight: 300;
+        src: url("../fonts/AvenirLTPro-Medium.otf") format("opentype");
+    }
+    @font-face {
+        font-family: Avenir;
+        font-weight: 400;
+        src: url("../fonts/AvenirLTPro-Roman.otf") format("opentype");
+    }
+    html {
+        font-family: 'Avenir', sans-serif;
+        color: #3fb1ff;
+        width: 500px;
+        height: 300px;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+    h1,h2,h3 {
+        margin: 0;
+    }
+    h2,h3,p {
+        color: #445aa3;
+    }
+    h1 {
+        font-weight: 400;
+    }
+    h2 {
+        font-weight: 300;
+    }
+    h3 {
+        font-weight: 200;
+    }
+    small {
+        font-size: 12px;
+        vertical-align: middle;
+        opacity: .5;
+    }
+    #content {
+        border-radius: 25px;
+        padding: 10px;
+        width: 98%;
+        height: 96%;
+        margin: 1% 1%;
+        box-sizing: border-box;
+        background: #fff;
+    }
+    #ranking {
+        text-align: center;
+        columns: 4;
+        column-rule-style: solid;
+        column-rule-width: 1px;
+        column-rule-color: #e9e9e9;
+    }
+    #avatar {
+        border-radius: 50%;
+        height: 50px;
+        float: right;
+    }
+    #activity {
+        margin: 0 auto;
+        border-radius: 25px;
+        background-color: #3fb1ff;
+        width: 98%;
+        height: 40%;
+        -moz-filter: drop-shadow(0px 8px 5px #a3d9ff);
+        -webkit-filter: drop-shadow(0px 8px 5px #a3d9ff);
+        -ms-filter: drop-shadow(0px 8px 5px #a3d9ff);
+        filter: drop-shadow(0px 8px 5px #a3d9ff);
+    }
+    hr {
+        border: 0;
+        border-top: 1px solid #e9e9e9;
+        color: #e9e9e9;
+        margin: 10px auto 10px;
+        width: 90%;
     }
     </style>
 </head>
 <body>
-<h1>LEVEL: {LEVEL}</h1>
-<h2>Daily: {DAILY}</h2>
-<h2>Weekly: {WEEKLY}</h2>
-<h2>Monthly: {MONTHLY}</h2>
-<h2>All: {ALL}</h2>
-<h5>Last Message: {LAST_MESSAGE}</h5>
+    <div id="content">
+        <img id="avatar" src="{AVATAR_URL}">
+        <h1>{USERNAME}</h1>
+        <h2>RANKING <small>(resets 12:00 AM UTC)</small></h2>
+        <div id="ranking">
+            <h3>DAILY<br>{DAILY}</h3>
+            <h3>WEEKLY<br>{WEEKLY}</h3>
+            <h3>MONTHLY<br>{MONTHLY}</h3>
+            <h3>ALL TIME<br>{ALL}</h3>
+        </div>
+        <hr>
+        <h2>ACTIVITY <small>(all time)</small></h2>
+        <div id="activity">
+            
+        </div>
+        <!--<p>Last Message: {LAST_MESSAGE}</p>-->
+    </div>
 </body>
 </html>
