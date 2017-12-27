@@ -6,6 +6,7 @@ use schema::notifications;
 use schema::users;
 
 use chrono::naive::NaiveDateTime;
+use diesel::types::*;
 
 #[derive(Queryable, AsChangeset, Clone)]
 #[table_name = "guilds"]
@@ -66,6 +67,45 @@ pub struct UserLevel {
     pub msg_week: i64,
     pub msg_day: i64,
     pub last_msg: NaiveDateTime,
+}
+
+#[derive(QueryableByName, Clone)]
+pub struct UserLevelRanked {
+    #[sql_type = "Integer"]
+    pub id: i32,
+
+    #[sql_type = "BigInt"]
+    pub user_id: i64,
+
+    #[sql_type = "BigInt"]
+    pub guild_id: i64,
+
+    #[sql_type = "BigInt"]
+    pub msg_all_time: i64,
+
+    #[sql_type = "BigInt"]
+    pub msg_month: i64,
+
+    #[sql_type = "BigInt"]
+    pub msg_week: i64,
+
+    #[sql_type = "BigInt"]
+    pub msg_day: i64,
+
+    #[sql_type = "Timestamp"]
+    pub last_msg: NaiveDateTime,
+
+    #[sql_type = "Double"]
+    pub msg_day_rank: f64,
+
+    #[sql_type = "Double"]
+    pub msg_all_time_rank: f64,
+
+    #[sql_type = "Double"]
+    pub msg_month_rank: f64,
+
+    #[sql_type = "Double"]
+    pub msg_week_rank: f64,
 }
 
 #[derive(Insertable)]
