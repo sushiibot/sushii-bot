@@ -11,66 +11,14 @@ use utils;
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
     let mut name = match args.single::<String>() {
-        Ok(val) => val.to_lowercase(),
-        Err(_) => msg.author.tag(),
-    };
-
-    let user_from_id = match parse_username(&name) {
-        Some(id) => {
-            match UserId(id).get() {
-                Ok(user) => {
-                    Some(format!("{}#{}", user.name.to_lowercase(), user.discriminator))
-                },
-                Err(_) => {
-                    None
-                }
-            }
-        },
-        None => {
-            None
-        }
-    };
-
-
-    // replace name if it's a mention
-    if let Some(name_from_id) = user_from_id {
-        name = name_from_id;
-    }
-
-    // from https://github.com/zeyla/serenity/blob/7fa4df324bcc68f9c0c1c1322eb94931aa267cf0/src/model/guild/mod.rs#L727-L737
-    // as a workaround for currently non-working guild.member_named() function
-    let (name, discrim) = if let Some(pos) = name.find('#') {
-        let split = name.split_at(pos);
-
-        // [1..] is to remove the #
-        match split.1[1..].parse::<u16>() {
-            Ok(discrim_int) => (split.0, Some(discrim_int)),
-            Err(_) => (&name[..], None),
-        }
-    } else {
-        (&name[..], None)
+        Ok(val) => val,
+        Err(_) => msg.author.id.0.to_string(),
     };
     
     if let Some(guild) = msg.guild() {
         let guild = guild.read().unwrap();
 
-        // fetch user by name containing
-        let members = guild.members_containing(&name, false, false);
-
-        let member = members.iter().find(|member| {
-                let name_matches = member.user.read().unwrap().name.to_lowercase() == name;
-                let discrim_matches = match discrim {
-                    Some(discrim) => member.user.read().unwrap().discriminator == discrim,
-                    None => true,
-                };
-
-                name_matches && discrim_matches
-            })
-            .or_else(|| {
-                members.iter().find(|member| {
-                    member.nick.as_ref().map_or(false, |nick| nick.to_lowercase() == name)
-                })
-        });
+        let member = utils::user::find_member(&name, &guild);
 
         if let Some(member) = member {
             let user = member.user.read().unwrap();
