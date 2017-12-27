@@ -1,9 +1,11 @@
 use diesel;
+use diesel::types::BigInt;
 use diesel::result::Error;
 use diesel::pg::PgConnection;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use diesel::ExpressionMethods;
+use diesel::pg::Pg;
 
 use r2d2::Pool;
 use r2d2_diesel::ConnectionManager;
@@ -263,20 +265,36 @@ impl ConnectionPool {
         Ok(())
     }
 
-    pub fn get_level(&self, id_user: u64, id_guild: u64) -> Option<UserLevel> {
-        use schema::levels::dsl::*;
-
+    pub fn get_level(&self, id_user: u64, id_guild: u64) -> Option<UserLevelRanked> {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        let results = levels
-            .filter(user_id.eq(id_user as i64))
-            .filter(guild_id.eq(id_guild as i64))
-            .load::<UserLevel>(&*conn)
-            .expect("Error loading level");
+        // get percentile ranks
+        let results = diesel::sql_query(r#"
+            SELECT * 
+                FROM (
+                    SELECT *,
+                        PERCENT_RANK() OVER(ORDER BY msg_day ASC) AS msg_day_rank,
+                        PERCENT_RANK() OVER(ORDER BY msg_all_time ASC) AS msg_all_time_rank,
+                        PERCENT_RANK() OVER(ORDER BY msg_month ASC) AS msg_month_rank,
+                        PERCENT_RANK() OVER(ORDER BY msg_week ASC) AS msg_week_rank
+                    FROM levels WHERE guild_id = $1 
+                ) t
+            WHERE t.user_id = $2 ORDER BY id ASC
+        "#)
+            .bind::<BigInt, i64>(id_guild as i64)
+            .bind::<BigInt, i64>(id_user as i64)
+            .load(&*conn)
+            .expect("Error loading user level.");
+
+        // let results = levels
+        //     .filter(user_id.eq(id_user as i64))
+        //     .filter(guild_id.eq(id_guild as i64))
+        //     .load::<UserLevelRanked>(&*conn)
+        //     .expect("Error loading level");
 
         if results.len() == 1 {
-            return Some(level_interval(&results[0]));
+            return Some(level_interval_ranked(&results[0]));
         } else {
             return None;
         }
@@ -525,6 +543,47 @@ pub fn level_interval(user_level: &UserLevel) -> UserLevel {
         msg_week: msg_week,
         msg_day: msg_day,
         last_msg: user_level.last_msg,
+    }
+}
+
+/// checks if a new interval has passed and reset message counts accordingly
+pub fn level_interval_ranked(user_level: &UserLevelRanked) -> UserLevelRanked {
+    let utc: DateTime<Utc> = Utc::now();
+    let now = utc.naive_utc();
+
+    let last_msg = user_level.last_msg;
+    let mut msg_day = user_level.msg_day;
+    let mut msg_week = user_level.msg_week;
+    let mut msg_month = user_level.msg_month;
+
+    // check if new day (could possible be same day 1 year apart but unlikey)
+    if now.ordinal() != last_msg.ordinal() {
+        msg_day = 0;
+    }
+
+    // check if new week
+    if now.iso_week() != last_msg.iso_week() {
+        msg_week = 0;
+    }
+
+    // check if new month
+    if now.month() != last_msg.month() {
+        msg_month = 0;
+    }
+
+    UserLevelRanked {
+        id: user_level.id,
+        user_id: user_level.user_id,
+        guild_id: user_level.guild_id,
+        msg_all_time: user_level.msg_all_time,
+        msg_month: msg_month,
+        msg_week: msg_week,
+        msg_day: msg_day,
+        last_msg: user_level.last_msg,
+        msg_day_rank: user_level.msg_day_rank,
+        msg_all_time_rank: user_level.msg_all_time_rank,
+        msg_month_rank: user_level.msg_month_rank,
+        msg_week_rank: user_level.msg_week_rank,
     }
 }
 
