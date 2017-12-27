@@ -41,6 +41,12 @@
             vertical-align: middle;
             opacity: .5;
         }
+        #username {
+            max-width: 450px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
         #content {
             border-radius: 15px;
             padding: 10px;
@@ -89,7 +95,7 @@
 <body>
     <div id="content">
         <img id="avatar" src="{AVATAR_URL}">
-        <h1>{USERNAME}</h1>
+        <h1 id="username">{USERNAME}</h1>
         <h2>RANKING <small>(resets 12:00 AM UTC)</small></h2>
         <div id="ranking">
             <h3>DAILY<br>{DAILY}</h3>
@@ -98,7 +104,7 @@
             <h3>ALL TIME<br>{ALL}</h3>
         </div>
         <hr>
-        <h2>ACTIVITY <small>(all time across all shared servers)</small></h2>
+        <h2>ACTIVITY <small>(hours in UTC, all time across all shared servers)</small></h2>
         <div id="activity">
             <div id="chart" style="width: 100%; height: 100%" ></div>
         </div>
