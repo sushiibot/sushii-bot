@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use database;
 
 use utils;
+use utils::num::format_percentile;
 
 const LEVEL_HTML: &'static str = include_str!("../../html/rank.html");
 
@@ -56,10 +57,10 @@ command!(rank(ctx, msg, args) {
 
     let html = html.replace("{USERNAME}", &user.tag());
     let html = html.replace("{AVATAR_URL}", &user.face());
-    let html = html.replace("{DAILY}", &level_data.msg_day.to_string());
-    let html = html.replace("{WEEKLY}", &level_data.msg_week.to_string());
-    let html = html.replace("{MONTHLY}", &level_data.msg_month.to_string());
-    let html = html.replace("{ALL}", &level_data.msg_all_time.to_string());
+    let html = html.replace("{DAILY}", &format_percentile(level_data.msg_day_rank));
+    let html = html.replace("{WEEKLY}", &format_percentile(level_data.msg_week_rank));
+    let html = html.replace("{MONTHLY}", &format_percentile(level_data.msg_month_rank));
+    let html = html.replace("{ALL}", &format_percentile(level_data.msg_all_time_rank));
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", activity));
 
