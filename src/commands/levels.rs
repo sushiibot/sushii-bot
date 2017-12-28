@@ -45,6 +45,8 @@ command!(rank(ctx, msg, args) {
         Err(_) => return Err(CommandError("Could not fetch user.".to_owned())),
     };
 
+    let _ = msg.channel_id.broadcast_typing();
+
     let mut s = "```ruby\nMessage Count\n".to_owned();
     let _ = write!(s, "Month: {}\n", level_data.msg_month);
     let _ = write!(s, "Week: {}\n", level_data.msg_week);
