@@ -5,17 +5,22 @@ use diesel::pg::PgConnection;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use diesel::ExpressionMethods;
+use diesel::dsl::max;
 use diesel::pg::Pg;
 
 use r2d2::Pool;
 use r2d2_diesel::ConnectionManager;
 
+use serenity;
 use std::env;
 
 use models::*;
 
 use chrono::{DateTime, Utc, Datelike, Timelike};
 use chrono::naive::NaiveDateTime;
+
+use utils::time::now_utc;
+
 
 #[derive(Clone)]
 pub struct ConnectionPool {
@@ -87,11 +92,13 @@ impl ConnectionPool {
 
     pub fn save_guild_config(&self, config: &GuildConfig) {
         use schema::guilds;
+        use schema::guilds::dsl::*;
 
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
         diesel::update(guilds::table)
+            .filter(id.eq(config.id))
             .set(config)
             .execute(&*conn)
             .expect("Error updating guild.");
@@ -328,10 +335,10 @@ impl ConnectionPool {
             }
             // update the user
             diesel::update(users.filter(id.eq(id_user as i64)))
-            .set((
-                msg_activity.eq(updated_activity),
-                last_msg.eq(now),
-            ))
+                .set((
+                    msg_activity.eq(updated_activity),
+                    last_msg.eq(now),
+                ))
                 .execute(&*conn)
                 .expect("Failed to update user row.");
         } else {
@@ -505,6 +512,59 @@ impl ConnectionPool {
         } else {
             return Some(rows);
         }
+    }
+
+    /// MOD ACTIONS
+    pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User) -> ModAction {
+        use schema::mod_log;
+        use schema::mod_log::dsl::*;
+        
+        let now = now_utc();
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        // get a new case id
+        let new_case_id = mod_log
+            .select(max(case_id))
+            .filter(guild_id.eq(guild as i64))
+            .first::<Option<i32>>(&*conn)
+            .expect("Failed to get next mod case id.")
+            .unwrap_or(0) + 1;
+
+        // create new mod action 
+        let new_action = NewModAction {
+            case_id: new_case_id,
+            guild_id: guild as i64,
+            executor_id: None,
+            user_id: user.id.0 as i64,
+            user_tag: &user.tag(),
+            action: mod_action,
+            reason: None,
+            action_time: &now,
+            msg_id: None,
+        };
+
+        // add the action and return the new action
+        diesel::insert_into(mod_log::table)
+            .values(&new_action)
+            .get_result::<ModAction>(&*conn)
+            .expect("Failed to insert new mod action.")
+    }
+
+    pub fn update_mod_action(&self, entry: ModAction) {
+        use schema::mod_log;
+        use schema::mod_log::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        // id/entry_id is the unique global serial id, not the case id
+        diesel::update(mod_log::table)
+            .filter(id.eq(entry.id))
+            .set(&entry)
+            .execute(&*conn)
+            .expect("Failed to update mod_log row.");
     }
 }
 
