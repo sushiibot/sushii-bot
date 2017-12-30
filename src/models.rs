@@ -4,6 +4,7 @@ use schema::levels;
 use schema::reminders;
 use schema::notifications;
 use schema::users;
+use schema::mod_log;
 
 use chrono::naive::NaiveDateTime;
 use diesel::types::*;
@@ -172,4 +173,33 @@ pub struct NewUser<'a> {
     pub msg_activity: &'a Vec<i32>,
     pub rep: i32,
     pub last_rep: Option<&'a NaiveDateTime>,
+}
+
+#[derive(Queryable, AsChangeset, Clone)]
+#[table_name = "mod_log"]
+pub struct ModAction {
+    pub id: i32,
+    pub case_id: i32,
+    pub guild_id: i64,
+    pub executor_id: Option<i64>,
+    pub user_id: i64,
+    pub user_tag: String,
+    pub action: String,
+    pub reason: Option<String>,
+    pub action_time: NaiveDateTime,
+    pub msg_id: Option<i64>,
+}
+
+#[derive(Insertable)]
+#[table_name = "mod_log"]
+pub struct NewModAction<'a> {
+    pub case_id: i32,
+    pub guild_id: i64,
+    pub executor_id: Option<i64>,
+    pub user_id: i64,
+    pub user_tag: &'a str,
+    pub action: &'a str,
+    pub reason: Option<&'a str>,
+    pub action_time: &'a NaiveDateTime,
+    pub msg_id: Option<i64>,
 }
