@@ -206,6 +206,12 @@ fn main() {
                             .exec(commands::meta::events)
                     })
             })
+            .group("Moderation", |g| {
+                g.command("reason", |c| {
+                        c.desc("Edits the reason for moderation action cases.")
+                        .exec(commands::moderation::cases::reason)
+                    })
+            })
             .group("Settings", |g| {
                 g.command("prefix", |c| {
                     c.desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
