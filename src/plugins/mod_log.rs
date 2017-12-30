@@ -15,6 +15,7 @@ use std::env;
 
 use database;
 use utils::config::get_pool;
+use utils::time::now_utc;
 
 
 pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
@@ -58,6 +59,10 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
                     .value(format!("Responsible moderator: Please use `{}reason {} [reason]` to set a reason for this case.", prefix, db_entry.case_id))
                     .inline(false)
                 )
+                .footer(|ft| ft
+                    .text(format!("Case #{}", db_entry.case_id))
+                )
+                .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string())
             )
         ) {
             // edit the mod entry to have the mod log message id if successfull msg send

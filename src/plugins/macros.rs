@@ -40,3 +40,11 @@ macro_rules! exec_on_guild_ban_addition {
         )*
     }
 }
+
+macro_rules! exec_on_guild_ban_removal {
+    ( [$ctx:expr, $GuildId:expr, $user:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_guild_ban_removal($ctx, $GuildId, $user);
+        )*
+    }
+}
