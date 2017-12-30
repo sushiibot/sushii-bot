@@ -5,6 +5,8 @@ use serenity::model::ChannelId;
 use serenity::model::EmbedAuthor;
 use serenity::builder::CreateEmbed;
 
+use std::fmt::Write;
+
 command!(reason(ctx, msg, args) {
     let cases = args.single::<String>()?;
     let reason = args.full();
@@ -98,7 +100,7 @@ command!(reason(ctx, msg, args) {
                 }
 
                 // edit the case message embed
-                message.edit(|m| m.embed(|e| CreateEmbed::from(embed.clone())));
+                let _ = message.edit(|m| m.embed(|e| CreateEmbed::from(embed.clone())));
 
 
                 // edit database entry
@@ -107,11 +109,23 @@ command!(reason(ctx, msg, args) {
                 pool.update_mod_action(case);
             }
         }
+        let mut s = "Finished updating case reasons.".to_owned();
         // check if there were errors
-        
+        if !errored.is_empty() {
+            let _ = match errored.len() {
+                1 => write!(s, "\n\nThere was 1 error while updating cases:\n```\n"),
+                _ => write!(s, "\n\nThere were {} errors while updating cases:\n```\n", errored.len()),
+            };
+
+            for error in errored {
+                let _ = write!(s, "Case #{}: {}\n", error.0, error.1);
+            }
+
+            let _ = write!(s, "```");
+        }
 
         // finished editing
-        let _ = msg.channel_id.say("Finished updating case reasons.");
+        let _ = msg.channel_id.say(&s);
     } else {
         return Err(CommandError::from("I can't seem to find any cases in this range."));
     }
