@@ -566,6 +566,36 @@ impl ConnectionPool {
             .execute(&*conn)
             .expect("Failed to update mod_log row.");
     }
+
+    pub fn get_latest_mod_action(&self, guild: u64) -> i32 {
+        use schema::mod_log;
+        use schema::mod_log::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        mod_log
+            .select(case_id)
+            .filter(guild_id.eq(guild as i64))
+            .order(case_id.desc())
+            .first(&*conn)
+            .unwrap_or(0)
+    }
+
+    pub fn fetch_mod_actions(&self, guild: u64, lower: i32, upper: i32) -> Option<Vec<ModAction>> {
+        use schema::mod_log;
+        use schema::mod_log::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        mod_log
+            .filter(guild_id.eq(guild as i64))
+            .filter(case_id.between(lower, upper))
+            .order(case_id.asc())
+            .load::<ModAction>(&*conn)
+            .ok()
+    }
 }
 
 
