@@ -8,3 +8,8 @@ pub fn get_config_from_context(ctx: &Context, guild_id: u64) -> GuildConfig {
 
     pool.get_guild_config(guild_id)
 }
+
+pub fn get_pool(ctx: &Context) -> database::ConnectionPool {
+    let mut data = ctx.data.lock();
+    data.get_mut::<database::ConnectionPool>().unwrap().clone()
+}
