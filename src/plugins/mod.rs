@@ -11,6 +11,6 @@ pub mod macros;
 pub mod util;
 pub mod random_hi;
 pub mod join_leave_message;
-// pub mod mod_log;
+pub mod mod_log;
 pub mod notifications;
 pub mod user_info_activity;
