@@ -6,3 +6,4 @@ pub mod settings;
 pub mod userinfo;
 pub mod crypto;
 pub mod notifications;
+pub mod moderation;
