@@ -64,7 +64,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_BAN_ADD");
     }
 
-    fn on_guild_ban_removal(&self, ctx: Context, _: GuildId, _: User) {
+    fn on_guild_ban_removal(&self, ctx: Context, guild: GuildId, user: User) {
+        // exec_on_guild_ban_removal!([&ctx, &guild, &user], mod_log);
+
         update_event(&ctx, "GUILD_BAN_REMOVE");
     }
 
