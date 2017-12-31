@@ -97,11 +97,13 @@ impl ConnectionPool {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        diesel::update(guilds::table)
+        match diesel::update(guilds::table)
             .filter(id.eq(config.id))
             .set(config)
-            .execute(&*conn)
-            .expect("Error updating guild.");
+            .execute(&*conn) {
+                Err(e) => error!("Error while updating a guild: {}", e),
+                _ => {},
+        };
     }
 
     /// PREFIX
@@ -121,15 +123,13 @@ impl ConnectionPool {
         let conn = (*&self.pool).get().unwrap();
 
         // fetch event
-        let rows = guilds
+        let result = guilds
             .filter(id.eq(guild_id as i64))
             .load::<GuildConfig>(&*conn)
-            .expect("Error loading guild");
+            .ok();
 
-        // check if this is a new guild
-        if rows.len() == 0 {
-            self.new_guild(guild_id);
-        } else {
+
+        if let Some(rows) = result {
             let guild = rows[0].clone();
             // check if guild has same prefix
             if let Some(existing_prefix) = guild.prefix {
@@ -137,13 +137,19 @@ impl ConnectionPool {
                     return false;
                 }
             }
+        } else {
+            // check if this is a new guild,
+            // make a new config if it is
+            self.new_guild(guild_id);
         }
 
         // update the guild row
-        diesel::update(guilds.filter(id.eq(guild_id as i64)))
+        match diesel::update(guilds.filter(id.eq(guild_id as i64)))
             .set(prefix.eq(new_prefix))
-            .execute(&*conn)
-            .expect("Failed to update the guild prefix.");
+            .execute(&*conn) {
+                Err(e) => error!("Error while setting a guild prefix: {}", e),
+                _ => {}
+        };
 
         true
     }
@@ -151,7 +157,7 @@ impl ConnectionPool {
     /// EVENTS
 
     /// Logs a counter for each event that is handled
-    pub fn log_event(&self, event_name: &str) {
+    pub fn log_event(&self, event_name: &str) -> Result<(), Error> {
         use schema::events;
         use schema::events::dsl::*;
 
@@ -161,16 +167,14 @@ impl ConnectionPool {
         // fetch event
         let rows = events
             .filter(name.eq(&event_name))
-            .load::<EventCounter>(&*conn)
-            .expect("Error loading event");
+            .load::<EventCounter>(&*conn)?;
 
         // check if a row was found
         if rows.len() == 1 {
             // increment the counter
             diesel::update(events.filter(name.eq(&event_name)))
                 .set(count.eq(rows[0].count + 1))
-                .execute(&*conn)
-                .expect("Failed to update the event.");
+                .execute(&*conn)?;
         } else {
             let new_event_obj = NewEventCounter {
                 name: &event_name,
@@ -179,9 +183,10 @@ impl ConnectionPool {
 
             diesel::insert_into(events::table)
                 .values(&new_event_obj)
-                .execute(&*conn)
-                .expect("Error saving new event.");
+                .execute(&*conn)?;
         }
+
+        Ok(())
     }
 
     /// Gets the counters for events handled
@@ -193,8 +198,7 @@ impl ConnectionPool {
 
         let results = events
             .order(name.asc())
-            .load::<EventCounter>(&*conn)
-            .expect("Error loading events");
+            .load::<EventCounter>(&*conn)?;
 
         Ok(results)
     }
@@ -207,8 +211,7 @@ impl ConnectionPool {
 
         diesel::update(events)
             .set(count.eq(0))
-            .execute(&*conn)
-            .expect("Failed to reset the events.");
+            .execute(&*conn)?;
 
         Ok(())
     }
@@ -225,8 +228,7 @@ impl ConnectionPool {
         let user = levels
             .filter(user_id.eq(id_user as i64))
             .filter(guild_id.eq(id_guild as i64))
-            .load::<UserLevel>(&*conn)
-            .expect("Error loading user's level.");
+            .load::<UserLevel>(&*conn)?;
 
         // get current timestamp
         let utc: DateTime<Utc> = Utc::now();
@@ -236,20 +238,18 @@ impl ConnectionPool {
             let new_interval_user = level_interval(&user[0]);
 
             // found a user object
-            diesel::update(levels.filter(user_id.eq(id_user as i64)).filter(
-                guild_id.eq(
-                    id_guild as
-                        i64,
-                ),
-            )).set((
-                msg_all_time.eq(user[0].msg_all_time + 1),
-                msg_month.eq(new_interval_user.msg_month + 1),
-                msg_week.eq(new_interval_user.msg_week + 1),
-                msg_day.eq(new_interval_user.msg_day + 1),
-                last_msg.eq(now),
-            ))
-                .execute(&*conn)
-                .expect("Failed to update level row.");
+            diesel::update(
+                levels
+                    .filter(user_id.eq(id_user as i64))
+                    .filter(guild_id.eq(id_guild as i64))
+                ).set((
+                    msg_all_time.eq(user[0].msg_all_time + 1),
+                    msg_month.eq(new_interval_user.msg_month + 1),
+                    msg_week.eq(new_interval_user.msg_week + 1),
+                    msg_day.eq(new_interval_user.msg_day + 1),
+                    last_msg.eq(now),
+                ))
+                .execute(&*conn)?;
         } else {
 
             // create a new level row for the user + guild
@@ -265,8 +265,7 @@ impl ConnectionPool {
 
             diesel::insert_into(levels::table)
                 .values(&new_level_obj)
-                .execute(&*conn)
-                .expect("Failed to insert new user level row.");
+                .execute(&*conn)?;
         }
 
         Ok(())
@@ -277,7 +276,7 @@ impl ConnectionPool {
         let conn = (*&self.pool).get().unwrap();
 
         // get percentile ranks
-        let results = diesel::sql_query(r#"
+        diesel::sql_query(r#"
             SELECT * 
                 FROM (
                     SELECT *,
@@ -292,19 +291,7 @@ impl ConnectionPool {
             .bind::<BigInt, i64>(id_guild as i64)
             .bind::<BigInt, i64>(id_user as i64)
             .load(&*conn)
-            .expect("Error loading user level.");
-
-        // let results = levels
-        //     .filter(user_id.eq(id_user as i64))
-        //     .filter(guild_id.eq(id_guild as i64))
-        //     .load::<UserLevelRanked>(&*conn)
-        //     .expect("Error loading level");
-
-        if results.len() == 1 {
-            return Some(level_interval_ranked(&results[0]));
-        } else {
-            return None;
-        }
+            .ok().map(|x: Vec<UserLevelRanked>| x[0].clone())
     }
 
     pub fn update_user_activity_message(&self, id_user: u64) {
@@ -316,8 +303,8 @@ impl ConnectionPool {
 
         let user = users
             .filter(id.eq(id_user as i64))
-            .load::<User>(&*conn)
-            .expect("Error loading user.");
+            .first::<User>(&*conn)
+            .ok();
 
         // get current timestamp
         let utc: DateTime<Utc> = Utc::now();
@@ -325,9 +312,9 @@ impl ConnectionPool {
 
         let hour = now.hour();
 
-        if user.len() == 1 {
+        if let Some(user) = user {
             // update the useractivity
-            let mut updated_activity = user[0].msg_activity.clone();
+            let mut updated_activity = user.msg_activity.clone();
             if let Some(elem) = updated_activity.get_mut(hour as usize) {
                 *elem = *elem + 1;
             } else {
@@ -366,16 +353,10 @@ impl ConnectionPool {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        let results = users
+        users
             .filter(id.eq(id_user as i64))
             .load::<User>(&*conn)
-            .expect("Error loading user");
-
-        if results.len() == 1 {
-            return Some(results[0].clone());
-        } else {
-            return None;
-        }
+            .ok().map(|x: Vec<User>| x[0].clone())
     }
 
     /// REMINDERS
@@ -413,16 +394,10 @@ impl ConnectionPool {
         let utc: DateTime<Utc> = Utc::now();
         let now = utc.naive_utc();
 
-        let rows = reminders
+        reminders
             .filter(time_to_remind.lt(now))
             .load::<Reminder>(&*conn)
-            .expect("Error loading reminders");
-
-        if rows.len() == 0 {
-            return None;
-        } else {
-            return Some(rows);
-        }
+            .ok()
     }
 
     pub fn remove_reminder(&self, reminder_id: i32) {
@@ -442,16 +417,10 @@ impl ConnectionPool {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        let rows = reminders
+        reminders
             .filter(user_id.eq(id_user as i64))
             .load::<Reminder>(&*conn)
-            .expect("Error loading reminders.");
-
-        if rows.len() == 0 {
-            return None;
-        } else {
-            return Some(rows);
-        }
+            .ok()
     }
 
     /// Creates a new notification
@@ -482,17 +451,11 @@ impl ConnectionPool {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        let rows = notifications
+        notifications
             .filter(guild_id.eq(guild as i64))
             .filter(strpos(msg, keyword).gt(0))
             .load::<Notification>(&*conn)
-            .expect("Error loading notifications.");
-
-        if rows.len() == 0 {
-            return None;
-        } else {
-            return Some(rows);
-        }
+            .ok()
     }
 
     /// Lists the notification's of a user
@@ -502,20 +465,14 @@ impl ConnectionPool {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        let rows = notifications
+        notifications
             .filter(user_id.eq(user as i64))
             .load::<Notification>(&*conn)
-            .expect("Error loading user's notifications.");
-
-        if rows.len() == 0 {
-            return None;
-        } else {
-            return Some(rows);
-        }
+            .ok()
     }
 
     /// MOD ACTIONS
-    pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User) -> ModAction {
+    pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User, is_pending: bool) -> ModAction {
         use schema::mod_log;
         use schema::mod_log::dsl::*;
         
@@ -543,6 +500,7 @@ impl ConnectionPool {
             reason: None,
             action_time: &now,
             msg_id: None,
+            pending: is_pending,
         };
 
         // add the action and return the new action
@@ -594,6 +552,22 @@ impl ConnectionPool {
             .filter(case_id.between(lower, upper))
             .order(case_id.asc())
             .load::<ModAction>(&*conn)
+            .ok()
+    }
+
+    pub fn get_pending_mod_actions(&self, mod_action: &str, guild: u64, user: u64) -> Option<ModAction> {
+        use schema::mod_log;
+        use schema::mod_log::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        mod_log
+            .filter(guild_id.eq(guild as i64))
+            .filter(action.eq(mod_action))
+            .filter(user_id.eq(user as i64))
+            .filter(pending.eq(true))
+            .first::<ModAction>(&*conn)
             .ok()
     }
 }
