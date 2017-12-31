@@ -47,7 +47,7 @@ Currently you will have to build everything yourself.  Later on, SQL migrations 
         4. Start with `npm start` or with a process manager like [PM2](https://github.com/Unitech/pm2)
 2. Clone this repository.
 3. Edit [`.env.example`](.env.example) and rename to `.env`.
-4. Build and the bot.
+4. Build and run the bot.
     ```bash
     $ cargo run --release
     ```
