@@ -21,8 +21,12 @@ use utils::time::now_utc;
 pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
     let pool = get_pool(&ctx);
 
-    // add the action to the database
-    let mut db_entry = pool.add_mod_action("ban", guild.0, user);
+    // check if a ban command was used instead of discord right click ban
+    // add the action to the database if not pendings
+    let mut db_entry = match pool.get_pending_mod_actions("ban", guild.0, user.id.0) {
+        Some(val) => val,
+        None => pool.add_mod_action("ban", guild.0, user, false),
+    };
 
     let current_user = &CACHE.read().unwrap().user;
 
