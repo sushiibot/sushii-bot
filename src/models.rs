@@ -188,6 +188,7 @@ pub struct ModAction {
     pub reason: Option<String>,
     pub action_time: NaiveDateTime,
     pub msg_id: Option<i64>,
+    pub pending: bool,
 }
 
 #[derive(Insertable)]
@@ -202,4 +203,5 @@ pub struct NewModAction<'a> {
     pub reason: Option<&'a str>,
     pub action_time: &'a NaiveDateTime,
     pub msg_id: Option<i64>,
+    pub pending: bool,
 }
