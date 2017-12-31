@@ -5,4 +5,45 @@ A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.
 
 Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
 
-WIP
+Work in progress.  Features may be either missing or broken.
+
+# Current Features
+* Ranking system based on percentiles of message counts in daily, weekly, monthly, and all time categories
+* User 24 hour activity tracker
+* Profile image generation for displaying rank and activity graph (with [sbot2-image-server](https://github.com/drklee3/sbot2-image-server))
+* Customizable prefix per guild
+* Reminders
+* Keyword notifications
+* Moderation action logs and editable action reasons
+* User join and leave messages
+* Rust playground code execution
+* Discord events counter
+* ...and more to be added
+
+# Installation
+Currently you will have to build everything yourself.  Later on, SQL migrations may be moved into binary downloads to simplify installation, removing the need for cloning this repository or installing Rust, Cargo, and Diesel CLI.
+
+1. Install dependencies.
+    * [PostgreSQL](https://www.postgresql.org)
+    * [Diesel CLI](https://github.com/diesel-rs/diesel/tree/master/diesel_cli)
+        1. Install [Rust and Cargo](http://doc.crates.io).
+            ```bash
+            $ curl -sSf https://static.rust-lang.org/rustup.sh | sh
+            ```
+        2. Install Diesel CLI.
+            ```bash
+            $ cargo install diesel_cli --no-default-features --features "postgres"
+            ```
+    * [sbot2-image-server](https://github.com/drklee3/sbot2-image-server) (Used for rank image generation, etc)
+        1. Clone repository.
+        2. Install sbot2-image-server dependencies.
+            ```bash
+            $ npm install
+            ```
+        3. Start with `npm start` or with a process manager like [PM2](https://github.com/Unitech/pm2)
+2. Clone this repository.
+3. Edit [`.env.example`](.env.example) and rename to `.env`.
+4. Build and the bot.
+    ```bash
+    $ cargo run --release
+    ```
