@@ -9,5 +9,6 @@ CREATE TABLE mod_log (
     action TEXT NOT NULL,
     reason TEXT,
     action_time TIMESTAMP NOT NULL,
-    msg_id BIGINT
+    msg_id BIGINT,
+    pending BOOLEAN NOT NULL
 )
