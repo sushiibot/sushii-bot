@@ -195,5 +195,7 @@ fn update_event(ctx: &Context, event_name: &str) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-    pool.log_event(event_name);
+    if let Err(e) = pool.log_event(event_name) {
+        error!("Failed to log event: {}", e);
+    }
 }
