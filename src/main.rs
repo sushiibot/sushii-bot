@@ -192,6 +192,10 @@ fn main() {
                     c.desc("Lists your set notifications")
                         .exec(commands::notifications::list_notifications)
                 })
+                .command("delete", |c| {
+                    c.desc("Deletes a notification")
+                        .exec(commands::notifications::delete_notification)
+                })
             })
             .group("Meta", |g| {
                 g.command("help", |c| c.exec_help(help_commands::with_embeds))

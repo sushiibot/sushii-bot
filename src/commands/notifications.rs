@@ -4,6 +4,7 @@ use serenity::CACHE;
 use std::fmt::Write;
 use models::Notification;
 use database;
+use utils::config::get_pool;
 
 command!(add_notification(ctx, msg, args) {
     let keyword = args.full();
@@ -86,5 +87,28 @@ command!(list_notifications(ctx, msg, args) {
         }
         let _ = write!(s, "```");
         let _ = msg.channel_id.say(&s);
+    }
+});
+
+command!(delete_notification(ctx, msg, args) {
+    let keyword = args.full();
+
+    if keyword.is_empty() {
+        return Err(CommandError::from("Missing keyword."));
+    }
+
+    let guild_id = match msg.guild_id() {
+        Some(val) => val.0,
+        None => return Err(CommandError::from("No guild, try this in a server.")),
+    };
+
+    let pool = get_pool(&ctx);
+    let result = pool.delete_notification(msg.author.id.0, guild_id, &keyword);
+
+    if result {
+        let s = format!("Deleted the keyword `{}`.", keyword);
+        let _ = msg.channel_id.say(&s);
+    } else {
+        return Err(CommandError::from("You don't have that keyword set."));
     }
 });
