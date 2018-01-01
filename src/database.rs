@@ -289,7 +289,7 @@ impl ConnectionPool {
             .bind::<BigInt, i64>(id_guild as i64)
             .bind::<BigInt, i64>(id_user as i64)
             .load(&*conn)
-            .ok().map(|x: Vec<UserLevelRanked>| x[0].clone())
+            .ok().map(|x: Vec<UserLevelRanked>| level_interval_ranked(&x[0]))
     }
 
     pub fn update_user_activity_message(&self, id_user: u64) {
@@ -494,7 +494,8 @@ impl ConnectionPool {
     }
 
     /// MOD ACTIONS
-    pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User, is_pending: bool) -> ModAction {
+    pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User,
+            action_reason: Option<&str>, is_pending: bool) -> ModAction {
         use schema::mod_log;
         use schema::mod_log::dsl::*;
         
@@ -519,7 +520,7 @@ impl ConnectionPool {
             user_id: user.id.0 as i64,
             user_tag: &user.tag(),
             action: mod_action,
-            reason: None,
+            reason: action_reason,
             action_time: &now,
             msg_id: None,
             pending: is_pending,
