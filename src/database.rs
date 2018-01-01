@@ -65,10 +65,8 @@ impl ConnectionPool {
 
         diesel::insert_into(guilds::table)
             .values(&new_guild_obj)
-            .execute(&*conn)
-            .expect("Error saving new guild.");
-
-        new_guild_to_guild_config(new_guild_obj)
+            .get_result::<GuildConfig>(&*conn)
+            .expect("Error saving new guild.")
     }
 
     // gets a guild's config if it exists, or create one if it doesn't
@@ -477,7 +475,8 @@ impl ConnectionPool {
         // get a connection from the pool
         let conn = (*&self.pool).get().unwrap();
 
-        let result = diesel::delete(notifications
+        let result = diesel::delete(
+            notifications
                 .filter(user_id.eq(user as i64))
                 .filter(guild_id.eq(guild as i64))
                 .filter(keyword.eq(kw))
@@ -671,22 +670,5 @@ pub fn level_interval_ranked(user_level: &UserLevelRanked) -> UserLevelRanked {
         msg_all_time_rank: user_level.msg_all_time_rank,
         msg_month_rank: user_level.msg_month_rank,
         msg_week_rank: user_level.msg_week_rank,
-    }
-}
-
-fn new_guild_to_guild_config(config: NewGuildConfig) -> GuildConfig {
-    GuildConfig {
-        id: config.id,
-        name: config.name,
-        join_msg: config.join_msg,
-        join_react: config.join_react,
-        leave_msg: config.leave_msg,
-        msg_channel: config.msg_channel,
-        invite_guard: config.invite_guard,
-        log_msg: config.log_msg,
-        log_mod: config.log_mod,
-        log_member: config.log_member,
-        mute_role: config.mute_role,
-        prefix: config.prefix,
     }
 }
