@@ -5,7 +5,7 @@ A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.
 
 Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
 
-Work in progress.  Features may be either missing or broken.
+Work in progress.  Features may be either missing, incomplete, or broken.
 
 # Features
 * Ranking system based on percentiles of message counts in daily, weekly, monthly, and all time categories
@@ -46,8 +46,12 @@ Currently you will have to build everything yourself.  Later on, SQL migrations 
             ```
         4. Start with `npm start` or with a process manager like [PM2](https://github.com/Unitech/pm2)
 2. Clone this repository.
-3. Edit [`.env.example`](.env.example) and rename to `.env`.
-4. Build and run the bot.
+3. Run SQL migrations.
+    ```bash
+    $ diesel migration run
+    ```
+4. Edit [`.env.example`](.env.example) and rename to `.env`.
+5. Build and run the bot.
     ```bash
     $ cargo run --release
     ```
