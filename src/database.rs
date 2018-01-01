@@ -471,6 +471,29 @@ impl ConnectionPool {
             .ok()
     }
 
+    pub fn delete_notification(&self, user: u64, guild: u64, kw: &str) -> bool {
+        use schema::notifications::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let result = diesel::delete(notifications
+                .filter(user_id.eq(user as i64))
+                .filter(guild_id.eq(guild as i64))
+                .filter(keyword.eq(kw))
+            )
+            .execute(&*conn)
+            .unwrap_or(0);
+
+        if result == 0 {
+            // nothing found, or some error occured
+            false
+        } else {
+            // found and deleted a notification
+            true
+        }
+    }
+
     /// MOD ACTIONS
     pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User, is_pending: bool) -> ModAction {
         use schema::mod_log;
