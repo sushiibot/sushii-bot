@@ -1,7 +1,6 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::UserId;
 use reqwest;
-use reqwest::header::ContentType;
 use std::fmt::Write;
 use std::collections::HashMap;
 use database;
@@ -82,7 +81,7 @@ command!(rank(ctx, msg, args) {
 
     let mut img = match res {
         Ok(val) => val,
-        Err(e) => {
+        Err(_) => {
             // in case webserver down or something?
             // fallback to text
             let _ = msg.channel_id.say(&s);

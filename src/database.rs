@@ -6,7 +6,6 @@ use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use diesel::ExpressionMethods;
 use diesel::dsl::max;
-use diesel::pg::Pg;
 
 use r2d2::Pool;
 use r2d2_diesel::ConnectionManager;
@@ -549,7 +548,6 @@ impl ConnectionPool {
     }
 
     pub fn get_latest_mod_action(&self, guild: u64) -> i32 {
-        use schema::mod_log;
         use schema::mod_log::dsl::*;
 
         // get a connection from the pool
@@ -564,7 +562,6 @@ impl ConnectionPool {
     }
 
     pub fn fetch_mod_actions(&self, guild: u64, lower: i32, upper: i32) -> Option<Vec<ModAction>> {
-        use schema::mod_log;
         use schema::mod_log::dsl::*;
 
         // get a connection from the pool
@@ -579,7 +576,6 @@ impl ConnectionPool {
     }
 
     pub fn get_pending_mod_actions(&self, mod_action: &str, guild: u64, user: u64) -> Option<ModAction> {
-        use schema::mod_log;
         use schema::mod_log::dsl::*;
 
         // get a connection from the pool

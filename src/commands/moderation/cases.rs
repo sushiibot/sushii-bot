@@ -101,7 +101,7 @@ command!(reason(ctx, msg, args) {
                 }
 
                 // edit the case message embed
-                let _ = message.edit(|m| m.embed(|e| CreateEmbed::from(embed.clone())));
+                let _ = message.edit(|m| m.embed(|_| CreateEmbed::from(embed.clone())));
 
 
                 // edit database entry

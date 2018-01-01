@@ -42,12 +42,13 @@ command!(ban(ctx, msg, args) {
             return Err(CommandError::from(format!("I don't have permission to ban this user, requires: `{:?}`.", permissions))),
         Err(Error::Model(DeleteMessageDaysAmount(num))) => 
             return Err(CommandError::from(format!("The number of days worth of messages to delete is over the maximum: ({}).", num))),
-        _ => return Err(CommandError::from("There was an error trying to ban this user.")),
+        Err(_) => return Err(CommandError::from("There was an error trying to ban this user.")),
+        _ => {},
     };
 
     // log the ban in the database
     let pool = get_pool(&ctx);
-    let action = pool.add_mod_action("ban", guild.id.0, &user, reason, true);
+    let _ = pool.add_mod_action("ban", guild.id.0, &user, reason, true);
 
     let s = format!("Banned user {} ({}).", user.tag(), user.id.0);
     let _ = msg.channel_id.say(&s);

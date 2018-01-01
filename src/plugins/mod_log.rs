@@ -1,19 +1,11 @@
-use serenity::model::MessageId;
-use serenity::model::Message;
 use serenity::model::ChannelId;
 use serenity::model::GuildId;
 use serenity::model::User;
-use serenity::model::event::MessageUpdateEvent;
-use serenity::model::AuditLogs;
-use serenity::model::AuditLogEntry;
 use serenity::prelude::Context;
 use serenity::CACHE;
 
-use chrono::{DateTime, Utc, Datelike};
-use chrono::naive::NaiveDateTime;
 use std::env;
 
-use database;
 use utils::config::get_pool;
 use utils::time::now_utc;
 
@@ -25,7 +17,7 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
     // add the action to the database if not pendings
     let mut db_entry = match pool.get_pending_mod_actions("ban", guild.0, user.id.0) {
         Some(val) => val,
-        None => pool.add_mod_action("ban", guild.0, user, false),
+        None => pool.add_mod_action("ban", guild.0, user, None, false),
     };
 
     let current_user = &CACHE.read().unwrap().user;
