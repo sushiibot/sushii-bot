@@ -35,16 +35,25 @@ Currently you will have to build everything yourself.  Later on, SQL migrations 
             $ cargo install diesel_cli --no-default-features --features "postgres"
             ```
     * [sbot2-image-server](https://github.com/drklee3/sbot2-image-server) (Used for rank image generation, etc)
-        1. Clone repository.
-        2. Install sbot2-image-server dependencies.
+        1. Install [Node.js and npm](https://nodejs.org/en/download/package-manager/)
+            ```bash
+            $ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+            $ sudo apt-get install -y nodejs
+            ```
+        2. Clone repository and enter the directory.
+            ```bash
+            $ git clone https://github.com/drklee3/sbot2-image-server.git
+            $ cd sbot2-image-server
+            ```
+        3. Install sbot2-image-server dependencies.
             ```bash
             $ npm install
             ```
-        3. Install [chromium dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch).
+        4. Install [chromium dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch).
             ```bash
             $ sudo apt-get install -y gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
             ```
-        4. Start with `npm start` or with a process manager like [PM2](https://github.com/Unitech/pm2)
+        5. Start with `npm start` or with a process manager like [PM2](https://github.com/Unitech/pm2)
 2. Clone this repository and enter the directory.
     ```bash
     $ git clone https://github.com/drklee3/discord-sbot2.git
