@@ -1,14 +1,12 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::GameType;
-use serenity::utils::parse_username;
 use serenity::model::UserId;
 
 use inflector::Inflector;
 
-use database;
 use utils;
 
-command!(userinfo(ctx, msg, args) {
+command!(userinfo(_ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
     let mut name = match args.single::<String>() {
         Ok(val) => val,

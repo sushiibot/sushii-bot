@@ -27,7 +27,7 @@ command!(add_notification(ctx, msg, args) {
     let _ = msg.channel_id.say(&s);
 });
 
-command!(list_notifications(ctx, msg, args) {
+command!(list_notifications(ctx, msg, _args) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
     let mut notifications = match pool.list_notifications(msg.author.id.0) {

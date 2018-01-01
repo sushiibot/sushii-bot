@@ -1,5 +1,4 @@
 use serenity::model::Member;
-use serenity::model::UserId;
 use serenity::model::Guild;
 
 pub fn get_id(value: &str) -> Option<u64> {
