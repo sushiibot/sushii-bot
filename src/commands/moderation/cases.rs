@@ -59,6 +59,7 @@ command!(reason(ctx, msg, args) {
             None => return Err(CommandError::from("There doesn't seem to be a mod log channel set.")),
         };
 
+        // keep track of errored edits, (case number, error message)
         let mut errored = Vec::<(i32, &str)>::new();
 
         // loop through each case

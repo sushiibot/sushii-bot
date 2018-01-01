@@ -215,6 +215,10 @@ fn main() {
                         c.desc("Edits the reason for moderation action cases.")
                         .exec(commands::moderation::cases::reason)
                     })
+                    .command("ban", |c| {
+                        c.desc("Bans a user or ID.")
+                        .exec(commands::moderation::ban::ban)
+                    })
             })
             .group("Settings", |g| {
                 g.command("prefix", |c| {
