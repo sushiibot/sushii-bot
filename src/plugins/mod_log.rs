@@ -32,6 +32,11 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
         }
     };
 
+    let reason = match db_entry.reason.clone() {
+        Some(val) => val,
+        None => format!("Responsible moderator: Please use `{}reason {} [reason]` to set a reason for this case.", prefix, db_entry.case_id)
+    };
+
     if let Some(channel) = config.log_mod {
         if let Ok(msg) = ChannelId(channel as u64).send_message(|m| m
             .embed(|e| e
@@ -52,7 +57,7 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
                 )
                 .field(|f| f
                     .name("Reason")
-                    .value(format!("Responsible moderator: Please use `{}reason {} [reason]` to set a reason for this case.", prefix, db_entry.case_id))
+                    .value(&reason)
                     .inline(false)
                 )
                 .footer(|ft| ft
@@ -67,7 +72,7 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
         // if failed to send the message, it should be already set to None
     }
 
-    
+    db_entry.pending = false;
 
     pool.update_mod_action(db_entry);
 }
