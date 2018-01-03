@@ -73,24 +73,28 @@ command!(ban(ctx, msg, args) {
         // format a tag (id) string for the user
         let user_tag_id = format!("{} ({})", user.tag(), user.id.0);
 
+        // potentially if banning a user who's already banned, it will make another case for them as
+        // it won't create an error.  check before if user is already banned?
+        let case_id = pool.add_mod_action("ban", guild.id.0, &user, reason, true, Some(msg.author.id.0)).case_id;
+
         // ban the user
         let _ = match guild.ban(u, 7) {
             Err(Error::Model(InvalidPermissions(permissions))) => {
                 let e = format!("I don't have permission to ban this user, requires: `{:?}`.", permissions);
                 let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                pool.remove_mod_action(guild.id.0, &user, case_id);
             },
             Err(Error::Model(DeleteMessageDaysAmount(num))) => {
                 let e = format!("The number of days worth of messages to delete is over the maximum: ({}).", num);
                 let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                pool.remove_mod_action(guild.id.0, &user, case_id);
             }
             Err(_) => {
                 let e = "There was an unknown error trying to ban this user.";
                 let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                pool.remove_mod_action(guild.id.0, &user, case_id);
             },
             Ok(_) => {
-                // add the ban to the database if it was successfull
-                // THIS IS BEING ADDED AFTER THE BAN TAKEN PLACE, SO BAN HANDLER NEVER SEES THIS
-                let _ = pool.add_mod_action("ban", guild.id.0, &user, reason, true);
                 let _ = write!(s, "{} - Successfully banned.\n", &user_tag_id);
             },
         };
