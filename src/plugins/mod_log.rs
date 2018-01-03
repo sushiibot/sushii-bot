@@ -1,6 +1,7 @@
 use serenity::model::ChannelId;
 use serenity::model::GuildId;
 use serenity::model::User;
+use serenity::model::UserId;
 use serenity::prelude::Context;
 use serenity::CACHE;
 
@@ -17,10 +18,24 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
     // add the action to the database if not pendings
     let mut db_entry = match pool.get_pending_mod_actions("ban", guild.0, user.id.0) {
         Some(val) => val,
-        None => pool.add_mod_action("ban", guild.0, user, None, false),
+        None => pool.add_mod_action("ban", guild.0, user, None, false, None),
     };
 
-    let current_user = &CACHE.read().unwrap().user;
+    // get the tag and face of the executor if it exists,
+    // if getting the user fails, just fall back to the bot's tag / id
+    let (tag, face) = if let Some(executor) = db_entry.executor_id {
+        if let Ok(user) = UserId(executor as u64).get() {
+            (user.tag(), user.face())
+        } else {
+            let c = &CACHE.read().unwrap().user;
+
+            (c.tag(), c.face())
+        }
+    } else {
+        let c = &CACHE.read().unwrap().user;
+
+        (c.tag(), c.face())
+    };
 
     // send a mod action message to the mod_log in discord chat,
     // if there is a channel set in the settings
@@ -41,8 +56,8 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
         if let Ok(msg) = ChannelId(channel as u64).send_message(|m| m
             .embed(|e| e
                 .author(|a| a
-                    .name(&current_user.tag())
-                    .icon_url(&current_user.face())
+                    .name(&tag)
+                    .icon_url(&face)
                 )
                 .color(0xe74c3c)
                 .field(|f| f
