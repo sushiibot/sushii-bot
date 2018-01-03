@@ -494,7 +494,7 @@ impl ConnectionPool {
 
     /// MOD ACTIONS
     pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User,
-            action_reason: Option<&str>, is_pending: bool) -> ModAction {
+            action_reason: Option<&str>, is_pending: bool, executor: Option<u64>) -> ModAction {
         use schema::mod_log;
         use schema::mod_log::dsl::*;
         
@@ -515,7 +515,7 @@ impl ConnectionPool {
         let new_action = NewModAction {
             case_id: new_case_id,
             guild_id: guild as i64,
-            executor_id: None,
+            executor_id: executor.map(|x| x as i64),
             user_id: user.id.0 as i64,
             user_tag: &user.tag(),
             action: mod_action,
@@ -530,6 +530,23 @@ impl ConnectionPool {
             .values(&new_action)
             .get_result::<ModAction>(&*conn)
             .expect("Failed to insert new mod action.")
+    }
+
+    pub fn remove_mod_action(&self, guild: u64, user: &serenity::model::User, case: i32) {
+        use schema::mod_log::dsl::*;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        if let Err(e) = diesel::delete(
+            mod_log
+                .filter(user_id.eq(user.id.0 as i64))
+                .filter(guild_id.eq(guild as i64))
+                .filter(case_id.eq(case))
+            )
+            .execute(&*conn) {
+                error!("Error while removing a mod action due to failed ban: {}", e);
+        }
     }
 
     pub fn update_mod_action(&self, entry: ModAction) {
