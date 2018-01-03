@@ -4,22 +4,29 @@ use serenity::model::UserId;
 
 use inflector::Inflector;
 
-use utils;
+use utils::user::get_id;
 
 command!(userinfo(_ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
-    let mut name = match args.single::<String>() {
+    let user = match args.single::<String>() {
         Ok(val) => val,
         Err(_) => msg.author.id.0.to_string(),
     };
+    println!("got args");
     
     if let Some(guild) = msg.guild() {
         let guild = guild.read().unwrap();
+        println!("read guild");
 
-        let member = utils::user::find_member(&name, &guild);
+        let member = match get_id(&user) {
+            Some(val) => guild.member(val),
+            None => return Err(CommandError::from("No user found.")),
+        };
+        println!("found member");
 
-        if let Some(member) = member {
+        if let Ok(member) = member {
             let user = member.user.read().unwrap();
+            println!("read user");
 
             let _ = msg.channel_id.send_message(|m| 
                 m.embed(|e| {
@@ -117,10 +124,11 @@ command!(userinfo(_ctx, msg, args) {
                     e
                 })
             );
+
+            println!("sent message");
         } else {
-            // member not found
-            let s = format!("I cant find a member named `{}`.", name);
-            return Err(CommandError(s.to_owned()));
+            // user not found
+            return Err(CommandError::from("I cant find that user."));
         }
     }
 });
@@ -131,7 +139,7 @@ command!(avatar(_ctx, msg, args) {
         Err(_) => return Err(CommandError("Missing user.".to_owned())),
     };
 
-    let id = match utils::user::get_id(&name) {
+    let id = match get_id(&name) {
         Some(id) => id,
         None => return Err(CommandError("Invalid mention.".to_owned())),
     };
