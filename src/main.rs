@@ -120,41 +120,36 @@ fn main() {
                 .allow_whitespace(true)
             )
             .on_dispatch_error(|_, msg, error| {
+                let mut s = String::new();
                 match error {
                     NotEnoughArguments { min, given } => {
-                        let s = format!("Need {} arguments, but only got {}.", min, given);
-
-                        let _ = msg.channel_id.say(&s);
+                        s = format!("Need {} arguments, but only got {}.", min, given);
                     }
                     TooManyArguments { max, given } => {
-                        let s = format!("Too many arguments, need {}, but got {}.", max, given);
-
-                        let _ = msg.channel_id.say(&s);
+                        s = format!("Too many arguments, need {}, but got {}.", max, given);
                     }
                     LackOfPermissions(permissions) => {
-                        let s = format!(
+                        s = format!(
                             "You do not have permission for this command.  Requires `{:?}`.",
                             permissions
                         );
-
-                        let _ = msg.channel_id.say(&s);
                     }
                     OnlyForOwners => {
-                        let _ = msg.channel_id.say("no.");
+                        s = "no.".to_owned();
                     }
                     OnlyForGuilds => {
-                        let _ = msg.channel_id.say("This command can only be used in guilds.");
+                        s = "This command can only be used in guilds.".to_owned();
                     }
                     RateLimited(seconds) => {
-                        let s = format!("Try this again in {} seconds.", seconds);
-
-                        let _ = msg.channel_id.say(&s);
+                        s = format!("Try this again in {} seconds.", seconds);
                     }
                     BlockedUser => {
                         println!("Blocked user {} attemped to use command.", msg.author.tag());
                     }
                     _ => println!("Unhandled dispatch error."),
                 }
+
+                let _ = msg.channel_id.say(&s);
 
                 // react x whenever an error occurs
                 let _ = msg.react("❌");
@@ -212,10 +207,12 @@ fn main() {
             .group("Moderation", |g| {
                 g.command("reason", |c| {
                         c.desc("Edits the reason for moderation action cases.")
+                        .required_permissions(Permissions::MANAGE_GUILD)
                         .exec(commands::moderation::cases::reason)
                     })
                     .command("ban", |c| {
                         c.desc("Bans a user or ID.")
+                        .required_permissions(Permissions::BAN_MEMBERS)
                         .exec(commands::moderation::ban::ban)
                     })
             })
