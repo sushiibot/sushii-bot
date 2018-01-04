@@ -211,7 +211,8 @@ fn main() {
                         .exec(commands::moderation::cases::reason)
                     })
                     .command("ban", |c| {
-                        c.desc("Bans a user or ID.")
+                        c.usage("[mention or id](,mention or id) [reason]")
+                        .desc("Bans a user or ID.")
                         .required_permissions(Permissions::BAN_MEMBERS)
                         .exec(commands::moderation::ban::ban)
                     })
