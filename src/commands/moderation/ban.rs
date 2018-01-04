@@ -47,16 +47,16 @@ command!(ban(ctx, msg, args) {
         reason = None;
     }
 
+    let mut bans = match guild.bans() {
+        Ok(val) => val.iter().map(|x| x.user.id.0).collect(),
+        Err(_) => Vec::new(),
+    };
+
     // log the ban in the database
     let pool = get_pool(&ctx);
     let mut s = String::new();
 
-    let len = users.len();
-
-    // more than 1 ban so let's use a code block
-    if len > 1 {
-        let _ = write!(s, "```ruby\n");
-    }
+    let _ = write!(s, "```ruby\n");
 
     let _ = write!(s, "Attempted to ban {} users:\n\n", users.len());
 
@@ -72,6 +72,13 @@ command!(ban(ctx, msg, args) {
 
         // format a tag (id) string for the user
         let user_tag_id = format!("{} ({})", user.tag(), user.id.0);
+
+        // check if already banned in server ban list or in current currently
+        if bans.contains(&u) {
+            let _ = write!(s, "{} - Error: User is already banned\n", user_tag_id);
+            continue;
+        }
+
 
         // potentially if banning a user who's already banned, it will make another case for them as
         // it won't create an error.  check before if user is already banned?
@@ -96,14 +103,14 @@ command!(ban(ctx, msg, args) {
             },
             Ok(_) => {
                 let _ = write!(s, "{} - Successfully banned.\n", &user_tag_id);
+                // add the ban to the vec to prevent dupe bans
+                bans.push(u);
             },
         };
     }
 
-    // close the code block if > 1 ban
-    if len > 1 {
-        let _ = write!(s, "```");
-    }
+    let _ = write!(s, "```");
+
     
     let _ = msg.channel_id.say(&s);
 });
