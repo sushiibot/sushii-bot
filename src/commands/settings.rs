@@ -3,6 +3,7 @@ use serenity::utils::parse_channel;
 
 use std::env;
 use database;
+use utils::config::get_pool;
 
 command!(prefix(ctx, msg, args) {
     let mut data = ctx.data.lock();
@@ -207,6 +208,40 @@ command!(memberlog(ctx, msg, args) {
         pool.save_guild_config(&config);
 
         let s = format!("The member log channel has been set to: <#{}>", channel);
+        let _ = msg.channel_id.say(&s);
+    } else {
+        return Err(CommandError("No guild found.".to_owned()));
+    }
+});
+
+command!(inviteguard(ctx, msg, args) {
+    let status_str = match args.single::<String>() {
+        Ok(val) => val,
+        Err(_) => return Err(CommandError::from("No option given.  Use `enable` or `disable`")),
+    };
+
+    let mut status;
+    let mut s;
+
+    if status_str == "enable" {
+        status = true;
+        s = "Invite guard has been enabled.";
+    } else if status_str == "disable" {
+        status = false;
+        s = "Invite guard has been disabled.";
+    } else {
+        return Err(CommandError::from("Invalid option.  Use `enable` or `disable`"));
+    }
+
+    if let Some(guild_id) = msg.guild_id() {
+        let pool = get_pool(&ctx);
+
+        let mut config = pool.get_guild_config(guild_id.0);
+
+        config.invite_guard = Some(status);
+
+        pool.save_guild_config(&config);
+
         let _ = msg.channel_id.say(&s);
     } else {
         return Err(CommandError("No guild found.".to_owned()));
