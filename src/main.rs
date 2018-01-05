@@ -247,6 +247,11 @@ fn main() {
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::memberlog)
                     })
+                    .command("inviteguard", |c| {
+                        c.desc("Enables or disables the invite guard.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::inviteguard)
+                    })
             })
             .group("Misc", |g| {
                 g.command("play", |c| {
