@@ -4,6 +4,7 @@ use serenity::utils::parse_channel;
 use serde_json;
 
 use std::env;
+use std::fmt::Write;
 use database;
 use utils::config::get_pool;
 
@@ -250,6 +251,60 @@ command!(inviteguard(ctx, msg, args) {
     }
 });
 
+fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> String {
+    let mut s = String::new();
+    for (cat_name, cat_data) in cfg.iter() {
+        // check if there's a roles field
+        if let Some(lim) = cat_data.get("limit") {
+            if !lim.is_number() {
+                let _ = write!(s, "Category limit for `{}` has to be a number\n", cat_name);
+            }
+        } else {
+            let _ = write!(s, "Missing category limit for `{}`, set to 0 to disable\n", cat_name);
+        }
+        // check if there is a roles field
+        if let Some(roles) = cat_data.get("roles") {
+            // check if roles is an object
+            if let Some(obj) = roles.as_object() {
+                // check if roles object is empty
+                if obj.is_empty() {
+                    let _ = write!(s, "Roles for `{}` cannot be empty\n", cat_name); 
+                }
+                // check if each role has correct properties
+                for (role_name, role_data) in obj.iter() {
+                    let role_fields = ["search", "primary", "secondary"];
+
+                    // check for each property
+                    for role_field in role_fields.iter() {
+                        if let Some(val) = role_data.get(role_field) {
+                            if role_field == &"search" {
+                                if !val.is_string() {
+                                    let _ = write!(s, "Field `{}` for role `{}` in category `{}` must be a string (Supports RegEx)\n", 
+                                        role_field, role_name, cat_name);
+                                }
+                            } else {
+                                if !val.is_u64() {
+                                    let _ = write!(s, "Field `{}` for role `{}` in category `{}` has to be a number (Role ID)\n", 
+                                        role_field, role_name, cat_name);
+                                }
+                            }
+                        } else {
+                            let _ = write!(s, "Role `{}` in category `{}` is missing field `{}`\n", 
+                                role_name, cat_name, role_field);
+                        }
+                    }
+                }
+            } else {
+                let _ = write!(s, "Roles in category `{}` are not configured properly as an object\n", cat_name);
+            }
+        } else {
+            let _ = write!(s, "Missing roles for category `{}`\n", cat_name);
+        }
+    }
+
+    return s;
+}
+
 command!(set_roles(ctx, msg, args) {
     let mut raw_json = args.full();
 
@@ -271,6 +326,11 @@ command!(set_roles(ctx, msg, args) {
     let role_config: serde_json::Map<String, serde_json::Value> = match serde_json::from_str(&raw_json) {
         Ok(val) => val,
         Err(e) => return Err(CommandError::from(e)),
+    };
+
+    let validated = validate_roles_config(&role_config);
+    if !validated.is_empty() {
+        return Err(CommandError::from(validated));
     };
 
     if let Some(guild_id) = msg.guild_id() {
