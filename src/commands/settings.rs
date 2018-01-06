@@ -6,7 +6,7 @@ use serde_json;
 use std::env;
 use std::fmt::Write;
 use database;
-use utils::config::get_pool;
+use utils::config::*;
 
 command!(prefix(ctx, msg, args) {
     let mut data = ctx.data.lock();
@@ -46,7 +46,7 @@ command!(prefix(ctx, msg, args) {
                 let _ = msg.channel_id.say(format!("The prefix for this server is already: `{}`", prefix));
             }
         } else {
-            return Err(CommandError("You need `MANAGE_GUILD` permissions to set the prefix.".to_owned()));
+            return Err(CommandError::from("You need `MANAGE_GUILD` permissions to set the prefix."));
         }
         
     } else {
@@ -92,7 +92,7 @@ command!(joinmsg(ctx, msg, args) {
             pool.save_guild_config(&config);
         }
     } else {
-        return Err(CommandError("No guild found.".to_owned()));
+        return Err(CommandError::from("No guild found."));
     }
 });
 
@@ -132,23 +132,22 @@ command!(leavemsg(ctx, msg, args) {
             pool.save_guild_config(&config);
         }
     } else {
-        return Err(CommandError("No guild found.".to_owned()));
+        return Err(CommandError::from("No guild found."));
     }
 });
 
 command!(modlog(ctx, msg, args) {
     let channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError("No channel given.".to_owned())),
+        Err(_) => return Err(CommandError::from("No channel given.")),
     };
 
     if channel == 0 {
-        return Err(CommandError("Invalid channel.".to_owned()));
+        return Err(CommandError::from("Invalid channel."));
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let mut data = ctx.data.lock();
-        let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+        let pool = get_pool(&ctx);
 
         let mut config = pool.get_guild_config(guild_id.0);
 
@@ -159,23 +158,22 @@ command!(modlog(ctx, msg, args) {
         let s = format!("The moderation log channel has been set to: <#{}>", channel);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError("No guild found.".to_owned()));
+        return Err(CommandError::from("No guild found."));
     }
 });
 
 command!(msglog(ctx, msg, args) {
     let channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError("No channel given.".to_owned())),
+        Err(_) => return Err(CommandError::from("No channel given.")),
     };
 
     if channel == 0 {
-        return Err(CommandError("Invalid channel.".to_owned()));
+        return Err(CommandError::from("Invalid channel."));
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let mut data = ctx.data.lock();
-        let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+        let pool = get_pool(&ctx);
 
         let mut config = pool.get_guild_config(guild_id.0);
 
@@ -186,23 +184,22 @@ command!(msglog(ctx, msg, args) {
         let s = format!("The message log channel has been set to: <#{}>", channel);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError("No guild found.".to_owned()));
+        return Err(CommandError::from("No guild found."));
     }
 });
 
 command!(memberlog(ctx, msg, args) {
     let channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError("No channel given.".to_owned())),
+        Err(_) => return Err(CommandError::from("No channel given.")),
     };
 
     if channel == 0 {
-        return Err(CommandError("Invalid channel.".to_owned()));
+        return Err(CommandError::from("Invalid channel."));
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let mut data = ctx.data.lock();
-        let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+        let pool = get_pool(&ctx);
 
         let mut config = pool.get_guild_config(guild_id.0);
 
@@ -213,7 +210,7 @@ command!(memberlog(ctx, msg, args) {
         let s = format!("The member log channel has been set to: <#{}>", channel);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError("No guild found.".to_owned()));
+        return Err(CommandError::from("No guild found."));
     }
 });
 
@@ -247,7 +244,7 @@ command!(inviteguard(ctx, msg, args) {
 
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError("No guild found.".to_owned()));
+        return Err(CommandError::from("No guild found."));
     }
 });
 
@@ -305,8 +302,15 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
     return s;
 }
 
-command!(set_roles(ctx, msg, args) {
+command!(roles_set(ctx, msg, args) {
     let mut raw_json = args.full();
+
+    // check if it starts with a code block
+    if raw_json.starts_with("```") && raw_json.ends_with("```") {
+        // remove code block from string
+        raw_json = raw_json.replace("```json", "");
+        raw_json = raw_json.replacen("```", "", 2);
+    }
 
     if raw_json.is_empty() && msg.attachments.len() > 0 {
         let bytes = match msg.attachments[0].download() {
@@ -344,5 +348,49 @@ command!(set_roles(ctx, msg, args) {
         let _ = msg.channel_id.say("Updated the guild role config.");
     } else {
         return Err(CommandError::from("No guild."));
+    }
+});
+
+command!(roles_channel(ctx, msg, args) {
+    let channel = match args.single::<String>() {
+        Ok(val) => parse_channel(&val).unwrap_or(0),
+        Err(_) => return Err(CommandError::from("No channel given.")),
+    };
+
+    if channel == 0 {
+        return Err(CommandError::from("Invalid channel."));
+    }
+
+    if let Some(guild_id) = msg.guild_id() {
+        let pool = get_pool(&ctx);
+
+        let mut config = pool.get_guild_config(guild_id.0);
+
+        config.role_channel = Some(channel as i64);
+
+        pool.save_guild_config(&config);
+
+        let s = format!("The role channel has been set to: <#{}>", channel);
+        let _ = msg.channel_id.say(&s);
+    } else {
+        return Err(CommandError::from("No guild found."));
+    }
+});
+
+command!(roles_get(ctx, msg, _args) {
+    if let Some(guild_id) = msg.guild_id() {
+        let config = get_config_from_context(&ctx, guild_id.0);
+
+        if let Some(role_config) = config.role_config {
+            let roles_pretty = match serde_json::to_string_pretty(&role_config) {
+                Ok(val) => val,
+                Err(e) => return Err(CommandError::from(e)),
+            };
+
+            let s = format!("```json\n{}\n```", roles_pretty);
+            let _ = msg.channel_id.say(&s);
+        } else {
+            return Err(CommandError::from("There isn't a role configuration set."))
+        }
     }
 });
