@@ -9,6 +9,8 @@ matrix:
     - rust: nightly
 services:
   - postgresql
+addons:
+  postgresql: "9.6"
 before_script:
   - psql -c 'create database travisdb;' -U postgres
   - cargo install diesel_cli
