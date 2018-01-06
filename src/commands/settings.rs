@@ -1,6 +1,8 @@
 use serenity::framework::standard::CommandError;
 use serenity::utils::parse_channel;
 
+use serde_json;
+
 use std::env;
 use database;
 use utils::config::get_pool;
@@ -245,5 +247,42 @@ command!(inviteguard(ctx, msg, args) {
         let _ = msg.channel_id.say(&s);
     } else {
         return Err(CommandError("No guild found.".to_owned()));
+    }
+});
+
+command!(set_roles(ctx, msg, args) {
+    let mut raw_json = args.full();
+
+    if raw_json.is_empty() && msg.attachments.len() > 0 {
+        let bytes = match msg.attachments[0].download() {
+            Ok(content) => content,
+            Err(e) => return Err(CommandError::from(e)),
+        };
+
+        raw_json = match String::from_utf8(bytes) {
+            Ok(content) => content,
+            Err(e) => return Err(CommandError::from(e)),
+        };
+    } else if raw_json.is_empty() && msg.attachments.is_empty() {
+        // no message or attachment 
+        return Err(CommandError::from("No configuration provided."));
+    }
+
+    let role_config: serde_json::Map<String, serde_json::Value> = match serde_json::from_str(&raw_json) {
+        Ok(val) => val,
+        Err(e) => return Err(CommandError::from(e)),
+    };
+
+    if let Some(guild_id) = msg.guild_id() {
+        let pool = get_pool(&ctx);
+
+        let mut config = pool.get_guild_config(guild_id.0);        
+        config.role_config = Some(serde_json::Value::from(role_config));
+
+        pool.save_guild_config(&config);
+
+        let _ = msg.channel_id.say("Updated the guild role config.");
+    } else {
+        return Err(CommandError::from("No guild."));
     }
 });
