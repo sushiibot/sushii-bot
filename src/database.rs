@@ -51,6 +51,8 @@ impl ConnectionPool {
             join_react: None,
             leave_msg: None,
             msg_channel: None,
+            role_channel: None,
+            role_config: None,
             invite_guard: Some(false),
             log_msg: None,
             log_mod: None,

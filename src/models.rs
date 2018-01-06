@@ -8,6 +8,7 @@ use schema::mod_log;
 
 use chrono::naive::NaiveDateTime;
 use diesel::types::*;
+use serde_json;
 
 #[derive(Queryable, AsChangeset, Clone)]
 #[table_name = "guilds"]
@@ -18,6 +19,8 @@ pub struct GuildConfig {
     pub join_react: Option<String>,
     pub leave_msg: Option<String>,
     pub msg_channel: Option<i64>,
+    pub role_channel: Option<i64>,
+    pub role_config: Option<serde_json::Value>,
     pub invite_guard: Option<bool>,
     pub log_msg: Option<i64>,
     pub log_mod: Option<i64>,
@@ -35,6 +38,8 @@ pub struct NewGuildConfig {
     pub join_react: Option<String>,
     pub leave_msg: Option<String>,
     pub msg_channel: Option<i64>,
+    pub role_channel: Option<i64>,
+    pub role_config: Option<serde_json::Value>,
     pub invite_guard: Option<bool>,
     pub log_msg: Option<i64>,
     pub log_mod: Option<i64>,
