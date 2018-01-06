@@ -135,7 +135,8 @@ impl EventHandler for Handler {
             levels,
             random_hi,
             notifications,
-            user_info_activity
+            user_info_activity,
+            invite_guard
         );
     }
 
