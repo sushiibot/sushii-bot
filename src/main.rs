@@ -19,6 +19,9 @@ extern crate r2d2_diesel;
 #[macro_use]
 extern crate diesel_infer_schema;
 
+#[macro_use]
+extern crate lazy_static;
+
 extern crate dotenv;
 extern crate env_logger;
 extern crate reqwest;
