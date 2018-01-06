@@ -178,18 +178,18 @@ fn main() {
             })
             .group("Notifications", |g| {
                 g.prefix("notification")
-                .command("add", |c| {
-                    c.desc("Adds a notification.")
-                        .exec(commands::notifications::add_notification)
-                })
-                .command("list", |c| {
-                    c.desc("Lists your set notifications")
-                        .exec(commands::notifications::list_notifications)
-                })
-                .command("delete", |c| {
-                    c.desc("Deletes a notification")
-                        .exec(commands::notifications::delete_notification)
-                })
+                    .command("add", |c| {
+                        c.desc("Adds a notification.")
+                            .exec(commands::notifications::add_notification)
+                    })
+                    .command("list", |c| {
+                        c.desc("Lists your set notifications")
+                            .exec(commands::notifications::list_notifications)
+                    })
+                    .command("delete", |c| {
+                        c.desc("Deletes a notification")
+                            .exec(commands::notifications::delete_notification)
+                    })
             })
             .group("Meta", |g| {
                 g.command("help", |c| c.exec_help(help_commands::with_embeds))
@@ -218,7 +218,8 @@ fn main() {
                     })
             })
             .group("Settings", |g| {
-                g.command("prefix", |c| {
+                g.guild_only(true)
+                    .command("prefix", |c| {
                     c.desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
                         .exec(commands::settings::prefix)
                     })
@@ -252,10 +253,25 @@ fn main() {
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::inviteguard)
                     })
-                    .command("setroles", |c| {
+            })
+            .group("Roles", |g| {
+                g.prefix("roles")
+                    .guild_only(true)
+                    .required_permissions(Permissions::MANAGE_GUILD)
+                    .command("set", |c| {
                         c.desc("Sets the role configuration.")
                             .required_permissions(Permissions::MANAGE_GUILD)
-                            .exec(commands::settings::set_roles)
+                            .exec(commands::settings::roles_set)
+                    })
+                    .command("get", |c| {
+                        c.desc("Gets the role configuration.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::roles_get)
+                    })
+                    .command("channel", |c| {
+                        c.desc("Sets the roles channel.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::roles_channel)
                     })
             })
             .group("Misc", |g| {
