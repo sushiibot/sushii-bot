@@ -1,0 +1,27 @@
+{
+    "main_category": {
+        "limit": 3,
+        "roles": {
+            "role1": {
+                "search": "(role1|hello)",
+                "primary": 1,
+                "secondary": 2
+            },
+            "role2": {
+                "search": "(role2|aaaaaahhh)",
+                "primary": 3,
+                "secondary": 4
+            }
+        }
+    },
+    "additional_category": {
+        "limit": 0,
+        "roles": {
+            "free_role": {
+                "search": "(free)",
+                "primary": 5,
+                "secondary": 0
+            }
+        }
+    }
+}
