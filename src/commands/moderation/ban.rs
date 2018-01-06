@@ -80,8 +80,7 @@ command!(ban(ctx, msg, args) {
         }
 
 
-        // potentially if banning a user who's already banned, it will make another case for them as
-        // it won't create an error.  check before if user is already banned?
+        // add a pending case, remove if ban errored
         let case_id = pool.add_mod_action("ban", guild.id.0, &user, reason, true, Some(msg.author.id.0)).case_id;
 
         // ban the user

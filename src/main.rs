@@ -252,6 +252,11 @@ fn main() {
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::inviteguard)
                     })
+                    .command("setroles", |c| {
+                        c.desc("Sets the role configuration.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::set_roles)
+                    })
             })
             .group("Misc", |g| {
                 g.command("play", |c| {
