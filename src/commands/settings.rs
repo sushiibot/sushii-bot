@@ -1,5 +1,6 @@
 use serenity::framework::standard::CommandError;
 use serenity::utils::parse_channel;
+use serenity::utils::parse_role;
 
 use serde_json;
 
@@ -393,4 +394,33 @@ command!(roles_get(ctx, msg, _args) {
             return Err(CommandError::from("There isn't a role config set."))
         }
     }
+});
+
+
+command!(mute_role(ctx, msg, args) {
+    if let Some(guild) = msg.guild() {
+        let guild = guild.read().unwrap();
+
+        let role = match args.single::<String>() {
+            Ok(val) => val,
+            Err(e) => return Err(CommandError::from(e)),
+        };
+
+        let role_id = parse_role(&role)
+            .or(guild.roles.values().find(|&x| x.name == role).map(|x| x.id.0));
+
+        if let Some(id) = role_id {
+            let pool = get_pool(&ctx);
+
+            let mut config = pool.get_guild_config(guild.id.0);
+            config.mute_role = Some(id as i64);
+
+            pool.save_guild_config(&config);
+
+            let s = format!("The mute role has been set to: <@&{}>", id);
+            let _ = msg.channel_id.say(&s);
+        } else {
+            return Err(CommandError::from("Invalid role id, mention, or name."));
+        }
+    }    
 });

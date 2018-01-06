@@ -256,6 +256,11 @@ fn main() {
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::inviteguard)
                     })
+                    .command("muterole", |c| {
+                        c.desc("Sets the mute role.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::mute_role)
+                    })
             })
             .group("Roles", |g| {
                 g.prefix("roles")
