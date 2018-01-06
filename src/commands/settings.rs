@@ -390,7 +390,7 @@ command!(roles_get(ctx, msg, _args) {
             let s = format!("```json\n{}\n```", roles_pretty);
             let _ = msg.channel_id.say(&s);
         } else {
-            return Err(CommandError::from("There isn't a role configuration set."))
+            return Err(CommandError::from("There isn't a role config set."))
         }
     }
 });
