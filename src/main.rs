@@ -34,6 +34,7 @@ extern crate regex;
 
 pub mod schema;
 pub mod models;
+#[macro_use]
 pub mod utils;
 
 #[macro_use]
