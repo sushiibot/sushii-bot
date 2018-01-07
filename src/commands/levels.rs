@@ -8,7 +8,7 @@ use database;
 use utils;
 use utils::num::format_percentile;
 
-const LEVEL_HTML: &'static str = include_str!("../../html/rank.html");
+const LEVEL_HTML: &'static str = include_str!("../../assets/html/rank.html");
 
 command!(rank(ctx, msg, args) {
     let mut data = ctx.data.lock();
