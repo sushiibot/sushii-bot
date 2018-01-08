@@ -48,3 +48,11 @@ macro_rules! exec_on_guild_ban_removal {
         )*
     }
 }
+
+macro_rules! exec_on_guild_member_update {
+    ( [$ctx:expr, $prev_member:expr, $curr_member:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_guild_member_update($ctx, $prev_member, $curr_member);
+        )*
+    }
+}
