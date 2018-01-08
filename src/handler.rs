@@ -104,7 +104,13 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_MEMBER_REMOVE");
     }
 
-    fn on_guild_member_update(&self, ctx: Context, _: Option<Member>, _: Member) {
+    fn on_guild_member_update(
+        &self,
+        ctx: Context,
+        prev_member: Option<Member>,
+        curr_member: Member,
+    ) {
+        exec_on_guild_member_update!([&ctx, &prev_member, &curr_member], mod_log);
         update_event(&ctx, "GUILD_MEMBER_UPDATE");
     }
 
@@ -136,7 +142,8 @@ impl EventHandler for Handler {
             random_hi,
             notifications,
             user_info_activity,
-            invite_guard
+            invite_guard,
+            anti_spam
         );
     }
 
