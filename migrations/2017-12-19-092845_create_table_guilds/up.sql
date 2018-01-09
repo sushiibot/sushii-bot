@@ -13,5 +13,6 @@ CREATE TABLE guilds (
     log_mod BIGINT,
     log_member BIGINT,
     mute_role BIGINT,
-    prefix TEXT
+    prefix TEXT,
+    max_mention INTEGER NOT NULL DEFAULT 10
 )

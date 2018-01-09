@@ -1,4 +1,4 @@
-#![recursion_limit="128"]
+#![recursion_limit="256"]
 
 #[macro_use]
 extern crate log;
@@ -261,6 +261,11 @@ fn main() {
                         c.desc("Sets the mute role.")
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::mute_role)
+                    })
+                    .command("maxmentions", |c| {
+                        c.desc("Sets the maximum mentions a user can have in a single message before automatically being muted.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::max_mentions)
                     })
             })
             .group("Roles", |g| {
