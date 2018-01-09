@@ -369,7 +369,7 @@ command!(roles_channel(ctx, msg, args) {
 
         pool.save_guild_config(&config);
 
-        let s = get_msg!("The role channel has been set to: <#{}>", channel);
+        let s = get_msg!("info/role_channel_set", channel);
         let _ = msg.channel_id.say(&s);
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
