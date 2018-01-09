@@ -31,7 +31,7 @@ macro_rules! get_msg {
             };
 
             $(
-                s = s.replace("{}", $replace);
+                s = s.replace("{}", &format!("{}", $replace));
             )*
 
 

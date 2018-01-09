@@ -24,12 +24,12 @@ command!(prefix(ctx, msg, args) {
                 // no prefix argument, set the prefix
                 match pool.get_prefix(guild.id.0) {
                     Some(prefix) => {
-                        let _ = msg.channel_id.say(&format!("The prefix in this guild is set to: `{}`", prefix));
+                        let _ = msg.channel_id.say(&get_msg!("info/prefix_current", &prefix));
                         return Ok(());
                     },
                     None => {
-                        let prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
-                        let _ = msg.channel_id.say(format!("The prefix in this guild is set to: `{}`", prefix));
+                        let prefix = env::var("DEFAULT_PREFIX").expect(&get_msg!("error/prefix_no_default"));
+                        let _ = msg.channel_id.say(get_msg!("info/prefix_current", &prefix));
                         return Ok(());
                     }
                 }
@@ -42,18 +42,18 @@ command!(prefix(ctx, msg, args) {
             let success = pool.set_prefix(guild.id.0, &prefix);
 
             if success {
-                let _ = msg.channel_id.say(format!("The prefix for this server has been set to: `{}`", prefix));
+                let _ = msg.channel_id.say(get_msg!("info/prefix_set", &prefix));
             } else {
-                let _ = msg.channel_id.say(format!("The prefix for this server is already: `{}`", prefix));
+                let _ = msg.channel_id.say(get_msg!("info/prefix_existing", &prefix));
             }
         } else {
-            return Err(CommandError::from("You need `MANAGE_GUILD` permissions to set the prefix."));
+            return Err(CommandError::from("error/prefix_no_perms"));
         }
         
     } else {
         // no guild found, probably in DMs
-        let prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
-        let _ = msg.channel_id.say(format!("The default prefix is set to `{}`", prefix));
+        let prefix = env::var("DEFAULT_PREFIX").expect(&get_msg!("error/prefix_no_default"));
+        let _ = msg.channel_id.say(get_msg!("info/prefix_default", &prefix));
     }
 });
 
@@ -70,11 +70,10 @@ command!(joinmsg(ctx, msg, args) {
         // no message given, just print out the current message
         if args.len() == 0 {
             if let Some(current_message) = config.join_msg {
-                let s = format!("The current join message is: {}", current_message);
+                let s = get_msg!("info/join_message_current", current_message);
                 let _ = msg.channel_id.say(&s);
             } else {
-                let _ = msg.channel_id.say("There is no join message set.  \
-                    You can set one with the placeholders <mention>, <username>, <server>.");
+                let _ = msg.channel_id.say(get_msg!("info/join_message_none"));
             }
         } else {
             let mut config = config;
@@ -82,18 +81,18 @@ command!(joinmsg(ctx, msg, args) {
             if message == "off" {
                 config.join_msg = None;
 
-                let _ = msg.channel_id.say("Join messages have been disabled.");
+                let _ = msg.channel_id.say(get_msg!("info/join_message_disable"));
             } else {
                 config.join_msg = Some(message.clone());
 
-                let s = format!("The current join message has been set to: {}", message);
+                let s = get_msg!("info/join_message_set", message);
                 let _ = msg.channel_id.say(&s);
             }
 
             pool.save_guild_config(&config);
         }
     } else {
-        return Err(CommandError::from("No guild found."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
@@ -110,11 +109,10 @@ command!(leavemsg(ctx, msg, args) {
         // no message given, just print out the current message
         if args.len() == 0 {
             if let Some(current_message) = config.leave_msg {
-                let s = format!("The current leave message is: {}", current_message);
+                let s = get_msg!("info/leave_message_current", current_message);
                 let _ = msg.channel_id.say(&s);
             } else {
-                let _ = msg.channel_id.say("There is no leave message set.  \
-                    You can set one with the placeholders <mention>, <username>, <server>.");
+                let _ = msg.channel_id.say(get_msg!("info/leave_message_none"));
             }
         } else {
             let mut config = config;
@@ -122,29 +120,29 @@ command!(leavemsg(ctx, msg, args) {
             if message == "off" {
                 config.leave_msg = None;
 
-                let _ = msg.channel_id.say("Leave messages have been disabled.");
+                let _ = msg.channel_id.say(get_msg!("info/leave_message_disable"));
             } else {
                 config.leave_msg = Some(message.clone());
 
-                let s = format!("The current leave message has been set to: {}", message);
+                let s = get_msg!("info/leave_message_set", message);
                 let _ = msg.channel_id.say(&s);
             }
 
             pool.save_guild_config(&config);
         }
     } else {
-        return Err(CommandError::from("No guild found."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
 command!(modlog(ctx, msg, args) {
     let channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError::from("No channel given.")),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
     };
 
     if channel == 0 {
-        return Err(CommandError::from("Invalid channel."));
+        return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
     if let Some(guild_id) = msg.guild_id() {
@@ -156,21 +154,21 @@ command!(modlog(ctx, msg, args) {
 
         pool.save_guild_config(&config);
 
-        let s = format!("The moderation log channel has been set to: <#{}>", channel);
+        let s = get_msg!("info/mod_log_set", channel);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError::from("No guild found."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
 command!(msglog(ctx, msg, args) {
     let channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError::from("No channel given.")),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
     };
 
     if channel == 0 {
-        return Err(CommandError::from("Invalid channel."));
+        return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
     if let Some(guild_id) = msg.guild_id() {
@@ -182,21 +180,21 @@ command!(msglog(ctx, msg, args) {
 
         pool.save_guild_config(&config);
 
-        let s = format!("The message log channel has been set to: <#{}>", channel);
+        let s = get_msg!("info/message_log_set", channel);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError::from("No guild found."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
 command!(memberlog(ctx, msg, args) {
     let channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError::from("No channel given.")),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
     };
 
     if channel == 0 {
-        return Err(CommandError::from("Invalid channel."));
+        return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
     if let Some(guild_id) = msg.guild_id() {
@@ -208,17 +206,17 @@ command!(memberlog(ctx, msg, args) {
 
         pool.save_guild_config(&config);
 
-        let s = format!("The member log channel has been set to: <#{}>", channel);
+        let s = get_msg!("info/member_log_set", channel);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError::from("No guild found."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
 command!(inviteguard(ctx, msg, args) {
     let status_str = match args.single::<String>() {
         Ok(val) => val,
-        Err(_) => return Err(CommandError::from("No option given.  Use `enable` or `disable`")),
+        Err(_) => return Err(CommandError::from(get_msg!("error/invalid_option_enable_disable"))),
     };
 
     let mut status;
@@ -231,7 +229,7 @@ command!(inviteguard(ctx, msg, args) {
         status = false;
         s = "Invite guard has been disabled.";
     } else {
-        return Err(CommandError::from("Invalid option.  Use `enable` or `disable`"));
+        return Err(CommandError::from(get_msg!("error/invalid_option_enable_disable")));
     }
 
     if let Some(guild_id) = msg.guild_id() {
@@ -245,7 +243,7 @@ command!(inviteguard(ctx, msg, args) {
 
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError::from("No guild found."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
@@ -325,7 +323,7 @@ command!(roles_set(ctx, msg, args) {
         };
     } else if raw_json.is_empty() && msg.attachments.is_empty() {
         // no message or attachment 
-        return Err(CommandError::from("No configuration provided."));
+        return Err(CommandError::from(get_msg!("error/no_config_given")));
     }
 
     let role_config: serde_json::Map<String, serde_json::Value> = match serde_json::from_str(&raw_json) {
@@ -346,20 +344,20 @@ command!(roles_set(ctx, msg, args) {
 
         pool.save_guild_config(&config);
 
-        let _ = msg.channel_id.say("Updated the guild role config.");
+        let _ = msg.channel_id.say(get_msg!("info/role_config_set"));
     } else {
-        return Err(CommandError::from("No guild."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
 command!(roles_channel(ctx, msg, args) {
     let channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError::from("No channel given.")),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
     };
 
     if channel == 0 {
-        return Err(CommandError::from("Invalid channel."));
+        return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
     if let Some(guild_id) = msg.guild_id() {
@@ -371,10 +369,10 @@ command!(roles_channel(ctx, msg, args) {
 
         pool.save_guild_config(&config);
 
-        let s = format!("The role channel has been set to: <#{}>", channel);
+        let s = get_msg!("The role channel has been set to: <#{}>", channel);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError::from("No guild found."));
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
@@ -391,7 +389,7 @@ command!(roles_get(ctx, msg, _args) {
             let s = format!("```json\n{}\n```", roles_pretty);
             let _ = msg.channel_id.say(&s);
         } else {
-            return Err(CommandError::from("There isn't a role config set."))
+            return Err(CommandError::from(get_msg!("error/no_role_config")))
         }
     }
 });
@@ -417,10 +415,10 @@ command!(mute_role(ctx, msg, args) {
 
             pool.save_guild_config(&config);
 
-            let s = format!("The mute role has been set to: <@&{}>", id);
+            let s = get_msg!("info/mute_role_set", id);
             let _ = msg.channel_id.say(&s);
         } else {
-            return Err(CommandError::from("Invalid role id, mention, or name."));
+            return Err(CommandError::from(get_msg!("error/invalid_role")));
         }
     }    
 });
