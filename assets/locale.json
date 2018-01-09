@@ -1,5 +1,38 @@
 {
-  "error": {
-    "invalid_role": "Invalid role id, mention, or name."
-  }
+    "info": {
+        "role_config_set": "Updated the guild role config.",
+        "role_channel_set": "The role channel has been set to: <#{}>",
+        "mute_role_set": "The mute role has been set to: <@&{}>",
+        "member_log_set": "The member log channel has been set to: <#{}>",
+        "message_log_set": "The message log channel has been set to: <#{}>",
+        "mod_log_set": "The moderation log channel has been set to: <#{}>",
+
+        "leave_message_current": "The current leave message is: {}",
+        "leave_message_none": "There is no leave message set.  You can set one with the placeholders <mention>, <username>, <server>.",
+        "leave_message_disable": "Leave messages have been disabled.",
+        "leave_message_set": "The current leave message has been set to: {}",
+
+        "join_message_current": "The current join message is: {}",
+        "join_message_none": "There is no join message set. You can set one with the placeholders <mention>, <username>, <server>.",
+        "join_message_disable": "Join messages have been disabled.",
+        "join_message_set": "The current join message has been set to: {}",
+
+        "prefix_current": "The prefix in this guild is set to: `{}`",
+        "prefix_set": "The prefix for this server has been set to: `{}`",
+        "prefix_existing": "The prefix for this server is already: `{}`",
+        "prefix_default": "The default prefix is set to `{}`"
+    },
+    "error": {
+        "no_guild": "No guild found.",
+        "no_channel_given": "No channel given.",
+        "no_config_given": "No configuration provided.",
+        "no_role_config": "There isn't a role config set.",
+
+        "invalid_channel": "Invalid channel.",
+        "invalid_role": "Invalid role id, mention, or name.",
+        "invalid_option_enable_disable": "Invalid option.  Use `enable` or `disable`",
+
+        "prefix_no_perms": "You need `MANAGE_GUILD` permissions to set the prefix.",
+        "prefix_no_default": "Expected DEFAULT_PREFIX in the environment."
+    }
 }
