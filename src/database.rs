@@ -59,6 +59,7 @@ impl ConnectionPool {
             log_member: None,
             mute_role: None,
             prefix: None,
+            max_mention: 10,
         };
 
         // get a connection from the pool

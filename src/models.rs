@@ -27,6 +27,7 @@ pub struct GuildConfig {
     pub log_member: Option<i64>,
     pub mute_role: Option<i64>,
     pub prefix: Option<String>,
+    pub max_mention: i32,
 }
 
 #[derive(Insertable)]
@@ -46,6 +47,7 @@ pub struct NewGuildConfig {
     pub log_member: Option<i64>,
     pub mute_role: Option<i64>,
     pub prefix: Option<String>,
+    pub max_mention: i32,
 }
 
 

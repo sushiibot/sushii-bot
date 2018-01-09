@@ -25,8 +25,12 @@ pub fn on_message(ctx: &Context, msg: &Message) {
             return;
         }
 
-        // currently 10, add configurable options later
-        if msg.mentions.len() > 10 {
+        let pool = get_pool(&ctx);
+
+        // get the config
+        let config = pool.get_guild_config(guild.id.0);
+
+        if msg.mentions.len() > config.max_mention as usize {
             // get the member
             let mut member = match guild.member(msg.author.id) {
                 Ok(val) => val,
@@ -36,10 +40,8 @@ pub fn on_message(ctx: &Context, msg: &Message) {
                 }
             };
 
-            let pool = get_pool(&ctx);
-
             // get the mute role
-            let mute_role = match pool.get_guild_config(guild.id.0).mute_role {
+            let mute_role = match config.mute_role {
                 Some(val) => val,
                 None => return,
             };

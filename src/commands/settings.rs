@@ -422,3 +422,24 @@ command!(mute_role(ctx, msg, args) {
         }
     }    
 });
+
+command!(max_mentions(ctx, msg, args) {
+    if let Some(guild) = msg.guild() {
+        let guild = guild.read().unwrap();
+
+        let max_mention = match args.single::<i32>() {
+            Ok(val) => val,
+            Err(_) => return Err(CommandError::from(get_msg!("error/required_number"))),
+        };
+
+        let pool = get_pool(&ctx);
+
+        let mut config = pool.get_guild_config(guild.id.0);
+        config.max_mention = max_mention;
+
+        pool.save_guild_config(&config);
+
+        let s = get_msg!("info/max_mention_set", max_mention);
+        let _ = msg.channel_id.say(&s);
+    }    
+});
