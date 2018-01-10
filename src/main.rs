@@ -173,8 +173,11 @@ fn main() {
                     println!("Error in {}: {:?}", cmd_name, why);
                 }
             })
+            .simple_bucket("rank_bucket", 15)
             .group("Ranking", |g| {
-                g.command("rank", |c| {
+                g.bucket("rank_bucket")
+                    .guild_only(true)
+                    .command("rank", |c| {
                     c.desc("Shows your current rank.").exec(
                         commands::levels::rank,
                     )
