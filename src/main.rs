@@ -200,6 +200,7 @@ fn main() {
             })
             .group("Meta", |g| {
                 g.command("help", |c| c.exec_help(help_commands::with_embeds))
+                    .command("helpp", |c| c.exec_help(help_commands::plain))
                     .command("ping", |c| c.exec_str("Pong!"))
                     .command("latency", |c| {
                         c.desc(
