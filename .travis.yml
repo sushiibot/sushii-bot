@@ -18,4 +18,13 @@ before_script:
 env:
   DATABASE_URL=postgres://postgres@localhost/travisdb
 script:
-  - cargo build --verbose --all
+  - cargo build --release --verbose --all
+cache: cargo
+deploy:
+  provider: releases
+  api_key:
+    secure: "q+Mp2Ok0z1nr/TgvnGuBKViJddMHSRkLYCvIKB53WAzyyo/lA1OKRHRfbBrhe8uamFWTCohMEqOfiB83YKu2dtRe57Bsxv2ZoxdNQ7tJsMNyR0+2dPGvxkmAtWDN13WUA3ht5YJYY26zGuPsS2MaM+ZC33ZiREnA5pmGFtMGBPhStg0kZRiT26eYpKP9XgG+SfP3b7WCdc8ov9o388UZnw0iQ3qoh8lphzd2uFYN/V1+73VzHtf0rCNDhAZTb+hcxqICKqNw8kkVPkiFPjbSbtC/cDd+Q/GDyjyUl7Bi47US9Zu7pknxcvncx25Csz2LRBsKKvSbRZ7UdkdTFQQMwV77qsOH01bs5LX4JMx0eVUq/E6mZ63OdsEprJ13UdWzSr9in9ge+Q/9ELP94V+9ur4YkwuSnx4zE6dMy0buGJ3JDRwnDOLpmlR4ZgB3dh3gNtEx7pcscdTbGqJgoUu7e4sZllWTaPFDSvkX8Gp+NY+j4agGQLDV0oML4BBMxofo6FHOL1eAS7qPMFDdADrV4rrxy04rcnOYqcGapnHsbTnvLs2u5DdrUFBNSmpjCQ+d7FJCX7+0QlsLJkHOwRFFy03Fv2byljJHsUloLVEg5X3HfoQu+jsfICv5/Ti3GTmiub7/vgwYy1GL1s7Ffnzeke6HmHYP6oDYYXiNg9GDD+w="
+  file: "target/release/rust-sbot2"
+  skip_cleanup: true
+  on:
+    tags: true
