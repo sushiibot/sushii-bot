@@ -34,18 +34,7 @@ command!(userinfo(_ctx, msg, args) {
                         .field(|f| f
                             .name("ID")
                             .value(user.id)
-                            .inline(false)
-                        )
-                        .field(|f| f
-                            .name("Created At")
-                            .value(user.created_at().format("%Y-%m-%d %H:%M:%S UTC"))
                         );
-
-                    if let Some(joined_date) = member.joined_at {
-                        e = e.field(|f| f
-                            .name("Joined At")
-                            .value(joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC")));
-                    }
 
                     if let Some(presence) = guild.presences.get(&user.id) {
                         let mut full_status = presence.status.name().to_owned().to_sentence_case();
@@ -73,6 +62,18 @@ command!(userinfo(_ctx, msg, args) {
                             .value("Offline"));
                     }
 
+                    e = e.field(|f| f
+                            .name("Created At")
+                            .value(user.created_at().format("%Y-%m-%d %H:%M:%S UTC"))
+                        );
+
+                    if let Some(joined_date) = member.joined_at {
+                        e = e.field(|f| f
+                            .name("Joined At")
+                            .value(joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC")));
+                    }
+
+
                     // AUTHOR - nick - tag [bot]
 
                     let mut author_name;
@@ -93,6 +94,8 @@ command!(userinfo(_ctx, msg, args) {
                         a.name(&author_name)
                         .icon_url(&user.face())
                     );
+
+                    e = e.thumbnail(&user.face());
 
                     // roles
                     let roles = match member.roles() {
