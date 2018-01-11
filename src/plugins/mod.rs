@@ -1,7 +1,6 @@
 // pub mod roles;
 // pub mod bans;
 // pub mod gallery;
-// pub mod mute;
 #[macro_use]
 pub mod macros;
 

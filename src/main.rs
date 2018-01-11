@@ -224,6 +224,12 @@ fn main() {
                         .required_permissions(Permissions::BAN_MEMBERS)
                         .exec(commands::moderation::ban::ban)
                     })
+                    .command("mute", |c| {
+                        c.usage("[mention or id]")
+                        .desc("Mutes a member.")
+                        .required_permissions(Permissions::BAN_MEMBERS)
+                        .exec(commands::moderation::mute::mute)
+                    })
             })
             .group("Settings", |g| {
                 g.guild_only(true)
