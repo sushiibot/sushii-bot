@@ -39,6 +39,11 @@ command!(mute(ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_member"))),
     };
 
+    // check if user is already muted
+    if let Some(_) = member.roles.iter().find(|x| x.0 == mute_role as u64) {
+        return Err(CommandError::from(get_msg!("error/already_muted")));
+    }
+
     let user = member.user.read().unwrap().clone();
 
     // add a pending case, remove if ban errored
