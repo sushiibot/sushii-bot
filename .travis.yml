@@ -7,16 +7,16 @@ matrix:
   allow_failures:
     - rust: beta
     - rust: nightly
-services:
-  - postgresql
-addons:
-  postgresql: "9.6"
-before_script:
-  - psql -c 'create database travisdb;' -U postgres
-  - cargo install diesel_cli --force
-  - diesel migration run
-env:
-  DATABASE_URL=postgres://postgres@localhost/travisdb
+# services:
+#   - postgresql
+# addons:
+#   postgresql: "9.6"
+# before_script:
+#   - psql -c 'create database travisdb;' -U postgres
+#   - cargo install diesel_cli --force
+#   - diesel migration run
+# env:
+#  DATABASE_URL=postgres://postgres@localhost/travisdb
 script:
   - cargo build --release --verbose --all
 cache: cargo
