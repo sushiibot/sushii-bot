@@ -1,10 +1,8 @@
 use serenity::model::Message;
 use serenity::prelude::Context;
 
-use utils::config::get_pool;
+use database::ConnectionPool;
 
-pub fn on_message(ctx: &Context, msg: &Message) {
-    let pool = get_pool(&ctx);
-
+pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     pool.log_message(msg);
 }

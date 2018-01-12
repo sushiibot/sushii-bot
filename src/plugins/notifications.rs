@@ -2,9 +2,9 @@ use serenity::model::Message;
 use serenity::model::UserId;
 use serenity::prelude::*;
 
-use database;
+use database::ConnectionPool;
 
-pub fn on_message(ctx: &Context, msg: &Message) {
+pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     // skip empty messages, images / embeds / etc
     if msg.content.is_empty() {
         return;
@@ -13,9 +13,6 @@ pub fn on_message(ctx: &Context, msg: &Message) {
     if msg.author.bot {
         return;
     }
-
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
     let guild_id = match msg.guild_id() {
         Some(guild) => guild.0,

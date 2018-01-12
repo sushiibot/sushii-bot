@@ -2,9 +2,9 @@ use serenity::model::Message;
 use serenity::prelude::Context;
 use serenity::CACHE;
 
-use utils::config::get_pool;
+use database::ConnectionPool;
 
-pub fn on_message(ctx: &Context, msg: &Message) {
+pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     if let Some(guild) = msg.guild() {
         let guild = guild.read().unwrap();
 
@@ -24,8 +24,6 @@ pub fn on_message(ctx: &Context, msg: &Message) {
         if guild.member_permissions(msg.author.id).manage_guild() {
             return;
         }
-
-        let pool = get_pool(&ctx);
 
         // get the config
         let config = pool.get_guild_config(guild.id.0);
