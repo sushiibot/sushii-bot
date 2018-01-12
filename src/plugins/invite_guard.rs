@@ -2,10 +2,10 @@ use serenity::model::Message;
 use serenity::prelude::Context;
 use serenity::CACHE;
 
-use utils::config::get_config_from_context;
 use regex::Regex;
+use database::ConnectionPool;
 
-pub fn on_message(ctx: &Context, msg: &Message) {
+pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     if let Some(guild) = msg.guild() {
         let guild = guild.read().unwrap();
 
@@ -22,7 +22,7 @@ pub fn on_message(ctx: &Context, msg: &Message) {
         }
 
         // check the guild config if inviteguard is enabled
-        let invite_guard = match get_config_from_context(&ctx, guild.id.0).invite_guard {
+        let invite_guard = match pool.get_guild_config(guild.id.0).invite_guard {
             Some(val) => val,
             None => return,
         };

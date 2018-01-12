@@ -1,8 +1,9 @@
 use serenity::model::Message;
 use serenity::prelude::Context;
 use rand::{thread_rng, Rng};
+use database::ConnectionPool;
 
-pub fn on_message(_: &Context, msg: &Message) {
+pub fn on_message(_ctx: &Context, _pool: &ConnectionPool, msg: &Message) {
     // ignore messages other than "hi" and ignore bots
     if msg.content != "hi" || msg.author.bot {
         return ();

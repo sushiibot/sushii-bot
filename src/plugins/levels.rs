@@ -1,11 +1,8 @@
 use serenity::model::Message;
 use serenity::prelude::Context;
-use database;
+use database::ConnectionPool;
 
-pub fn on_message(ctx: &Context, msg: &Message) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
-
+pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     let guild_id = match msg.guild_id() {
         Some(guild) => guild.0,
         None => return,
