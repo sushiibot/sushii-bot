@@ -39,6 +39,18 @@ table! {
 }
 
 table! {
+    messages (id) {
+        id -> Int8,
+        author -> Int8,
+        tag -> Text,
+        channel -> Int8,
+        guild -> Nullable<Int8>,
+        created -> Timestamp,
+        content -> Text,
+    }
+}
+
+table! {
     mod_log (id) {
         id -> Int4,
         case_id -> Int4,
@@ -87,6 +99,7 @@ allow_tables_to_appear_in_same_query!(
     events,
     guilds,
     levels,
+    messages,
     mod_log,
     notifications,
     reminders,
