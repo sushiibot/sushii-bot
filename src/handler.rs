@@ -143,7 +143,8 @@ impl EventHandler for Handler {
             notifications,
             user_info_activity,
             invite_guard,
-            anti_spam
+            anti_spam,
+            message_log
         );
     }
 

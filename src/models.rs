@@ -5,6 +5,7 @@ use schema::reminders;
 use schema::notifications;
 use schema::users;
 use schema::mod_log;
+use schema::messages;
 
 use chrono::naive::NaiveDateTime;
 use diesel::types::*;
@@ -211,4 +212,27 @@ pub struct NewModAction<'a> {
     pub action_time: &'a NaiveDateTime,
     pub msg_id: Option<i64>,
     pub pending: bool,
+}
+
+#[derive(Queryable, Clone)]
+pub struct Message {
+    pub id: i64,
+    pub author: i64,
+    pub tag: String,
+    pub channel: i64,
+    pub guild: Option<i64>,
+    pub created: NaiveDateTime,
+    pub content: String,
+}
+
+#[derive(Insertable)]
+#[table_name = "messages"]
+pub struct NewMessage<'a> {
+    pub id: i64,
+    pub author: i64,
+    pub tag: &'a str,
+    pub channel: i64,
+    pub guild: Option<i64>,
+    pub created: NaiveDateTime,
+    pub content: &'a str,
 }

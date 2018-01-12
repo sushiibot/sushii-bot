@@ -13,3 +13,4 @@ pub mod notifications;
 pub mod user_info_activity;
 pub mod invite_guard;
 pub mod anti_spam;
+pub mod message_log;

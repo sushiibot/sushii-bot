@@ -609,6 +609,29 @@ impl ConnectionPool {
             .first::<ModAction>(&*conn)
             .ok()
     }
+
+    pub fn log_message(&self, msg: &serenity::model::Message) {
+        use schema::messages;
+
+        // get a connection from the pool
+        let conn = (*&self.pool).get().unwrap();
+
+        let new_message = NewMessage {
+            id: msg.id.0 as i64,
+            author: msg.author.id.0 as i64,
+            tag: &msg.author.tag(),
+            channel: msg.channel_id.0 as i64,
+            guild: msg.guild_id().map(|x| x.0 as i64),
+            created: msg.timestamp.naive_utc(),
+            content: &msg.content,
+        };
+
+        if let Err(e) = diesel::insert_into(messages::table)
+            .values(&new_message)
+            .execute(&*conn) {
+                error!("Error while logging new message: {}", e);
+            }
+    }
 }
 
 
