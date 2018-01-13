@@ -8,6 +8,7 @@ use diesel::ExpressionMethods;
 use diesel::dsl::max;
 
 use r2d2::Pool;
+use r2d2::PooledConnection;
 use r2d2_diesel::ConnectionManager;
 
 use serenity;
@@ -39,6 +40,11 @@ pub fn init() -> ConnectionPool {
 }
 
 impl ConnectionPool {
+    pub fn connection(&self) -> PooledConnection<ConnectionManager<PgConnection>> {
+        // get a connection from the pool
+        (*&self.pool).get().unwrap()
+    }
+
     /// Creates a new config for a guild,
     /// ie when the bot joins a new guild.
     pub fn new_guild(&self, guild_id: u64) -> GuildConfig {
@@ -62,8 +68,7 @@ impl ConnectionPool {
             max_mention: 10,
         };
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         diesel::insert_into(guilds::table)
             .values(&new_guild_obj)
@@ -75,8 +80,7 @@ impl ConnectionPool {
     pub fn get_guild_config(&self, guild_id: u64) -> GuildConfig {
         use schema::guilds::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         let rows = guilds
             .filter(id.eq(guild_id as i64))
@@ -94,8 +98,7 @@ impl ConnectionPool {
         use schema::guilds;
         use schema::guilds::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         match diesel::update(guilds::table)
             .filter(id.eq(config.id))
@@ -119,8 +122,7 @@ impl ConnectionPool {
     pub fn set_prefix(&self, guild_id: u64, new_prefix: &str) -> bool {
         use schema::guilds::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         // fetch event
         let result = guilds
@@ -161,8 +163,7 @@ impl ConnectionPool {
         use schema::events;
         use schema::events::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         // fetch event
         let rows = events
@@ -193,8 +194,7 @@ impl ConnectionPool {
     pub fn get_events(&self) -> Result<Vec<EventCounter>, Error> {
         use schema::events::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         let results = events
             .order(name.asc())
@@ -206,8 +206,7 @@ impl ConnectionPool {
     pub fn reset_events(&self) -> Result<(), Error> {
         use schema::events::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         diesel::update(events)
             .set(count.eq(0))
@@ -222,8 +221,7 @@ impl ConnectionPool {
         use schema::levels;
         use schema::levels::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         let user = levels
             .filter(user_id.eq(id_user as i64))
@@ -272,8 +270,7 @@ impl ConnectionPool {
     }
 
     pub fn get_level(&self, id_user: u64, id_guild: u64) -> Option<UserLevelRanked> {
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         // get percentile ranks
         diesel::sql_query(r#"
@@ -298,8 +295,7 @@ impl ConnectionPool {
         use schema::users;
         use schema::users::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         let user = users
             .filter(id.eq(id_user as i64))
@@ -350,8 +346,7 @@ impl ConnectionPool {
     pub fn get_user_activity_message(&self, id_user: u64) -> Option<User> {
         use schema::users::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         users
             .filter(id.eq(id_user as i64))
@@ -364,8 +359,7 @@ impl ConnectionPool {
     pub fn add_reminder(&self, id_user: u64, content: &str, time: &NaiveDateTime) {
         use schema::reminders;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         // get current timestamp
         let utc: DateTime<Utc> = Utc::now();
@@ -387,8 +381,7 @@ impl ConnectionPool {
     pub fn get_overdue_reminders(&self) -> Option<Vec<Reminder>> {
         use schema::reminders::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         // get current timestamp
         let utc: DateTime<Utc> = Utc::now();
@@ -403,8 +396,7 @@ impl ConnectionPool {
     pub fn remove_reminder(&self, reminder_id: i32) {
         use schema::reminders::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         diesel::delete(reminders.filter(id.eq(reminder_id)))
             .execute(&*conn)
@@ -414,8 +406,7 @@ impl ConnectionPool {
     pub fn get_reminders(&self, id_user: u64) -> Option<Vec<Reminder>> {
         use schema::reminders::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         reminders
             .filter(user_id.eq(id_user as i64))
@@ -427,8 +418,7 @@ impl ConnectionPool {
     pub fn new_notification(&self, user: u64, guild: u64, keyword: &str) {
         use schema::notifications;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         let new_notification = NewNotification {
             user_id: user as i64,
@@ -448,8 +438,7 @@ impl ConnectionPool {
 
         sql_function!(strpos, strpos_t, (string: diesel::types::Text, substring: diesel::types::Text) -> diesel::types::Integer);
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         notifications
             .filter(guild_id.eq(guild as i64))
@@ -462,8 +451,7 @@ impl ConnectionPool {
     pub fn list_notifications(&self, user: u64) -> Option<Vec<Notification>> {
         use schema::notifications::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         notifications
             .filter(user_id.eq(user as i64))
@@ -474,8 +462,7 @@ impl ConnectionPool {
     pub fn delete_notification(&self, user: u64, guild: u64, kw: &str) -> bool {
         use schema::notifications::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         let result = diesel::delete(
             notifications
@@ -503,8 +490,7 @@ impl ConnectionPool {
         
         let now = now_utc();
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         // get a new case id
         let new_case_id = mod_log
@@ -538,8 +524,7 @@ impl ConnectionPool {
     pub fn remove_mod_action(&self, guild: u64, user: &serenity::model::User, case: i32) {
         use schema::mod_log::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         if let Err(e) = diesel::delete(
             mod_log
@@ -556,8 +541,7 @@ impl ConnectionPool {
         use schema::mod_log;
         use schema::mod_log::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         // id/entry_id is the unique global serial id, not the case id
         diesel::update(mod_log::table)
@@ -570,8 +554,7 @@ impl ConnectionPool {
     pub fn get_latest_mod_action(&self, guild: u64) -> i32 {
         use schema::mod_log::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         mod_log
             .select(case_id)
@@ -584,8 +567,7 @@ impl ConnectionPool {
     pub fn fetch_mod_actions(&self, guild: u64, lower: i32, upper: i32) -> Option<Vec<ModAction>> {
         use schema::mod_log::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         mod_log
             .filter(guild_id.eq(guild as i64))
@@ -598,8 +580,7 @@ impl ConnectionPool {
     pub fn get_pending_mod_actions(&self, mod_action: &str, guild: u64, user: u64) -> Option<ModAction> {
         use schema::mod_log::dsl::*;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         mod_log
             .filter(guild_id.eq(guild as i64))
@@ -613,8 +594,7 @@ impl ConnectionPool {
     pub fn log_message(&self, msg: &serenity::model::Message) {
         use schema::messages;
 
-        // get a connection from the pool
-        let conn = (*&self.pool).get().unwrap();
+        let conn = self.connection();
 
         let new_message = NewMessage {
             id: msg.id.0 as i64,
