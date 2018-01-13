@@ -17,6 +17,9 @@ extern crate r2d2;
 extern crate r2d2_diesel;
 
 #[macro_use]
+extern crate diesel_migrations;
+
+#[macro_use]
 extern crate lazy_static;
 
 extern crate dotenv;
@@ -28,6 +31,7 @@ extern crate chrono_humanize;
 extern crate rand;
 extern crate inflector;
 extern crate regex;
+extern crate darksky;
 
 pub mod schema;
 pub mod models;
@@ -60,6 +64,7 @@ impl Key for ConnectionPool {
     type Value = ConnectionPool;
 }
 
+embed_migrations!("./migrations");
 
 fn main() {
     dotenv().ok();
