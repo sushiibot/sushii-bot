@@ -7,6 +7,8 @@ use diesel::RunQueryDsl;
 use diesel::ExpressionMethods;
 use diesel::dsl::max;
 
+use diesel_migrations::run_pending_migrations;
+
 use r2d2::Pool;
 use r2d2::PooledConnection;
 use r2d2_diesel::ConnectionManager;
@@ -36,13 +38,21 @@ pub fn init() -> ConnectionPool {
         "Failed to create pool.",
     );
 
+    // run pending (embedded) migrations 
+    info!("Running pending migrations...");
+    let conn = (&pool).get().unwrap();
+    if let Err(e) = run_pending_migrations(&*conn) {
+        error!("Error while running pending migrations: {}", e);
+    };
+
+
     ConnectionPool { pool }
 }
 
 impl ConnectionPool {
     pub fn connection(&self) -> PooledConnection<ConnectionManager<PgConnection>> {
         // get a connection from the pool
-        (*&self.pool).get().unwrap()
+        &self.pool.get().unwrap()
     }
 
     /// Creates a new config for a guild,
