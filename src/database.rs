@@ -52,7 +52,7 @@ pub fn init() -> ConnectionPool {
 impl ConnectionPool {
     pub fn connection(&self) -> PooledConnection<ConnectionManager<PgConnection>> {
         // get a connection from the pool
-        &self.pool.get().unwrap()
+        self.pool.get().unwrap()
     }
 
     /// Creates a new config for a guild,
