@@ -24,3 +24,4 @@ rand = "0.3.18"
 Inflector = "0.11.1"
 regex = "0.2.3"
 darksky = { version = "0.7", features = ["reqwest"]}
+tzdata = "0.4.1"
