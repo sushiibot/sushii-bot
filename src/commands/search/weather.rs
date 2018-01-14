@@ -10,10 +10,11 @@ use env;
 const GOOGLE_MAPS_URL: &str = "https://maps.googleapis.com/maps/api/geocode/json?address={ADDRESS}&key={KEY}";
 
 command!(weather(_ctx, msg, args) {
-    let location = match args.single::<String>() {
-        Ok(val) => val.replace(' ', "+"),
-        Err(_) => return Err(CommandError::from(get_msg!("error/weather_none_given"))),
-    };
+    let location = match args.full().replace(' ', "+");
+
+    if location.is_empty() {
+        return Err(CommandError::from(get_msg!("error/weather_none_given")));
+    }
 
     let _ = msg.channel_id.broadcast_typing();
 
@@ -73,7 +74,7 @@ command!(weather(_ctx, msg, args) {
         Some(icon) => match icon {
             Icon::ClearDay => ":sunny:",
             Icon::ClearNight => ":night_with_stars:",
-            Icon::Cloudy => ":cloudy:",
+            Icon::Cloudy => ":cloud:",
             Icon::Fog => ":foggy:",
             Icon::Hail | Icon::Sleet | Icon::Snow => ":cloud_snow:",
             Icon::PartlyCloudyDay => ":partly_sunny:",
