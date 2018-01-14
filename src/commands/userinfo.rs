@@ -5,8 +5,9 @@ use serenity::model::UserId;
 use inflector::Inflector;
 
 use utils::user::get_id;
+use utils::config::get_pool;
 
-command!(userinfo(_ctx, msg, args) {
+command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
     let user = match args.single::<String>() {
         Ok(val) => val,
@@ -27,6 +28,9 @@ command!(userinfo(_ctx, msg, args) {
         if let Ok(member) = member {
             let user = member.user.read().unwrap();
             println!("read user");
+
+            let pool = get_pool(&ctx);
+            let last_message = pool.get_user_last_message(user.id.0);
 
             let _ = msg.channel_id.send_message(|m| 
                 m.embed(|e| {
@@ -70,7 +74,15 @@ command!(userinfo(_ctx, msg, args) {
                     if let Some(joined_date) = member.joined_at {
                         e = e.field(|f| f
                             .name("Joined At")
-                            .value(joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC")));
+                            .value(joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC"))
+                        );
+                    }
+
+                    if let Some(last_msg) = last_message {
+                        e = e.field(|f| f
+                            .name("Last Message")
+                            .value(last_msg.format("%Y-%m-%d %H:%M:%S UTC"))
+                        );
                     }
 
 

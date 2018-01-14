@@ -344,6 +344,8 @@ impl ConnectionPool {
                 msg_activity: &init_activity,
                 rep: 0,
                 last_rep: None,
+                latitude: None,
+                longitude: None,
             };
 
             diesel::insert_into(users::table)
@@ -362,6 +364,17 @@ impl ConnectionPool {
             .filter(id.eq(id_user as i64))
             .load::<User>(&*conn)
             .ok().map(|x: Vec<User>| x[0].clone())
+    }
+
+    pub fn get_user_last_message(&self, id_user: u64) -> Option<NaiveDateTime> {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .filter(id.eq(id_user as i64))
+            .load::<User>(&*conn)
+            .ok().map(|x: Vec<User>| x[0].last_msg.clone())
     }
 
     /// REMINDERS
