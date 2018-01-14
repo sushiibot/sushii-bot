@@ -346,6 +346,7 @@ impl ConnectionPool {
                 last_rep: None,
                 latitude: None,
                 longitude: None,
+                address: None,
             };
 
             diesel::insert_into(users::table)
@@ -634,6 +635,37 @@ impl ConnectionPool {
             .execute(&*conn) {
                 error!("Error while logging new message: {}", e);
             }
+    }
+
+    pub fn save_weather_location(&self, id_user: u64, lat: f64, lng: f64, loc: &str) {
+        use schema::users;
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        match diesel::update(users::table)
+            .filter(id.eq(id_user as i64))
+            .set((
+                latitude.eq(Some(lat)),
+                longitude.eq(Some(lng)),
+                address.eq(Some(loc))
+            ))
+            .execute(&*conn) {
+                Err(e) => error!("Error while updating a user weather location: {}", e),
+                _ => {},
+        };
+    }
+
+    pub fn get_weather_location(&self, id_user: u64) -> Option<(Option<f64>, Option<f64>, Option<String>)> {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .filter(id.eq(id_user as i64))
+            .select((latitude, longitude, address))
+            .first(&*conn)
+            .ok()
     }
 }
 

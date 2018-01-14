@@ -171,6 +171,9 @@ pub struct User {
     pub msg_activity: Vec<i32>,
     pub rep: i32,
     pub last_rep: Option<NaiveDateTime>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub address: Option<String>,
 }
 
 #[derive(Insertable)]
@@ -181,6 +184,9 @@ pub struct NewUser<'a> {
     pub msg_activity: &'a Vec<i32>,
     pub rep: i32,
     pub last_rep: Option<&'a NaiveDateTime>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub address: Option<&'a str>,
 }
 
 #[derive(Queryable, AsChangeset, Clone)]

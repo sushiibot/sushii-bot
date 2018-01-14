@@ -8,53 +8,97 @@ use darksky::models::Icon;
 use env;
 
 use utils::time::now_utc;
+use utils::config::get_pool;
 
 const GOOGLE_MAPS_URL: &str = "https://maps.googleapis.com/maps/api/geocode/json?address={ADDRESS}&key={KEY}";
 
-command!(weather(_ctx, msg, args) {
-    let location = args.full().replace(' ', "+");
+command!(weather(ctx, msg, args) {
+    let darksky_key = env::var("DARK_SKY_KEY").expect("Expected DARK_SKY_KEY to be set in environment");
+    let google_maps_key = env::var("GOOGLE_MAPS_KEY").expect("Expected GOOGLE_MAPS_KEY to be set in environment");
 
-    if location.is_empty() {
-        return Err(CommandError::from(get_msg!("error/weather_none_given")));
+    let pool = get_pool(&ctx);
+    let lat;
+    let lng;
+    let address;
+    let mut should_save = false;
+
+
+    // check database for a saved location
+    if args.is_empty() {
+        let saved = match pool.get_weather_location(msg.author.id.0) {
+            Some((a, b, c)) => (a, b, c),
+            None => return Err(CommandError::from(get_msg!("error/weather_none_given"))),
+        };
+
+        if let Some(saved_lat) = saved.0 {
+            lat = saved_lat;
+        } else {
+            return Err(CommandError::from(get_msg!("error/weather_invalid_save")));
+        }
+
+        if let Some(saved_lng) = saved.1 {
+            lng = saved_lng;
+        } else {
+            return Err(CommandError::from(get_msg!("error/weather_invalid_save")));
+        }
+
+        if let Some(saved_address) = saved.2 {
+            address = saved_address;
+        } else {
+            return Err(CommandError::from(get_msg!("error/weather_invalid_save")));
+        }
+    } else {
+        if let Ok(save) = args.single_n::<String>() {
+            if save == "save" {
+                should_save = true;
+                // remove the save
+                let _ = args.skip();
+            }
+        }
+
+        let location = args.full().replace(' ', "+");
+
+        let url = GOOGLE_MAPS_URL.replace("{ADDRESS}", &location).replace("{KEY}", &google_maps_key);
+
+        let mut resp = match reqwest::get(&url) {
+            Ok(val) => val,
+            Err(e) => {
+                error!("Error getting geocode: {}", e);
+                return Err(CommandError::from(get_msg!("error/google_maps_fetch_failed")));
+            }
+        };
+
+        let maps_data: Value = match resp.json() {
+            Ok(val) => val,
+            Err(e) => {
+                error!("Error deserializing geocode data: {}", e);
+                return Err(CommandError::from(get_msg!("error/google_maps_deserialize_failed")));
+            }
+        };
+
+        address = match maps_data.pointer("/results/0/formatted_address").and_then(|x| x.as_str()) {
+            Some(val) => val.to_string(),
+            None => return Err(CommandError::from(get_msg!("error/google_maps_missing_address"))),
+        };
+
+        lat = match maps_data.pointer("/results/0/geometry/location/lat").and_then(|x| x.as_f64()) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/google_maps_missing_coord"))),
+        };
+
+        lng = match maps_data.pointer("/results/0/geometry/location/lng").and_then(|x| x.as_f64()) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/google_maps_missing_coord"))),
+        };
+
+        if should_save {
+            pool.save_weather_location(msg.author.id.0, lat, lng, &address);
+        }
     }
 
     let _ = msg.channel_id.broadcast_typing();
 
-    let darksky_key = env::var("DARK_SKY_KEY").expect("Expected DARK_SKY_KEY to be set in environment");
-    let google_maps_key = env::var("GOOGLE_MAPS_KEY").expect("Expected GOOGLE_MAPS_KEY to be set in environment");
-
-    let url = GOOGLE_MAPS_URL.replace("{ADDRESS}", &location).replace("{KEY}", &google_maps_key);
-
-    let mut resp = match reqwest::get(&url) {
-        Ok(val) => val,
-        Err(e) => {
-            error!("Error getting geocode: {}", e);
-            return Err(CommandError::from(get_msg!("error/google_maps_fetch_failed")));
-        }
-    };
-
-    let maps_data: Value = match resp.json() {
-        Ok(val) => val,
-        Err(e) => {
-            error!("Error deserializing geocode data: {}", e);
-            return Err(CommandError::from(get_msg!("error/google_maps_deserialize_failed")));
-        }
-    };
-
-    let address = match maps_data.pointer("/results/0/formatted_address").and_then(|x| x.as_str()) {
-        Some(val) => val,
-        None => return Err(CommandError::from(get_msg!("error/google_maps_missing_address"))),
-    };
-
-    let lat = match maps_data.pointer("/results/0/geometry/location/lat").and_then(|x| x.as_f64()) {
-        Some(val) => val,
-        None => return Err(CommandError::from(get_msg!("error/google_maps_missing_coord"))),
-    };
-
-    let lng = match maps_data.pointer("/results/0/geometry/location/lng").and_then(|x| x.as_f64()) {
-        Some(val) => val,
-        None => return Err(CommandError::from(get_msg!("error/google_maps_missing_coord"))),
-    };
+    
 
     // partially derived from 
     // https://github.com/zeyla/nanobot/blob/0b543692e810344a097f4511e90b414d4184140c/src/bot/plugins/misc.rs
@@ -113,7 +157,7 @@ command!(weather(_ctx, msg, args) {
     };
 
     let cloud_cover = if let Some(cloud_cover) = currently.cloud_cover {
-        (cloud_cover * 100.0).to_string()
+        ((cloud_cover * 100.0) as u8).to_string()
     } else {
         "N/A".to_owned()
     };
