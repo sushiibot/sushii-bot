@@ -56,7 +56,6 @@
         "google_maps_missing_coord": "Location data invalid, missing coordinate data.",
         "google_maps_missing_address": "Location data invalid, missing address data.",
         "weather_none_given": "Please provide a location to look up the weather.",
-        "weather_invalid_save": "Saved location data is missing or invalid, please provide a location.  You can save a location with `weather save [location]`.",
-        "weather_failed_parse_timezone": "Failed to parse IANA timezone name."
+        "weather_invalid_save": "Saved location data is missing or invalid, please provide a location.  You can save a location with `weather save [location]`."
     }
 }
