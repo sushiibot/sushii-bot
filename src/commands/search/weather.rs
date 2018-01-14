@@ -142,10 +142,12 @@ command!(weather(ctx, msg, args) {
     let wind_direction = if let Some(bearing) = currently.wind_bearing {
         let dirs = vec!["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
                         "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+        let emojis = vec![":arrow_up:", ":arrow_upper_right:", ":arrow_right:", ":arrow_lower_right:", 
+                            ":arrow_down:", ":arrow_lower_left:", ":arrow_left:", ":arrow_upper_left:"];
         
         let dir = ((bearing as f64 + 11.25) / 22.5) as usize;
 
-        format!("{} ({}°)", dirs[dir % 16].to_owned(), bearing)
+        format!("{} {} ({}°)", emojis[(dir / 2) % 7], dirs[dir % 15].to_owned(), bearing)
     } else {
         "N/A".to_owned()
     };
@@ -171,7 +173,7 @@ command!(weather(ctx, msg, args) {
 
         let phase = ((moon_phase + 0.0625) / 0.125) as usize;
 
-        format!("{} {}", emojis[phase], lunations[phase])
+        format!("{} {}", emojis[phase % 7], lunations[phase % 7])
     } else {
         "N/A".to_owned()
     };
