@@ -9,6 +9,7 @@ use env;
 
 use utils::time::now_utc;
 use utils::config::get_pool;
+use tzdata;
 
 const GOOGLE_MAPS_URL: &str = "https://maps.googleapis.com/maps/api/geocode/json?address={ADDRESS}&key={KEY}";
 
@@ -22,6 +23,7 @@ command!(weather(ctx, msg, args) {
     let address;
     let mut should_save = false;
 
+    let _ = msg.channel_id.broadcast_typing();
 
     // check database for a saved location
     if args.is_empty() {
@@ -95,9 +97,6 @@ command!(weather(ctx, msg, args) {
             pool.save_weather_location(msg.author.id.0, lat, lng, &address);
         }
     }
-
-    let _ = msg.channel_id.broadcast_typing();
-
     
 
     // partially derived from 
@@ -134,11 +133,54 @@ command!(weather(ctx, msg, args) {
 
     let icon = get_icon(&currently.icon);
     let icon_weekly = get_icon(&daily.icon);
-    
+
+    // timezone info
+    let tz = match tzdata::Timezone::new(&forecast.timezone) {
+        Ok(val) => val,
+        Err(e) => {
+            error!("Failed parsing timezone: {}", e);
+            return Err(CommandError::from(get_msg!("error/weather_failed_parse_timezone")));
+        }
+    };
+
+    // temperatures
     let temp = get_temp(currently.temperature);
+    let temp_high = get_temp(today.temperature_high);
+    let temp_high_time = if let Some(time) = today.temperature_high_time {
+        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
+    } else {
+        "N/A".to_owned()
+    };
+
+    let temp_low = get_temp(today.temperature_low);
+    let temp_low_time = if let Some(time) = today.temperature_low_time {
+        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
+    } else {
+        "N/A".to_owned()
+    };
+
+    let sunrise_time = if let Some(time) = today.sunrise_time {
+        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
+    } else {
+        "N/A".to_owned()
+    };
+
+    let sunset_time = if let Some(time) = today.sunset_time {
+        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
+    } else {
+        "N/A".to_owned()
+    };
+
+    let pressure = if let Some(pressure) = today.pressure {
+        format!("{} mbar", pressure)
+    } else {
+        "N/A".to_owned()
+    };
+
     let apparent_temp = get_temp(currently.apparent_temperature);
     let dew_point = get_temp(currently.dew_point);
     let wind_speed = currently.wind_speed.map_or("N/A".to_owned(), |s| s.to_string());
+    let wind_gust = currently.wind_gust.map_or("N/A".to_owned(), |s| s.to_string());
     let wind_direction = if let Some(bearing) = currently.wind_bearing {
         let dirs = vec!["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
                         "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
@@ -160,6 +202,12 @@ command!(weather(ctx, msg, args) {
 
     let cloud_cover = if let Some(cloud_cover) = currently.cloud_cover {
         ((cloud_cover * 100.0) as u8).to_string()
+    } else {
+        "N/A".to_owned()
+    };
+
+    let visibility = if let Some(visibility) = currently.visibility {
+        format!("{} mi", visibility).to_string()
     } else {
         "N/A".to_owned()
     };
@@ -206,15 +254,31 @@ command!(weather(ctx, msg, args) {
                 .name("This Week")
                 .value(&format!("{} {}", icon_weekly, summary_weekly))
                 .inline(false)
-            )
+            ) // temperature row
             .field(|f| f
                 .name("Temperature")
-                .value(&temp)
+                .value(&format!("{}\nFeels like {}", temp, apparent_temp))
             )
             .field(|f| f
-                .name("Apparent Temperature")
-                .value(&apparent_temp)
+                .name("Temperature High")
+                .value(&format!("{}\nat {}", temp_high, temp_high_time))
             )
+            .field(|f| f
+                .name("Temperature Low")
+                .value(&format!("{}\nat {}", temp_low, temp_low_time))
+            ) // sunrise row
+            .field(|f| f
+                .name("Sunrise Time")
+                .value(&sunrise_time)
+            )
+            .field(|f| f
+                .name("Sunset Time")
+                .value(&sunset_time)
+            )
+            .field(|f| f
+                .name("Pressure")
+                .value(&pressure)
+            ) // other row
             .field(|f| f
                 .name("Precipitation %")
                 .value(&format!("{}%", precip_probability))
@@ -226,14 +290,22 @@ command!(weather(ctx, msg, args) {
             .field(|f| f
                 .name("Dew Point")
                 .value(&dew_point)
+            ) // wind row
+            .field(|f| f
+                .name("Wind Direction")
+                .value(&wind_direction)
+            )
+            .field(|f| f
+                .name("Wind Gust")
+                .value(&format!("{} m/s", wind_gust))
             )
             .field(|f| f
                 .name("Wind Speed")
                 .value(&format!("{} m/s", wind_speed))
-            )
+            ) // other row
             .field(|f| f
-                .name("Wind Direction")
-                .value(&wind_direction)
+                .name("Visibility")
+                .value(&visibility)
             )
             .field(|f| f
                 .name("Cloud Cover")

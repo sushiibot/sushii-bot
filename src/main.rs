@@ -32,6 +32,7 @@ extern crate rand;
 extern crate inflector;
 extern crate regex;
 extern crate darksky;
+extern crate tzdata;
 
 pub mod schema;
 pub mod models;
