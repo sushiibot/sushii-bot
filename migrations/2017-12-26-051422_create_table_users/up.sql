@@ -4,5 +4,8 @@ CREATE TABLE users (
     last_msg TIMESTAMP NOT NULL,
     msg_activity INTEGER[] NOT NULL,
     rep INTEGER NOT NULL,
-    last_rep TIMESTAMP
+    last_rep TIMESTAMP,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    address TEXT
 )

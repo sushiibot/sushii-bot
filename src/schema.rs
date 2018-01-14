@@ -92,6 +92,9 @@ table! {
         msg_activity -> Array<Int4>,
         rep -> Int4,
         last_rep -> Nullable<Timestamp>,
+        latitude -> Nullable<Float8>,
+        longitude -> Nullable<Float8>,
+        address -> Nullable<Text>,
     }
 }
 
