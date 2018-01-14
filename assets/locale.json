@@ -24,7 +24,8 @@
 
         "max_mention_set": "The maximum mention limit was set to `{}`",
 
-        "member_muted": "Muted member {} ({})"
+        "member_muted": "Muted member {} ({})",
+        "weather_saved_location": "Saved a new location.  You won't have to pass a location argument to get the weather of this location."
     },
     "error": {
         "no_guild": "No guild found.",

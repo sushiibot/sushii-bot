@@ -183,8 +183,12 @@ command!(weather(ctx, msg, args) {
 
     let precip_probability = currently.precip_probability.map_or(0u8, |v| v as u8);
 
-    let _ = msg.channel_id.send_message(|m| m
-       .embed(|e| e
+    let _ = msg.channel_id.send_message(|m| {
+        let mut m = m;
+        if should_save {
+            m = m.content(get_msg!("info/weather_saved_location"));
+        }
+        m.embed(|e| e
             .author(|a| a
                 .name(&address)
                 .icon_url("https://darksky.net/images/darkskylogo.png")
@@ -242,7 +246,7 @@ command!(weather(ctx, msg, args) {
             )
             .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string())
        )
-    );
+    });
 });
 
 
