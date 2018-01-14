@@ -3,14 +3,13 @@ use reqwest;
 use serde_json::Value;
 
 use darksky::DarkskyReqwestRequester;
-use darksky::Unit;
 use darksky::models::Icon;
 use env;
 
 const GOOGLE_MAPS_URL: &str = "https://maps.googleapis.com/maps/api/geocode/json?address={ADDRESS}&key={KEY}";
 
 command!(weather(_ctx, msg, args) {
-    let location = match args.full().replace(' ', "+");
+    let location = args.full().replace(' ', "+");
 
     if location.is_empty() {
         return Err(CommandError::from(get_msg!("error/weather_none_given")));
@@ -54,7 +53,7 @@ command!(weather(_ctx, msg, args) {
 
     let client = reqwest::Client::new();
 
-    let forecast = match client.get_forecast_with_options(&darksky_key, lat, lng, |o| o.unit(Unit::Auto)) {
+    let forecast = match client.get_forecast(&darksky_key, lat, lng) {
         Ok(val) => val,
         Err(e) => {
             error!("Error getting forecast: {}", e);
