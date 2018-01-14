@@ -123,6 +123,8 @@ command!(weather(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/forecast_fetch_failed"))),
     };
 
+    let alerts = forecast.alerts;
+
     let today = match daily.data {
         Some(val) => match val.first() {
             Some(val) => val.clone(),
@@ -135,41 +137,19 @@ command!(weather(ctx, msg, args) {
     let icon_weekly = get_icon(&daily.icon);
 
     // timezone info
-    let tz = match tzdata::Timezone::new(&forecast.timezone) {
-        Ok(val) => val,
-        Err(e) => {
-            error!("Failed parsing timezone: {}", e);
-            return Err(CommandError::from(get_msg!("error/weather_failed_parse_timezone")));
-        }
-    };
+    let tz = tzdata::Timezone::new(&forecast.timezone).unwrap_or(tzdata::Timezone::utc());
 
     // temperatures
-    let temp = get_temp(currently.temperature);
-    let temp_high = get_temp(today.temperature_high);
-    let temp_high_time = if let Some(time) = today.temperature_high_time {
-        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
-    } else {
-        "N/A".to_owned()
-    };
+    let temp = get_temp(&currently.temperature);
 
-    let temp_low = get_temp(today.temperature_low);
-    let temp_low_time = if let Some(time) = today.temperature_low_time {
-        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
-    } else {
-        "N/A".to_owned()
-    };
+    let temp_high = get_temp(&today.temperature_high);
+    let temp_high_time = get_time(&tz, &today.temperature_high_time);
 
-    let sunrise_time = if let Some(time) = today.sunrise_time {
-        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
-    } else {
-        "N/A".to_owned()
-    };
+    let temp_low = get_temp(&today.temperature_low);
+    let temp_low_time = get_time(&tz, &today.temperature_low_time);
 
-    let sunset_time = if let Some(time) = today.sunset_time {
-        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
-    } else {
-        "N/A".to_owned()
-    };
+    let sunrise_time = get_time(&tz, &today.sunrise_time);
+    let sunset_time = get_time(&tz, &today.sunset_time);
 
     let pressure = if let Some(pressure) = today.pressure {
         format!("{} mbar", pressure)
@@ -177,8 +157,8 @@ command!(weather(ctx, msg, args) {
         "N/A".to_owned()
     };
 
-    let apparent_temp = get_temp(currently.apparent_temperature);
-    let dew_point = get_temp(currently.dew_point);
+    let apparent_temp = get_temp(&currently.apparent_temperature);
+    let dew_point = get_temp(&currently.dew_point);
     let wind_speed = currently.wind_speed.map_or("N/A".to_owned(), |s| s.to_string());
     let wind_gust = currently.wind_gust.map_or("N/A".to_owned(), |s| s.to_string());
     let wind_direction = if let Some(bearing) = currently.wind_bearing {
@@ -238,8 +218,8 @@ command!(weather(ctx, msg, args) {
         if should_save {
             m = m.content(get_msg!("info/weather_saved_location"));
         }
-        m.embed(|e| e
-            .author(|a| a
+        m.embed(|e| {
+            let mut e = e.author(|a| a
                 .name(&address)
                 .icon_url("https://darksky.net/images/darkskylogo.png")
                 .url("https://darksky.net/poweredby/")
@@ -314,21 +294,54 @@ command!(weather(ctx, msg, args) {
             .field(|f| f
                 .name("Moon Phase")
                 .value(&moon_phase)
-            )
-            .footer(|f| f
+            );
+
+            if let Some(alert) = alerts.first() {
+                let more_alerts = if alerts.len() == 2 {
+                    "(and 1 more alert)".to_owned()
+                } else if alerts.len() > 2 {
+                    format!("(and {} more alerts)", alerts.len() - 1)
+                } else {
+                    "".to_owned()
+                };
+
+                // check if description is over limit,
+                // giving generous limits to url, etc before since lazy
+                let desc = if alert.description.len() > 700 {
+                    format!("{}...", &alert.description[..700])
+                } else {
+                    alert.description[..].to_owned()
+                };
+
+                e = e.field(|f| f
+                    .name(format!("⚠ {} (Expires: {})", alert.title, get_time(&tz, &alert.expires)))
+                    .value(&format!("{}\n[More Information]({}) {}", desc, alert.uri, more_alerts))
+                    .inline(false)
+                )
+            }
+
+            e.footer(|f| f
                 .text("Powered by Dark Sky")
             )
             .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string())
-       )
+       })
     });
 });
 
 
-fn get_temp(temp: Option<f64>) -> String {
-    if let Some(temp) = temp {
+fn get_temp(temp: &Option<f64>) -> String {
+    if let &Some(temp) = temp {
         let temp_f = (((temp * 9f64) / 5f64) + 32f64) as i16;
                 
         format!("{}°C ({}°F)", temp as i16, temp_f)
+    } else {
+        "N/A".to_owned()
+    }
+}
+
+fn get_time(tz: &tzdata::Timezone, time: &Option<u64>) -> String {
+    if let &Some(time) = time {
+        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
     } else {
         "N/A".to_owned()
     }
