@@ -5,6 +5,7 @@ use serde_json::Value;
 use darksky::DarkskyReqwestRequester;
 use darksky::Unit;
 use darksky::models::Icon;
+use darksky::Block;
 use env;
 
 use utils::time::now_utc;
@@ -105,7 +106,7 @@ command!(weather(ctx, msg, args) {
 
     let client = reqwest::Client::new();
 
-    let forecast = match client.get_forecast_with_options(&darksky_key, lat, lng, |o| o.unit(Unit::Si)) {
+    let forecast = match client.get_forecast_with_options(&darksky_key, lat, lng, |o| o.unit(Unit::Si).exclude(vec![Block::Hourly, Block::Minutely])) {
         Ok(val) => val,
         Err(e) => {
             error!("Error getting forecast: {}", e);
