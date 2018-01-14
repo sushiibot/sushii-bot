@@ -7,3 +7,4 @@ pub mod userinfo;
 pub mod crypto;
 pub mod notifications;
 pub mod moderation;
+pub mod search;
