@@ -47,6 +47,12 @@
         "failed_get_member": "Failed to fetch the member.",
         "failed_mute_member": "Failed to add the mute role to the member.  Maybe I don't have permission.",
 
-        "already_muted": "This member is already muted."
+        "already_muted": "This member is already muted.",
+
+        "forecast_fetch_failed": "Failed to fetch the forecast.",
+        "google_maps_fetch_failed": "Failed to fetch location data.",
+        "google_maps_deserialize_failed": "Response body is not in JSON format or it cannot be properly deserialized",
+        "google_maps_missing_coord": "Location data invalid, missing coordinate data.",
+        "weather_none_given": "Please provide a location to look up the weather."
     }
 }

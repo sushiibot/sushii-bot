@@ -322,6 +322,13 @@ fn main() {
                         .exec(commands::crypto::crypto)
                 })
             })
+            .group("Search", |g| {
+                g.command("weather", |c| {
+                    c.usage("[location]")
+                        .desc("Gets the weather of a location")
+                        .exec(commands::search::weather::weather)
+                })
+            })
             .group("User Info", |g| {
                 g.command("userinfo", |c| {
                     c.usage("[user]")
