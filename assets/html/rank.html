@@ -12,7 +12,7 @@
             font-family: 'Montserrat', sans-serif;
             color: #3fb1ff;
             width: 500px;
-            height: 300px;
+            height: 350px;
             margin: 0;
             padding: 0;
         }
@@ -37,9 +37,24 @@
             font-weight: 300;
         }
         small {
-            font-size: 12px;
+            height: 100%;
             vertical-align: middle;
             opacity: .5;
+        }
+        h1 small {
+            font-size: 18px;
+            padding-bottom: 5px;
+        }
+        .rep {
+            color: #445aa3;
+        }
+        .rep_emoji {
+            height: 25px;
+            vertical-align: middle;
+        }
+        h2 small {
+            font-size: 12px;
+            padding-bottom: 5px;
         }
         #username {
             max-width: 450px;
@@ -93,6 +108,7 @@
     <div id="content">
         <img id="avatar" src="{AVATAR_URL}">
         <h1 id="username">{USERNAME}</h1>
+        <h3><img class="rep_emoji" src="http://localhost:3000/img/{REP_EMOJI}.png"> {REP} REP</h3>
         <h2>RANKING <small>(resets 12:00 AM UTC)</small></h2>
         <div id="ranking">
             <h3>DAILY<br>{DAILY}</h3>

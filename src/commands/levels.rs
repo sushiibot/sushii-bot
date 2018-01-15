@@ -37,9 +37,9 @@ command!(rank(ctx, msg, args) {
         None => return Err(CommandError("No level data found.".to_owned())),
     };
 
-    let activity = match pool.get_user_activity_message(id) {
-        Some(activity) => activity.msg_activity,
-        None => vec![0; 24],
+    let (rep, activity) = match pool.get_user(id) {
+        Some(val) => (val.rep, val.msg_activity),
+        None => (0, vec![0; 24]),
     };
 
     let user = match UserId(id).get() {
@@ -65,13 +65,15 @@ command!(rank(ctx, msg, args) {
     let html = html.replace("{WEEKLY}", &format_percentile(level_data.msg_week_rank));
     let html = html.replace("{MONTHLY}", &format_percentile(level_data.msg_month_rank));
     let html = html.replace("{ALL}", &format_percentile(level_data.msg_all_time_rank));
+    let html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(rep));
+    let html = html.replace("{REP}", &rep.to_string());
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", activity));
 
     let mut json = HashMap::new();
     json.insert("html", html);
     json.insert("width", "500".to_owned());
-    json.insert("height", "300".to_owned());
+    json.insert("height", "350".to_owned());
 
     let client = reqwest::Client::new();
     let res = match client.post("http://127.0.0.1:3000/html").json(&json).send() {
@@ -99,6 +101,24 @@ command!(rank(ctx, msg, args) {
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
 });
+
+fn get_rep_emoji_level(rep: i32) -> String {
+    let num = match rep {
+        n if n >= 150 => 11,
+        n if n >= 100 => 10,
+        n if n >= 50  => 9,
+        n if n >= 10  => 8,
+        n if n >=  0  => 7,
+        n if n >= -5  => 6,
+        n if n >= -10 => 5,
+        n if n >= -20 => 4,
+        n if n >= -30 => 3,
+        n if n >= -40 => 2,
+        _ => 1,
+    };
+
+    format!("{:02}", num)
+}
 
 
 command!(rep(ctx, msg, args) {
