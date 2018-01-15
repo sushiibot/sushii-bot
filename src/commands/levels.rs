@@ -3,16 +3,19 @@ use serenity::model::UserId;
 use reqwest;
 use std::fmt::Write;
 use std::collections::HashMap;
-use database;
 
 use utils;
 use utils::num::format_percentile;
+use utils::config::get_pool;
+use utils::time::now_utc;
+
+use chrono::Duration;
+use chrono_humanize::HumanTime;
 
 const LEVEL_HTML: &'static str = include_str!("../../assets/html/rank.html");
 
 command!(rank(ctx, msg, args) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
 
     let id = match args.single::<String>() {
         Ok(val) => {
@@ -95,4 +98,51 @@ command!(rank(ctx, msg, args) {
     let files = vec![(&buf[..], "level.png")];
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
+});
+
+
+command!(rep(ctx, msg, args) {
+    let pool = get_pool(&ctx);
+
+    let action = if let Ok(action) = args.single::<String>() {
+        if action != "+" && action != "-" {
+            return Err(CommandError::from(get_msg!("error/invalid_rep_option")));
+        }
+
+        action
+    } else {
+        return Err(CommandError::from(get_msg!("error/invalid_rep_option")));
+    };
+
+    let target = match args.single::<String>().ok().and_then(|x| utils::user::get_id(&x)) {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("error/no_user_given"))),
+    };
+
+    // check if repping self
+    if target == msg.author.id.0 {
+        return Err(CommandError::from(get_msg!("error/rep_self")));
+    }
+
+    let target_user = match UserId(target).get() {
+        Ok(val) => val,
+        Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
+    };
+
+    if let Some(last_rep) = pool.get_last_rep(msg.author.id.0) {
+        let now = now_utc();
+        let next_rep = last_rep + Duration::hours(24);
+
+        let diff = next_rep.signed_duration_since(now);
+        // precise humanized time 
+        let ht = format!("{:#}", HumanTime::from(diff));
+
+        if diff.num_hours() < 24 {
+            return Err(CommandError::from(get_msg!("error/rep_too_soon", ht)))
+        }
+    };
+
+    pool.rep_user(msg.author.id.0, target, &action);
+
+    let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag(), &action));
 });

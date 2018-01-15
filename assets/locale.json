@@ -25,7 +25,8 @@
         "max_mention_set": "The maximum mention limit was set to `{}`",
 
         "member_muted": "Muted member {} ({})",
-        "weather_saved_location": "Saved a new location.  You won't have to pass a location argument to get the weather of this location."
+        "weather_saved_location": "Saved a new location.  You won't have to pass a location argument to get the weather of this location.",
+        "rep_given": "I gave {} a {}1 rep."
     },
     "error": {
         "no_guild": "No guild found.",
@@ -33,11 +34,13 @@
         "no_config_given": "No configuration provided.",
         "no_role_config": "There isn't a role config set.",
         "no_mute_role": "There isn't a mute role set.",
+        "no_user_given": "Please give a user id or mention.",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
         "invalid_option_enable_disable": "Invalid option.  Use `enable` or `disable`",
         "invalid_user": "Invalid mention or ID.",
+        "invalid_rep_option": "Invalid rep action, please provide `+` or `-`.",
 
         "prefix_no_perms": "You need `MANAGE_GUILD` permissions to set the prefix.",
         "prefix_no_default": "Expected DEFAULT_PREFIX in the environment.",
@@ -56,6 +59,9 @@
         "google_maps_missing_coord": "Location data invalid, missing coordinate data.",
         "google_maps_missing_address": "Location data invalid, missing address data.",
         "weather_none_given": "Please provide a location to look up the weather.",
-        "weather_invalid_save": "Saved location data is missing or invalid, please provide a location.  You can save a location with `weather save [location]`."
+        "weather_invalid_save": "Saved location data is missing or invalid, please provide a location.  You can save a location with `weather save [location]`.",
+
+        "rep_too_soon": "You can rep again in {}.",
+        "rep_self": "You can't rep yourself.  Sorry."
     }
 }
