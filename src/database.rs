@@ -283,7 +283,7 @@ impl ConnectionPool {
         let conn = self.connection();
 
         // get percentile ranks
-        diesel::sql_query(r#"
+        if let Some(val) = diesel::sql_query(r#"
             SELECT * 
                 FROM (
                     SELECT *,
@@ -298,7 +298,12 @@ impl ConnectionPool {
             .bind::<BigInt, i64>(id_guild as i64)
             .bind::<BigInt, i64>(id_user as i64)
             .load(&*conn)
-            .ok().map(|x: Vec<UserLevelRanked>| level_interval_ranked(&x[0]))
+            .ok() {
+
+            val.get(0).map(|x| level_interval_ranked(&x))
+        } else {
+            None
+        }
     }
 
     pub fn update_user_activity_message(&self, id_user: u64) {
@@ -356,7 +361,7 @@ impl ConnectionPool {
         }
     }
 
-    pub fn get_user_activity_message(&self, id_user: u64) -> Option<User> {
+    pub fn get_user(&self, id_user: u64) -> Option<User> {
         use schema::users::dsl::*;
 
         let conn = self.connection();
