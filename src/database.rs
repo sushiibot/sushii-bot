@@ -378,6 +378,48 @@ impl ConnectionPool {
             .ok().map(|x: Vec<User>| x[0].last_msg.clone())
     }
 
+    pub fn get_last_rep(&self, id_user: u64) -> Option<NaiveDateTime> {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .filter(id.eq(id_user as i64))
+            .select(last_rep)
+            .first::<Option<NaiveDateTime>>(&*conn)
+            .unwrap_or(None)
+    }
+
+    /// REP
+    pub fn rep_user(&self, id_user: u64, id_target: u64, action: &str) {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        let now = now_utc();
+
+        // update last_rep timestamp
+        if let Err(e) = diesel::update(users.filter(id.eq(id_user as i64)))
+            .set(last_rep.eq(now))
+            .execute(&*conn) {
+                error!("[Rep] Error when updating last rep: {}", e);
+            }
+
+        let result = if action == "+" {
+            diesel::update(users.filter(id.eq(id_target as i64)))
+                .set(rep.eq(rep + 1))
+                .execute(&*conn)
+        } else {
+            diesel::update(users.filter(id.eq(id_target as i64)))
+                .set(rep.eq(rep - 1))
+                .execute(&*conn)
+        };
+        
+        if let Err(e) = result {
+            error!("[Rep] Error when updating rep: {}", e);
+        }
+    }
+
     /// REMINDERS
 
     pub fn add_reminder(&self, id_user: u64, content: &str, time: &NaiveDateTime) {

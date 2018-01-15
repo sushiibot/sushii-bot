@@ -181,10 +181,13 @@ fn main() {
                 g.bucket("rank_bucket")
                     .guild_only(true)
                     .command("rank", |c| {
-                    c.desc("Shows your current rank.").exec(
-                        commands::levels::rank,
-                    )
-                })
+                        c.desc("Shows your current rank.")
+                        .exec(commands::levels::rank)
+                    })
+                    .command("rep", |c| {
+                        c.desc("Rep a user.")
+                        .exec(commands::levels::rep)
+                    })
             })
             .group("Notifications", |g| {
                 g.prefix("notification")
