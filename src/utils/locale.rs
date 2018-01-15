@@ -32,7 +32,7 @@ macro_rules! get_msg {
 
             $(
                 // kind of hacky way to accept str and nums, but oh well
-                s = s.replace("{}", &format!("{}", $replace));
+                s = s.replacen("{}", &format!("{}", $replace), 1);
             )*
 
 
