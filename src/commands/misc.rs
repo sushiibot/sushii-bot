@@ -117,7 +117,7 @@ command!(reminder(ctx, msg, args) {
 
     let ht = HumanTime::from(since);
 
-    let s = format!("I'll remind you at `{}` ({}) to `{}`", remind_date.format("%Y-%m-%d %H:%M:%S UTC"), ht, content);
+    let s = format!("I'll remind you at `{}` ({:#}) to `{}`", remind_date.format("%Y-%m-%d %H:%M:%S UTC"), ht, content);
     let _ = msg.channel_id.say(&s);
 });
 
@@ -141,7 +141,7 @@ command!(reminders(ctx, msg, _args) {
             );
 
             let ht = HumanTime::from(since);
-            let _ = write!(s, "{} ({})\n    {}\n", reminder.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), ht, reminder.description);
+            let _ = write!(s, "{} ({:#})\n    {}\n", reminder.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), ht, reminder.description);
         }
 
         // get current timestamp
