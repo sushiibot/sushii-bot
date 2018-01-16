@@ -1,9 +1,9 @@
 use serenity::model::ChannelId;
 use serenity::model::GuildId;
+use serenity::model::User;
 use serenity::model::UserId;
 use serenity::model::Message;
 use serenity::model::Member;
-use serenity::model::User;
 use serenity::prelude::Context;
 use serenity::CACHE;
 use serenity::Error;
@@ -35,7 +35,7 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
     let reason = get_reason(&config, &db_entry);
 
     if let Some(channel) = config.log_mod {
-        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, &user, "Ban", &reason, db_entry.case_id) {
+        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, &user, "Ban", &reason, db_entry.case_id, 0xe74c3c) {
             // edit the mod entry to have the mod log message id if successfull msg send
             db_entry.msg_id = Some(msg.id.0 as i64);
         }
@@ -47,13 +47,33 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
     pool.update_mod_action(db_entry);
 }
 
-// pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, _: &User) {
-//     let config = get_config_from_context(&ctx, guild.id.0);
-//     let audits = match guild.audit_logs() {
-//         Ok()
-//     };
-// 
-// }
+pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, user: &User) {
+    let pool = get_pool(&ctx);
+
+    // check if a unban command was used instead of discord settings unban
+    // add the action to the database if not pendings
+    let mut db_entry = match pool.get_pending_mod_actions("unban", guild.0, user.id.0) {
+        Some(val) => val,
+        None => pool.add_mod_action("unban", guild.0, user, None, false, None),
+    };
+
+    let (tag, face) = get_user_tag_face(&db_entry);
+
+    let config = pool.get_guild_config(guild.0);
+    let reason = get_reason(&config, &db_entry);
+
+    if let Some(channel) = config.log_mod {
+        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, &user, "Unban", &reason, db_entry.case_id, 0x2ecc71) {
+            // edit the mod entry to have the mod log message id if successfull msg send
+            db_entry.msg_id = Some(msg.id.0 as i64);
+        }
+        // if failed to send the message, it should be already set to None
+    }
+
+    db_entry.pending = false;
+
+    pool.update_mod_action(db_entry);
+}
 
 // handle mutes
 pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, member: &Member) {
@@ -68,6 +88,7 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
     };
 
     let action;
+    let color;
 
     // check if there is a before member model, otherwise this is kind of useless
     let member_before = match member_before {
@@ -81,6 +102,7 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
         if let None = (member_before).roles.iter().find(|&x| x.0 == mute_role as u64) {
             // previous member has no mute role, current does, so this is a mute action
             action = "mute";
+            color = 0xe67e22;
         } else {
             return;
         }
@@ -89,6 +111,7 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
         if let Some(_) = member_before.roles.iter().find(|&x| x.0 == mute_role as u64) {
             // previous member has mute role, this was an unmute action
             action = "unmute";
+            color = 0x1abc9c;
         } else {
             return;
         }
@@ -109,7 +132,7 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
     let reason = get_reason(&config, &db_entry);
 
     if let Some(channel) = config.log_mod {
-        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, &user, &action.to_sentence_case(), &reason, db_entry.case_id) {
+        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, &user, &action.to_sentence_case(), &reason, db_entry.case_id, color) {
             // edit the mod entry to have the mod log message id if successfull msg send
             db_entry.msg_id = Some(msg.id.0 as i64);
         }
@@ -156,7 +179,7 @@ fn get_reason(config: &GuildConfig, db_entry: &ModAction) -> String {
 }
 
 fn send_mod_action_msg(channel: i64, tag: &str, face: &str, user: &User, 
-        action: &str, reason: &str, case_id: i32) -> Result<Message, Error> {
+        action: &str, reason: &str, case_id: i32, color: u32) -> Result<Message, Error> {
 
     ChannelId(channel as u64).send_message(|m| m
        .embed(|e| e
@@ -164,7 +187,7 @@ fn send_mod_action_msg(channel: i64, tag: &str, face: &str, user: &User,
                .name(tag)
                .icon_url(face)
            )
-           .color(0xe74c3c)
+           .color(color)
            .field(|f| f
                .name("User")
                .value(format!("{} ({})", user.tag(), user.id.0))

@@ -230,6 +230,12 @@ fn main() {
                         .required_permissions(Permissions::BAN_MEMBERS)
                         .exec(commands::moderation::ban::ban)
                     })
+                    .command("unban", |c| {
+                        c.usage("[mention or id](,mention or id) [reason]")
+                        .desc("Unbans a user or ID.")
+                        .required_permissions(Permissions::BAN_MEMBERS)
+                        .exec(commands::moderation::ban::unban)
+                    })
                     .command("mute", |c| {
                         c.usage("[mention or id]")
                         .desc("Mutes a member.")

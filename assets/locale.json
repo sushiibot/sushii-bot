@@ -50,6 +50,7 @@
         "failed_get_user": "Failed to fetch the user.",
         "failed_get_member": "Failed to fetch the member.",
         "failed_mute_member": "Failed to add the mute role to the member.  Maybe I don't have permission.",
+        "failed_get_bans": "Failed to fetch server bans.",
 
         "already_muted": "This member is already muted.",
 
