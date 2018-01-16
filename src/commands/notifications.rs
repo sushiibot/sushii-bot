@@ -7,7 +7,7 @@ use database;
 use utils::config::get_pool;
 
 command!(add_notification(ctx, msg, args) {
-    let keyword = args.full();
+    let keyword = args.full().to_lowercase();
 
     if keyword.is_empty() {
         return Err(CommandError("Missing keyword".to_owned()));
