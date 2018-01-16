@@ -10,6 +10,17 @@ macro_rules! exec_on_message {
         }}
 }
 
+macro_rules! exec_on_message_update {
+    ( [$ctx:expr, $msg_update:expr], $( $plugin:ident ),* ) => {{
+            use utils::config::get_pool;
+            let pool = get_pool(&$ctx);
+    
+            $(
+                $plugin::on_message_update($ctx, &pool, $msg_update);
+            )*
+        }}
+}
+
 
 macro_rules! exec_on_ready {
     ( [$ctx:expr, $ready:expr], $( $plugin:ident ),* ) => {
