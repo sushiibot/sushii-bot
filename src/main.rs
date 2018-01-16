@@ -178,10 +178,10 @@ fn main() {
             })
             .simple_bucket("rank_bucket", 15)
             .group("Ranking", |g| {
-                g.bucket("rank_bucket")
-                    .guild_only(true)
+                g.guild_only(true)
                     .command("rank", |c| {
                         c.desc("Shows your current rank.")
+                        .bucket("rank_bucket")
                         .exec(commands::levels::rank)
                     })
                     .command("rep", |c| {
