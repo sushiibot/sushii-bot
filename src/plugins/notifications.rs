@@ -19,7 +19,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         None => return,
     };
 
-    if let Some(notifications) = pool.get_notifications(&msg.content, guild_id) {
+    if let Some(notifications) = pool.get_notifications(&msg.content.to_lowercase(), guild_id) {
         for notification in notifications {
             // skip notifications for self
             if notification.user_id as u64 == msg.author.id.0 {
