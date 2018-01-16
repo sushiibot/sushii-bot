@@ -684,6 +684,20 @@ impl ConnectionPool {
             }
     }
 
+    pub fn update_message(&self, msg_id: u64, new_content: &str) {
+        use schema::messages;
+        use schema::messages::dsl::*;
+
+        let conn = self.connection();
+
+        if let Err(e) = diesel::update(messages::table)
+            .filter(id.eq(msg_id as i64))
+            .set(content.eq(new_content))
+            .execute(&*conn) {
+                error!("[Message] Error updating message: {}", e);
+        }
+    }
+
     pub fn save_weather_location(&self, id_user: u64, lat: f64, lng: f64, loc: &str) {
         use schema::users;
         use schema::users::dsl::*;

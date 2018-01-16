@@ -168,7 +168,8 @@ impl EventHandler for Handler {
         update_event(&ctx, "MESSAGE_REACTION_REMOVE_ALL");
     }
 
-    fn on_message_update(&self, ctx: Context, _: MessageUpdateEvent) {
+    fn on_message_update(&self, ctx: Context, msg_update: MessageUpdateEvent) {
+        exec_on_message_update!([&ctx, &msg_update], message_log);
         update_event(&ctx, "MESSAGE_UPDATE");
     }
 
