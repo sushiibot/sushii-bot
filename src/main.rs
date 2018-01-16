@@ -289,6 +289,11 @@ fn main() {
                             .required_permissions(Permissions::MANAGE_GUILD)
                             .exec(commands::settings::max_mentions)
                     })
+                    .command("listids", |c| {
+                        c.desc("Lists the server role ids.")
+                            .required_permissions(Permissions::MANAGE_GUILD)
+                            .exec(commands::settings::list_ids)
+                    })
             })
             .group("Roles", |g| {
                 g.prefix("roles")

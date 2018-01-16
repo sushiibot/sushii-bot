@@ -1,6 +1,7 @@
 use serenity::framework::standard::CommandError;
 use serenity::utils::parse_channel;
 use serenity::utils::parse_role;
+use serenity::model::Role;
 
 use serde_json;
 
@@ -442,4 +443,32 @@ command!(max_mentions(ctx, msg, args) {
         let s = get_msg!("info/max_mention_set", max_mention);
         let _ = msg.channel_id.say(&s);
     }    
+});
+
+command!(list_ids(_ctx, msg, _args) {
+    if let Some(guild) = msg.guild() {
+        let guild = guild.read().unwrap();
+
+        let mut roles_text = String::new();
+
+        let mut roles = guild.roles.values().collect::<Vec<&Role>>();
+        roles.sort_by(|&a, &b| b.position.cmp(&a.position));
+
+        for role in roles.iter() {
+            let _ = write!(roles_text, "[{:02}] {} - {}\n", role.position, role.id.0, role.name);
+        }
+
+        // check if over limit, send a text file instead
+        if roles_text.len() >= 2000 {
+            let files = vec![(roles_text.as_bytes(), "roles.txt")];
+            
+            let _ = msg.channel_id.send_files(files, |m| m.content(get_msg!("info/list_ids_attached")));
+        } else {
+            let s = format!("Server roles:\n```ruby\n{}```", roles_text);
+
+            let _ = msg.channel_id.say(&s);
+        }
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
 });
