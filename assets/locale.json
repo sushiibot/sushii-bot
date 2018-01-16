@@ -43,6 +43,9 @@
         "invalid_option_enable_disable": "Invalid option.  Use `enable` or `disable`",
         "invalid_user": "Invalid mention or ID.",
         "invalid_rep_option": "Invalid rep action, please provide `+` or `-`.",
+        "invalid_number": "Invalid number.",
+
+        "prune_too_high": "Invalid prune amount, must be between 1 and 99",
 
         "prefix_no_perms": "You need `MANAGE_GUILD` permissions to set the prefix.",
         "prefix_no_default": "Expected DEFAULT_PREFIX in the environment.",
@@ -53,6 +56,8 @@
         "failed_get_member": "Failed to fetch the member.",
         "failed_mute_member": "Failed to add the mute role to the member.  Maybe I don't have permission.",
         "failed_get_bans": "Failed to fetch server bans.",
+        "failed_get_messages": "Failed to fetch messages.",
+        "failed_delete_messages": "Failed to delete messages.",
 
         "already_muted": "This member is already muted.",
 
