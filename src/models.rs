@@ -8,7 +8,7 @@ use schema::mod_log;
 use schema::messages;
 
 use chrono::naive::NaiveDateTime;
-use diesel::types::*;
+use diesel::sql_types::*;
 use serde_json;
 
 #[derive(Queryable, AsChangeset, Clone)]

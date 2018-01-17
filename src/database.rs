@@ -1,5 +1,5 @@
 use diesel;
-use diesel::types::BigInt;
+use diesel::sql_types::BigInt;
 use diesel::result::Error;
 use diesel::pg::PgConnection;
 use diesel::QueryDsl;
@@ -507,7 +507,7 @@ impl ConnectionPool {
     pub fn get_notifications(&self, msg: &str, guild: u64) -> Option<Vec<Notification>> {
         use schema::notifications::dsl::*;
 
-        sql_function!(strpos, strpos_t, (string: diesel::types::Text, substring: diesel::types::Text) -> diesel::types::Integer);
+        sql_function!(strpos, strpos_t, (string: diesel::sql_types::Text, substring: diesel::sql_types::Text) -> diesel::sql_types::Integer);
 
         let conn = self.connection();
 
