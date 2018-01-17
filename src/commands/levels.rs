@@ -157,7 +157,7 @@ command!(rep(ctx, msg, args) {
         // precise humanized time 
         let ht = format!("{:#}", HumanTime::from(diff));
 
-        if diff.num_hours() < 24 {
+        if next_rep > now {
             return Err(CommandError::from(get_msg!("error/rep_too_soon", ht)))
         }
     };
