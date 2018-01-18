@@ -100,8 +100,8 @@ command!(reason(ctx, msg, args) {
                     }
                 }
 
-                // edit the case message embed, re-add the footer since serenity bug
-                let _ = message.edit(|m| m.embed(|_| CreateEmbed::from(embed.clone()).footer(|f| f.text(&format!("Case #{}", case.case_id)))));
+                // edit the case message embed
+                let _ = message.edit(|m| m.embed(|_| CreateEmbed::from(embed.clone())));
 
 
                 // edit database entry
