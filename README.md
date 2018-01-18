@@ -11,6 +11,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 * Ranking system based on percentiles of message counts in daily, weekly, monthly, and all time categories
 * User 24 hour activity tracker
 * Profile image generation for displaying rank and activity graph (with [sbot2-image-server](https://github.com/drklee3/sbot2-image-server))
+* Configurable self assigning role system with multiple categories and limits
 * Customizable prefix per guild
 * Reminders
 * Keyword notifications
@@ -24,7 +25,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 Currently you will have to build everything yourself.  Later on, SQL migrations may be moved into binary downloads to simplify installation, removing the need for cloning this repository or installing Rust, Cargo, and Diesel CLI.
 
 1. Install dependencies.
-    * [PostgreSQL](https://www.postgresql.org)
+    * [PostgreSQL](https://www.postgresql.org) (9.4+)
     * [Diesel CLI](https://github.com/diesel-rs/diesel/tree/master/diesel_cli)
         1. Install [Rust and Cargo](http://doc.crates.io).
             ```bash
@@ -63,7 +64,7 @@ Currently you will have to build everything yourself.  Later on, SQL migrations 
     ```bash
     $ diesel migration run
     ```
-4. Edit [`.env.example`](.env.example) and rename to `.env`.
+4. Edit [`.env.example`](.env.example) and rename to `.env`.  Removing any key or leaving them blank will result in panics.
 5. Build and run the bot.
     ```bash
     $ cargo run --release
