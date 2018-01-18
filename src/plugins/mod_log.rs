@@ -4,6 +4,7 @@ use serenity::model::User;
 use serenity::model::UserId;
 use serenity::model::Message;
 use serenity::model::Member;
+use serenity::model::Mentionable;
 use serenity::prelude::Context;
 use serenity::CACHE;
 use serenity::Error;
@@ -190,7 +191,7 @@ fn send_mod_action_msg(channel: i64, tag: &str, face: &str, user: &User,
            .color(color)
            .field(|f| f
                .name("User")
-               .value(format!("{} ({})", user.tag(), user.id.0))
+               .value(format!("{} ({}) ({})", user.tag(), user.id.0, user.mention()))
                .inline(false)
            )
            .field(|f| f
