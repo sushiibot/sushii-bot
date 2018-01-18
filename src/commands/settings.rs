@@ -1,7 +1,7 @@
 use serenity::framework::standard::CommandError;
 use serenity::utils::parse_channel;
 use serenity::utils::parse_role;
-use serenity::model::Role;
+use serenity::model::guild::Role;
 
 use serde_json;
 
@@ -17,20 +17,20 @@ command!(prefix(ctx, msg, args) {
     // check for MANAGE_SERVER permissions
 
     if let Some(guild) = msg.guild() {
-        let guild = guild.read().unwrap();
+        let guild = guild.read();
 
-        let prefix = match args.single::<String>() {
+        let pref = match args.single::<String>() {
             Ok(val) => val,
             Err(_) => {
                 // no prefix argument, set the prefix
                 match pool.get_prefix(guild.id.0) {
-                    Some(prefix) => {
-                        let _ = msg.channel_id.say(&get_msg!("info/prefix_current", &prefix));
+                    Some(pref) => {
+                        let _ = msg.channel_id.say(&get_msg!("info/prefix_current", &pref));
                         return Ok(());
                     },
                     None => {
-                        let prefix = env::var("DEFAULT_PREFIX").expect(&get_msg!("error/prefix_no_default"));
-                        let _ = msg.channel_id.say(get_msg!("info/prefix_current", &prefix));
+                        let pref = env::var("DEFAULT_PREFIX").expect(&get_msg!("error/prefix_no_default"));
+                        let _ = msg.channel_id.say(get_msg!("info/prefix_current", &pref));
                         return Ok(());
                     }
                 }
@@ -40,12 +40,12 @@ command!(prefix(ctx, msg, args) {
         let has_manage_guild = guild.member_permissions(msg.author.id).manage_guild();
 
         if has_manage_guild {
-            let success = pool.set_prefix(guild.id.0, &prefix);
+            let success = pool.set_prefix(guild.id.0, &pref);
 
             if success {
-                let _ = msg.channel_id.say(get_msg!("info/prefix_set", &prefix));
+                let _ = msg.channel_id.say(get_msg!("info/prefix_set", &pref));
             } else {
-                let _ = msg.channel_id.say(get_msg!("info/prefix_existing", &prefix));
+                let _ = msg.channel_id.say(get_msg!("info/prefix_existing", &pref));
             }
         } else {
             return Err(CommandError::from("error/prefix_no_perms"));
@@ -53,8 +53,8 @@ command!(prefix(ctx, msg, args) {
         
     } else {
         // no guild found, probably in DMs
-        let prefix = env::var("DEFAULT_PREFIX").expect(&get_msg!("error/prefix_no_default"));
-        let _ = msg.channel_id.say(get_msg!("info/prefix_default", &prefix));
+        let pref = env::var("DEFAULT_PREFIX").expect(&get_msg!("error/prefix_no_default"));
+        let _ = msg.channel_id.say(get_msg!("info/prefix_default", &pref));
     }
 });
 
@@ -62,7 +62,7 @@ command!(joinmsg(ctx, msg, args) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-    let message = args.full();
+    let message = args.full().to_owned();
 
     if let Some(guild_id) = msg.guild_id() {
         let guild_id = guild_id.0;
@@ -84,7 +84,7 @@ command!(joinmsg(ctx, msg, args) {
 
                 let _ = msg.channel_id.say(get_msg!("info/join_message_disable"));
             } else {
-                config.join_msg = Some(message.clone());
+                config.join_msg = Some(message.to_owned());
 
                 let s = get_msg!("info/join_message_set", message);
                 let _ = msg.channel_id.say(&s);
@@ -101,7 +101,7 @@ command!(leavemsg(ctx, msg, args) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-    let message = args.full();
+    let message = args.full().to_owned();
 
     if let Some(guild_id) = msg.guild_id() {
         let guild_id = guild_id.0;
@@ -123,7 +123,7 @@ command!(leavemsg(ctx, msg, args) {
 
                 let _ = msg.channel_id.say(get_msg!("info/leave_message_disable"));
             } else {
-                config.leave_msg = Some(message.clone());
+                config.leave_msg = Some(message.to_owned());
 
                 let s = get_msg!("info/leave_message_set", message);
                 let _ = msg.channel_id.say(&s);
@@ -303,7 +303,7 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
 }
 
 command!(roles_set(ctx, msg, args) {
-    let mut raw_json = args.full();
+    let mut raw_json = args.full().to_owned();
 
     // check if it starts with a code block
     if raw_json.starts_with("```") && raw_json.ends_with("```") {
@@ -398,7 +398,7 @@ command!(roles_get(ctx, msg, _args) {
 
 command!(mute_role(ctx, msg, args) {
     if let Some(guild) = msg.guild() {
-        let guild = guild.read().unwrap();
+        let guild = guild.read();
 
         let role = match args.single::<String>() {
             Ok(val) => val,
@@ -426,7 +426,7 @@ command!(mute_role(ctx, msg, args) {
 
 command!(max_mentions(ctx, msg, args) {
     if let Some(guild) = msg.guild() {
-        let guild = guild.read().unwrap();
+        let guild = guild.read();
 
         let max_mention = match args.single::<i32>() {
             Ok(val) => val,
@@ -447,7 +447,7 @@ command!(max_mentions(ctx, msg, args) {
 
 command!(list_ids(_ctx, msg, _args) {
     if let Some(guild) = msg.guild() {
-        let guild = guild.read().unwrap();
+        let guild = guild.read();
 
         let mut roles_text = String::new();
 

@@ -1,5 +1,5 @@
 use serenity::framework::standard::CommandError;
-use serenity::model::UserId;
+use serenity::model::id::UserId;
 use reqwest;
 use std::fmt::Write;
 use std::collections::HashMap;
@@ -37,7 +37,7 @@ command!(rank(ctx, msg, args) {
         None => return Err(CommandError("No level data found.".to_owned())),
     };
 
-    let (rep, activity) = match pool.get_user(id) {
+    let (user_rep, activity) = match pool.get_user(id) {
         Some(val) => (val.rep, val.msg_activity),
         None => (0, vec![0; 24]),
     };
@@ -65,8 +65,8 @@ command!(rank(ctx, msg, args) {
     let html = html.replace("{WEEKLY}", &format_percentile(level_data.msg_week_rank));
     let html = html.replace("{MONTHLY}", &format_percentile(level_data.msg_month_rank));
     let html = html.replace("{ALL}", &format_percentile(level_data.msg_all_time_rank));
-    let html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(rep));
-    let html = html.replace("{REP}", &rep.to_string());
+    let html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(user_rep));
+    let html = html.replace("{REP}", &user_rep.to_string());
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", activity));
 
@@ -102,8 +102,8 @@ command!(rank(ctx, msg, args) {
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
 });
 
-fn get_rep_emoji_level(rep: i32) -> String {
-    let num = match rep {
+fn get_rep_emoji_level(user_rep: i32) -> String {
+    let num = match user_rep {
         n if n >= 150 => 11,
         n if n >= 100 => 10,
         n if n >= 50  => 9,

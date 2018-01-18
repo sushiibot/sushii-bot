@@ -1,7 +1,7 @@
 use utils::config::get_pool;
 use utils::user::get_id;
 use serenity::framework::standard::CommandError;
-use serenity::model::UserId;
+use serenity::model::id::UserId;
 use serenity::Error;
 use serenity::model::ModelError::InvalidPermissions;
 use serenity::model::ModelError::DeleteMessageDaysAmount;
@@ -25,7 +25,7 @@ command!(ban(ctx, msg, args) {
 
     // get the guild
     let guild = match msg.guild() {
-        Some(val) => val.read().unwrap().clone(),
+        Some(val) => val.read().clone(),
         None => return Err(CommandError::from("No guild.")),
     };
 
@@ -86,7 +86,7 @@ command!(ban(ctx, msg, args) {
         let case_id = pool.add_mod_action("ban", guild.id.0, &user, reason, true, Some(msg.author.id.0)).case_id;
 
         // ban the user
-        let _ = match guild.ban(u, 7) {
+        let _ = match guild.ban(u, &7) {
             Err(Error::Model(InvalidPermissions(permissions))) => {
                 let e = format!("I don't have permission to ban this user, requires: `{:?}`.", permissions);
                 let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
@@ -132,7 +132,7 @@ command!(unban(ctx, msg, args) {
 
     // get the guild
     let guild = match msg.guild() {
-        Some(val) => val.read().unwrap().clone(),
+        Some(val) => val.read().clone(),
         None => return Err(CommandError::from("No guild.")),
     };
 

@@ -13,7 +13,7 @@ command!(mute(ctx, msg, args) {
 
     // get the guild
     let guild = match msg.guild() {
-        Some(val) => val.read().unwrap().clone(),
+        Some(val) => val.read().clone(),
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
@@ -44,7 +44,7 @@ command!(mute(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/already_muted")));
     }
 
-    let user = member.user.read().unwrap().clone();
+    let user = member.user.read().clone();
 
     // add a pending case, remove if ban errored
     let case_id = pool.add_mod_action("mute", guild.id.0, &user, reason, true, Some(msg.author.id.0)).case_id;

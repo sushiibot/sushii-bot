@@ -50,8 +50,8 @@ use serenity::framework::StandardFramework;
 use serenity::framework::standard::help_commands;
 use serenity::framework::standard::DispatchError::*;
 
-use serenity::model::permissions::Permissions;
-use serenity::model::UserId;
+use serenity::model::Permissions;
+use serenity::model::id::UserId;
 use serenity::prelude::*;
 
 use std::collections::HashSet;
@@ -80,7 +80,7 @@ fn main() {
         Client::new(
             &env::var("DISCORD_TOKEN").expect("Expected a discord token in the environment."),
             handler::Handler,
-        );
+        ).expect("Failed to create a new client");
 
     {
         let mut data = client.data.lock();
@@ -176,128 +176,131 @@ fn main() {
                     println!("Error in {}: {:?}", cmd_name, why);
                 }
             })
+            .help(help_commands::with_embeds)
             .simple_bucket("rank_bucket", 15)
             .group("Ranking", |g| g
                 .guild_only(true)
                 .command("rank", |c| c
                     .desc("Shows your current rank.")
                     .bucket("rank_bucket")
-                    .exec(commands::levels::rank)
+                    .cmd(commands::levels::rank)
                 )
                 .command("rep", |c| c
                     .desc("Rep a user.")
-                    .exec(commands::levels::rep)
+                    .cmd(commands::levels::rep)
                 )
             )
             .group("Notifications", |g| g
                 .command("notification add", |c| c
                     .desc("Adds a notification.")
-                    .exec(commands::notifications::add_notification)
+                    .cmd(commands::notifications::add_notification)
                 )
                 .command("notification list", |c| c
                     .desc("Lists your set notifications")
-                    .exec(commands::notifications::list_notifications)
+                    .cmd(commands::notifications::list_notifications)
                 )
                 .command("notification delete", |c| c
                     .desc("Deletes a notification")
-                    .exec(commands::notifications::delete_notification)
+                    .cmd(commands::notifications::delete_notification)
                 )
             )
             .group("Meta", |g| g
-                .command("help", |c| c.exec_help(help_commands::with_embeds))
-                .command("helpp", |c| c.exec_help(help_commands::plain))
-                .command("ping", |c| c.exec_str("Pong!"))
-                .command("latency", |c| c
-                    .desc("Calculates the heartbeat latency between the shard and the gateway.")
-                    .exec(commands::meta::latency)
+                // .command("helpp", |c| c.exec_help(help_commands::plain))
+                .command("ping", |c| c
+                    .desc("Gets the ping")
+                    .cmd(commands::meta::ping)
                 )
+                // .command("latency", |c| c
+                //     .desc("Calculates the heartbeat latency between the shard and the gateway.")
+                //     .cmd(commands::meta::latency)
+                // )
                 .command("events", |c| c
                     .desc("Shows the number of events handled by the bot.")
-                    .exec(commands::meta::events)
+                    .cmd(commands::meta::events)
                 )
             )
             .group("Moderation", |g| g
                 .command("reason", |c| c
                     .desc("Edits the reason for moderation action cases.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::moderation::cases::reason)
+                    .cmd(commands::moderation::cases::reason)
                 )
                 .command("ban", |c| c
                     .usage("[mention or id](,mention or id) [reason]")
                     .desc("Bans a user or ID.")
                     .required_permissions(Permissions::BAN_MEMBERS)
-                    .exec(commands::moderation::ban::ban)
+                    .cmd(commands::moderation::ban::ban)
                 )
                 .command("unban", |c| c
                     .usage("[mention or id](,mention or id) [reason]")
                     .desc("Unbans a user or ID.")
                     .required_permissions(Permissions::BAN_MEMBERS)
-                    .exec(commands::moderation::ban::unban)
+                    .cmd(commands::moderation::ban::unban)
                 )
                 .command("mute", |c| c
                     .usage("[mention or id]")
                     .desc("Mutes a member.")
                     .required_permissions(Permissions::BAN_MEMBERS)
-                    .exec(commands::moderation::mute::mute)
+                    .cmd(commands::moderation::mute::mute)
                 )
                 .command("prune", |c| c
                     .usage("[# of messages]")
                     .known_as("bulkdelete")
                     .desc("Bulk deletes messages. Message count given excludes the message used to invoke this command.")
                     .required_permissions(Permissions::MANAGE_MESSAGES)
-                    .exec(commands::moderation::prune::prune)
+                    .cmd(commands::moderation::prune::prune)
                 )
             )
             .group("Settings", |g| g
                 .guild_only(true)
                 .command("prefix", |c| c
                     .desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
-                    .exec(commands::settings::prefix)
+                    .cmd(commands::settings::prefix)
                 )
                 .command("joinmsg", |c| c
                     .desc("Gets the guild's join message or sets one if given.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::joinmsg)
+                    .cmd(commands::settings::joinmsg)
                 )
                 .command("leavemsg", |c| c
                     .desc("Gets the guild's leave message or sets one if given.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::leavemsg)
+                    .cmd(commands::settings::leavemsg)
                 )
                 .command("modlog", |c| c
                     .desc("Sets the moderation log channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::modlog)
+                    .cmd(commands::settings::modlog)
                 )
                 .command("msglog", |c| c
                     .desc("Sets the message log channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::msglog)
+                    .cmd(commands::settings::msglog)
                 )
                 .command("memberlog", |c| c
                     .desc("Sets the member log channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::memberlog)
+                    .cmd(commands::settings::memberlog)
                 )
                 .command("inviteguard", |c| c
                     .desc("Enables or disables the invite guard.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::inviteguard)
+                    .cmd(commands::settings::inviteguard)
                 )
                 .command("muterole", |c| c
                     .desc("Sets the mute role.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::mute_role)
+                    .cmd(commands::settings::mute_role)
                 )
                 .command("maxmentions", |c| c
                     .desc("Sets the maximum mentions a user can have in a single message before automatically being muted.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::max_mentions)
+                    .cmd(commands::settings::max_mentions)
                 )
                 .command("listids", |c| c
                     .desc("Lists the server role ids.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::list_ids)
+                    .cmd(commands::settings::list_ids)
                 )
             )
             .group("Roles", |g| g
@@ -306,17 +309,17 @@ fn main() {
                 .command("roles set", |c| c
                     .desc("Sets the role configuration.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::roles_set)
+                    .cmd(commands::settings::roles_set)
                 )
                 .command("roles get", |c| c
                     .desc("Gets the role configuration.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::roles_get)
+                    .cmd(commands::settings::roles_get)
                 )
                 .command("roles channel", |c| c
                     .desc("Sets the roles channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .exec(commands::settings::roles_channel)
+                    .cmd(commands::settings::roles_channel)
                 )
             )
             .group("Misc", |g| g
@@ -324,23 +327,23 @@ fn main() {
                     .usage("[rust code]")
                     .desc("Evaluates Rust code in the playground.")
                     .min_args(1)
-                    .exec(commands::misc::play)
+                    .cmd(commands::misc::play)
                 )
                 .command("crypto", |c| c
                     .usage("(symbol)")
                     .desc("Gets current cryptocurrency prices.")
-                    .exec(commands::crypto::crypto)
+                    .cmd(commands::crypto::crypto)
                 )
             )
             .group("Reminders", |g| g
                 .command("reminder", |c| c
                     .usage("[time] [description]")
                     .desc("Reminds you to do something after some time.")
-                    .exec(commands::misc::reminder)
+                    .cmd(commands::misc::reminder)
                 )
                 .command("reminder list", |c| c
                     .desc("Shows your pending reminders.")
-                    .exec(commands::misc::reminders)
+                    .cmd(commands::misc::reminders)
                 )
                 
             )
@@ -348,36 +351,36 @@ fn main() {
                 .command("weather", |c| c
                     .usage("[location]")
                     .desc("Gets the weather of a location")
-                    .exec(commands::search::weather::weather)
+                    .cmd(commands::search::weather::weather)
                 )
             )
             .group("User Info", |g| g
                 .command("userinfo", |c| c
                     .usage("[user]")
                     .desc("Gets information about a user.")
-                    .exec(commands::userinfo::userinfo)
+                    .cmd(commands::userinfo::userinfo)
                 )
                 .command("avatar", |c| c
                     .usage("[user]")
                     .desc("Gets the avatar for a user.")
-                    .exec(commands::userinfo::avatar)
+                    .cmd(commands::userinfo::avatar)
                 )
             )
             .group("Owner", |g| g
                 .command("quit", |c| c
                     .desc("Gracefully shuts down the bot.")
                     .owners_only(true)
-                    .exec(commands::owner::quit)
+                    .cmd(commands::owner::quit)
                     .known_as("shutdown")
                 ).command("reset events", |c| c
                     .desc("Resets the events counter.")
                     .owners_only(true)
-                    .exec(commands::meta::reset_events)
+                    .cmd(commands::meta::reset_events)
                 )
                 .command("username", |c| c
                     .desc("Changes the bot's username.")
                     .owners_only(true)
-                    .exec(commands::owner::username)
+                    .cmd(commands::owner::username)
                 )
             ),
     );

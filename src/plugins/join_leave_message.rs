@@ -1,8 +1,7 @@
-use serenity::model::GuildId;
-use serenity::model::ChannelId;
-use serenity::model::Member;
-use serenity::model::User;
-use serenity::model::ReactionType;
+use serenity::model::guild::Member;
+use serenity::model::id::{GuildId, ChannelId};
+use serenity::model::user::User;
+use serenity::model::channel::ReactionType;
 use serenity::prelude::*;
 
 use utils::config::get_config_from_context;
@@ -17,7 +16,7 @@ pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &Memb
                 Err(_) => return,
             };
 
-            let user = member.user.read().unwrap().clone();
+            let user = member.user.read().clone();
 
             let _ = channel.send_message(|m| {
                 let msg = format_message(joinmsg, guild_id, &user);
@@ -55,7 +54,7 @@ pub fn on_guild_member_removal(ctx: &Context, guild_id: &GuildId, user: &User, _
 /// member name, mention, and guild names
 fn format_message(msg: String, guild: &GuildId, user: &User) -> String {
     let guild_name = match guild.find() {
-        Some(guild) => guild.read().unwrap().name.clone(),
+        Some(guild) => guild.read().name.to_owned(),
         None => {
             match guild.get() {
                 Ok(guild) => guild.name,

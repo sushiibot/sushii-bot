@@ -1,7 +1,7 @@
 use std::{thread, time};
 
 use serenity::prelude::Context;
-use serenity::model::Ready;
+use serenity::model::gateway::Ready;
 use serenity::http;
 
 use chrono_humanize::HumanTime;
@@ -20,11 +20,11 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
 
             if let Some(reminders) = pool.get_overdue_reminders() {
                 // loop through reminders
-                for reminder in reminders {
+                for remind in reminders {
                     // get user by id
-                    if let Ok(user) = http::get_user(reminder.user_id as u64) {
-                        let since = reminder.time_set.signed_duration_since(
-                            reminder.time_to_remind,
+                    if let Ok(user) = http::get_user(remind.user_id as u64) {
+                        let since = remind.time_set.signed_duration_since(
+                            remind.time_to_remind,
                         );
 
                         let ht = HumanTime::from(since);
@@ -33,19 +33,19 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                             format!(
                             "Ding dong! The reminder you set {:#} has expired \n```{}```",
                             ht,
-                            reminder.description,
+                            remind.description,
                         );
                         if let Err(why) = user.direct_message(|m| m.content(&s)) {
                             error!(
                                 "Failed to send message to {} for reminder: {}\n{}",
                                 user.tag(),
-                                reminder.description,
+                                remind.description,
                                 why
                             );
                         }
                     }
 
-                    pool.remove_reminder(reminder.id);
+                    pool.remove_reminder(remind.id);
                 }
             }
 

@@ -1,4 +1,4 @@
-use serenity::model::Message;
+use serenity::model::channel::Message;
 use serenity::prelude::Context;
 use serenity::CACHE;
 
@@ -6,9 +6,9 @@ use database::ConnectionPool;
 
 pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     if let Some(guild) = msg.guild() {
-        let guild = guild.read().unwrap();
+        let guild = guild.read();
 
-        let current_user_id = CACHE.read().unwrap().user.id;
+        let current_user_id = CACHE.read().user.id;
 
         // return if bot doesn't have role perms
         if !guild.member_permissions(current_user_id).manage_roles() {
