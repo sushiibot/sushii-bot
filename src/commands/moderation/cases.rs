@@ -1,17 +1,17 @@
 use regex::Regex;
 use utils::config::get_pool;
 use serenity::framework::standard::CommandError;
-use serenity::model::ChannelId;
-use serenity::model::EmbedAuthor;
+use serenity::model::id::ChannelId;
+use serenity::model::channel::EmbedAuthor;
 use serenity::builder::CreateEmbed;
 
 use std::fmt::Write;
 
 command!(reason(ctx, msg, args) {
     let cases = args.single::<String>()?;
-    let reason = args.full();
+    let given_reason = args.full();
 
-    if reason.is_empty() {
+    if given_reason.is_empty() {
         return Err(CommandError::from("Please provide a reason."));
     }
 
@@ -96,7 +96,7 @@ command!(reason(ctx, msg, args) {
                 // edit reason
                 for mut field in &mut embed.fields {
                     if field.name == "Reason" {
-                        field.value = reason.clone();
+                        field.value = given_reason.to_string();
                     }
                 }
 
@@ -105,7 +105,7 @@ command!(reason(ctx, msg, args) {
 
 
                 // edit database entry
-                case.reason = Some(reason.clone());
+                case.reason = Some(given_reason.to_owned());
                 case.executor_id = Some(msg.author.id.0 as i64);
                 pool.update_mod_action(case);
             }

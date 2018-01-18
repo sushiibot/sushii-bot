@@ -15,7 +15,7 @@ struct Response {
 }
 
 command!(play(_ctx, msg, args) {
-    let mut code = args.full();
+    let mut code = args.full().to_owned();
 
     // check if using code block
     if !code.starts_with("```") || !code.ends_with("```") {
@@ -126,22 +126,22 @@ command!(reminders(ctx, msg, _args) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-    let reminders = pool.get_reminders(msg.author.id.0);
+    let current_reminders = pool.get_reminders(msg.author.id.0);
 
-    if let Some(reminders) = reminders {
-        let mut s = format!("You have {} reminders:\n```rust\n", reminders.len());
+    if let Some(current_reminders) = current_reminders {
+        let mut s = format!("You have {} reminders:\n```rust\n", current_reminders.len());
 
         // get current timestamp
         let utc: DateTime<Utc> = Utc::now();
         let now = utc.naive_utc();
 
-        for reminder in reminders {
-            let since = reminder.time_to_remind.signed_duration_since(
+        for remind in current_reminders {
+            let since = remind.time_to_remind.signed_duration_since(
                 now
             );
 
             let ht = HumanTime::from(since);
-            let _ = write!(s, "{} ({:#})\n    {}\n", reminder.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), ht, reminder.description);
+            let _ = write!(s, "{} ({:#})\n    {}\n", remind.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), ht, remind.description);
         }
 
         // get current timestamp

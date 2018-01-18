@@ -37,7 +37,7 @@ command!(list_notifications(ctx, msg, _args) {
             return Ok(());
         }
     };
-    let cache = CACHE.read()?;
+    let cache = CACHE.read();
 
     if let Some(guild_id) = msg.guild_id() {
         // get the notifications in this server
@@ -63,7 +63,7 @@ command!(list_notifications(ctx, msg, _args) {
 
             for noti in notifications_else {
                 let guild_name = match cache.guild(noti.guild_id as u64) {
-                    Some(val) => val.read().unwrap().name.clone(),
+                    Some(val) => val.read().name.clone(),
                     None => noti.guild_id.to_string(),
                 };
 
@@ -79,7 +79,7 @@ command!(list_notifications(ctx, msg, _args) {
         let mut s = "Your notifications in all servers:\n```".to_owned();
         for noti in notifications {
             let guild_name = match cache.guild(noti.guild_id as u64) {
-                Some(val) => val.read().unwrap().name.clone(),
+                Some(val) => val.read().name.clone(),
                 None => noti.guild_id.to_string(),
             };
 

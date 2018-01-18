@@ -1,5 +1,4 @@
-use serenity::model::Member;
-use serenity::model::Guild;
+use serenity::model::guild::{Member, Guild};
 
 pub fn get_id(value: &str) -> Option<u64> {
     // check if it's already an ID
@@ -51,9 +50,9 @@ pub fn find_member(value: &str, guild: &Guild) -> Option<Member> {
         let members = guild.members_containing(&name, false, false);
 
         let member = members.iter().find(|member| {
-                let name_matches = member.user.read().unwrap().name.to_lowercase() == name;
+                let name_matches = member.user.read().name.to_lowercase() == name;
                 let discrim_matches = match discrim {
-                    Some(discrim) => member.user.read().unwrap().discriminator == discrim,
+                    Some(discrim) => member.user.read().discriminator == discrim,
                     None => true,
                 };
 

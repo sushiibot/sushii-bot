@@ -554,7 +554,7 @@ impl ConnectionPool {
     }
 
     /// MOD ACTIONS
-    pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::User,
+    pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::user::User,
             action_reason: Option<&str>, is_pending: bool, executor: Option<u64>) -> ModAction {
         use schema::mod_log;
         use schema::mod_log::dsl::*;
@@ -592,7 +592,7 @@ impl ConnectionPool {
             .expect("Failed to insert new mod action.")
     }
 
-    pub fn remove_mod_action(&self, guild: u64, user: &serenity::model::User, case: i32) {
+    pub fn remove_mod_action(&self, guild: u64, user: &serenity::model::user::User, case: i32) {
         use schema::mod_log::dsl::*;
 
         let conn = self.connection();
@@ -662,7 +662,7 @@ impl ConnectionPool {
             .ok()
     }
 
-    pub fn log_message(&self, msg: &serenity::model::Message) {
+    pub fn log_message(&self, msg: &serenity::model::channel::Message) {
         use schema::messages;
 
         let conn = self.connection();

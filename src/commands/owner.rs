@@ -4,12 +4,7 @@ use serenity::framework::standard::CommandError;
 command!(quit(ctx, msg, _args) {
     let _ = msg.channel_id.say("cya");
 
-    match ctx.quit() {
-        Err(why) => {
-            let _ = msg.reply(&format!("Failed to shutdown: {:?}", why));
-        },
-        _ => {}
-    }
+    ctx.quit();
 });
 
 command!(username(ctx, msg, args) {

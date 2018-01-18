@@ -1,5 +1,5 @@
 use serenity::framework::standard::CommandError;
-use serenity::model::MessageId;
+use serenity::model::id::MessageId;
 
 command!(prune(_ctx, msg, args) {
     let count = match args.single::<u64>() {

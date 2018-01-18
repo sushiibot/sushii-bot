@@ -1,10 +1,8 @@
-use serenity::model::ChannelId;
-use serenity::model::GuildId;
-use serenity::model::User;
-use serenity::model::UserId;
-use serenity::model::Message;
-use serenity::model::Member;
-use serenity::model::Mentionable;
+use serenity::model::guild::Member;
+use serenity::model::user::User;
+use serenity::model::id::{GuildId, ChannelId, UserId};
+use serenity::model::channel::Message;
+use serenity::model::misc::Mentionable;
 use serenity::prelude::Context;
 use serenity::CACHE;
 use serenity::Error;
@@ -119,7 +117,7 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
     }
 
 
-    let user = member.user.read().unwrap();
+    let user = member.user.read();
 
     // check for pending mutes (automated or command mutes)
     let mut db_entry = match pool.get_pending_mod_actions(action, member.guild_id.0, user.id.0) {
@@ -155,12 +153,12 @@ fn get_user_tag_face(db_entry: &ModAction) -> (String, String) {
         if let Ok(user) = UserId(executor as u64).get() {
             (user.tag(), user.face())
         } else {
-            let c = &CACHE.read().unwrap().user;
+            let c = &CACHE.read().user;
 
             (c.tag(), c.face())
         }
     } else {
-        let c = &CACHE.read().unwrap().user;
+        let c = &CACHE.read().user;
 
         (c.tag(), c.face())
     }
@@ -189,21 +187,9 @@ fn send_mod_action_msg(channel: i64, tag: &str, face: &str, user: &User,
                .icon_url(face)
            )
            .color(color)
-           .field(|f| f
-               .name("User")
-               .value(format!("{} ({}) ({})", user.tag(), user.id.0, user.mention()))
-               .inline(false)
-           )
-           .field(|f| f
-               .name("Action")
-               .value(action)
-               .inline(false)
-           )
-           .field(|f| f
-               .name("Reason")
-               .value(reason)
-               .inline(false)
-           )
+           .field("User", format!("{} ({}) ({})", user.tag(), user.id.0, user.mention()), false)
+           .field("Action", action, false)
+           .field("Reason", reason, false)
            .footer(|ft| ft
                .text(format!("Case #{}", case_id))
            )

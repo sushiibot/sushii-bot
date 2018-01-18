@@ -226,76 +226,33 @@ command!(weather(ctx, msg, args) {
                 .url("https://darksky.net/poweredby/")
             )
             .color(color)
-            .field(|f| f
-                .name("Currently")
-                .value(&format!("{} {}", icon, summary))
-                .inline(false)
-            )
-            .field(|f| f
-                .name("This Week")
-                .value(&format!("{} {}", icon_weekly, summary_weekly))
-                .inline(false)
-            ) // temperature row
-            .field(|f| f
-                .name("Temperature")
-                .value(&format!("{}\nFeels like {}", temp, apparent_temp))
-            )
-            .field(|f| f
-                .name("Temperature High")
-                .value(&format!("{}\nat {}", temp_high, temp_high_time))
-            )
-            .field(|f| f
-                .name("Temperature Low")
-                .value(&format!("{}\nat {}", temp_low, temp_low_time))
-            ) // sunrise row
-            .field(|f| f
-                .name("Sunrise Time")
-                .value(&sunrise_time)
-            )
-            .field(|f| f
-                .name("Sunset Time")
-                .value(&sunset_time)
-            )
-            .field(|f| f
-                .name("Pressure")
-                .value(&pressure)
-            ) // other row
-            .field(|f| f
-                .name("Precipitation %")
-                .value(&format!("{}%", precip_probability))
-            )
-            .field(|f| f
-                .name("Humidity")
-                .value(&format!("{}%", humidity))
-            )
-            .field(|f| f
-                .name("Dew Point")
-                .value(&dew_point)
-            ) // wind row
-            .field(|f| f
-                .name("Wind Direction")
-                .value(&wind_direction)
-            )
-            .field(|f| f
-                .name("Wind Gust")
-                .value(&format!("{} m/s", wind_gust))
-            )
-            .field(|f| f
-                .name("Wind Speed")
-                .value(&format!("{} m/s", wind_speed))
-            ) // other row
-            .field(|f| f
-                .name("Visibility")
-                .value(&visibility)
-            )
-            .field(|f| f
-                .name("Cloud Cover")
-                .value(&format!("{}%", cloud_cover))
-            )
-            .field(|f| f
-                .name("Moon Phase")
-                .value(&moon_phase)
-            );
+            .field("Currently", &format!("{} {}", icon, summary), false)
+            .field("This Week", &format!("{} {}", icon_weekly, summary_weekly), false)
+            
+            // temperature row
+            .field("Temperature", &format!("{}\nFeels like {}", temp, apparent_temp), true)
+            .field("Temperature High", &format!("{}\nat {}", temp_high, temp_high_time), true)
+            .field("Temperature Low", &format!("{}\nat {}", temp_low, temp_low_time), true)
+
+            // sunrise row
+            .field("Sunrise Time", &sunrise_time, true)
+            .field("Sunset Time", &sunset_time, true)
+            .field("Pressure", &pressure, true)
+
+            // other row
+            .field("Precipitation %", &format!("{}%", precip_probability), true)
+            .field("Humidity", &format!("{}%", humidity), true)
+            .field("Dew Point", &dew_point, true)
+
+            // wind row
+            .field("Wind Direction", &wind_direction, true)
+            .field("Wind Gust", &format!("{} m/s", wind_gust), true)
+            .field("Wind Speed", &format!("{} m/s", wind_speed), true)
+
+            // other row
+            .field("Visibility", &visibility, true)
+            .field("Cloud Cover", &format!("{}%", cloud_cover), true)
+            .field("Moon Phase", &moon_phase, true);
 
             if let Some(alert) = alerts.first() {
                 let more_alerts = if alerts.len() == 2 {
@@ -314,10 +271,9 @@ command!(weather(ctx, msg, args) {
                     alert.description[..].to_owned()
                 };
 
-                e = e.field(|f| f
-                    .name(format!("⚠ {} (Expires: {})", alert.title, get_time(&tz, &alert.expires)))
-                    .value(&format!("{}\n[More Information]({}) {}", desc, alert.uri, more_alerts))
-                    .inline(false)
+                e = e.field(format!("⚠ {} (Expires: {})", alert.title, get_time(&tz, &alert.expires)),
+                    &format!("{}\n[More Information]({}) {}", desc, alert.uri, more_alerts),
+                    false
                 )
             }
 

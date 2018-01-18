@@ -1,6 +1,6 @@
 use serenity::framework::standard::CommandError;
-use serenity::model::GameType;
-use serenity::model::UserId;
+use serenity::model::gateway::GameType;
+use serenity::model::id::UserId;
 
 use inflector::Inflector;
 
@@ -16,7 +16,7 @@ command!(userinfo(ctx, msg, args) {
     println!("got args");
     
     if let Some(guild) = msg.guild() {
-        let guild = guild.read().unwrap();
+        let guild = guild.read();
         println!("read guild");
 
         let member = match get_id(&user) {
@@ -26,7 +26,7 @@ command!(userinfo(ctx, msg, args) {
         println!("found member");
 
         if let Ok(member) = member {
-            let user = member.user.read().unwrap();
+            let user = member.user.read();
             println!("read user");
 
             let pool = get_pool(&ctx);
@@ -34,11 +34,7 @@ command!(userinfo(ctx, msg, args) {
 
             let _ = msg.channel_id.send_message(|m| 
                 m.embed(|e| {
-                    let mut e = e
-                        .field(|f| f
-                            .name("ID")
-                            .value(user.id)
-                        );
+                    let mut e = e.field("ID", user.id, true);
 
                     if let Some(presence) = guild.presences.get(&user.id) {
                         let mut full_status = presence.status.name().to_owned().to_sentence_case();
@@ -47,6 +43,7 @@ command!(userinfo(ctx, msg, args) {
                             let kind = match game.kind {
                                 GameType::Playing => "Playing",
                                 GameType::Streaming => "Streaming",
+                                GameType::Listening => "Listening to"
                             };
 
                             let game = match game.url {
@@ -57,32 +54,19 @@ command!(userinfo(ctx, msg, args) {
                             full_status = format!("{} - {}", full_status, game);
                         }
 
-                        e = e.field(|f| f
-                            .name("Status")
-                            .value(full_status));
+                        e = e.field("Status", full_status, true);
                     } else {
-                        e = e.field(|f| f
-                            .name("Status")
-                            .value("Offline"));
+                        e = e.field("Status", "Offline", true);
                     }
 
-                    e = e.field(|f| f
-                            .name("Created At")
-                            .value(user.created_at().format("%Y-%m-%d %H:%M:%S UTC"))
-                        );
+                    e = e.field("Created At", user.created_at().format("%Y-%m-%d %H:%M:%S UTC"), true);
 
                     if let Some(joined_date) = member.joined_at {
-                        e = e.field(|f| f
-                            .name("Joined At")
-                            .value(joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC"))
-                        );
+                        e = e.field("Joined At", joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC"), true);
                     }
 
                     if let Some(last_msg) = last_message {
-                        e = e.field(|f| f
-                            .name("Last Message")
-                            .value(last_msg.format("%Y-%m-%d %H:%M:%S UTC"))
-                        );
+                        e = e.field("Last Message", last_msg.format("%Y-%m-%d %H:%M:%S UTC"), true);
                     }
 
 
@@ -129,11 +113,7 @@ command!(userinfo(ctx, msg, args) {
                         None => "".to_owned(),
                     };
 
-                    e = e.field(|f| f
-                        .name("Roles")
-                        .value(roles)
-                        .inline(false)
-                    );
+                    e = e.field("Roles", roles, false);
 
                     // return embed
                     e

@@ -1,5 +1,5 @@
-use serenity::model::Message;
-use serenity::model::UserId;
+use serenity::model::channel::Message;
+use serenity::model::id::UserId;
 use serenity::prelude::*;
 
 use database::ConnectionPool;

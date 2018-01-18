@@ -1,4 +1,4 @@
-use serenity::model::Message;
+use serenity::model::channel::Message;
 use serenity::prelude::Context;
 use rand::{thread_rng, Rng};
 use database::ConnectionPool;
