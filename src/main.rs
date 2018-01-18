@@ -13,8 +13,6 @@ extern crate serde_json;
 
 #[macro_use]
 extern crate diesel;
-extern crate r2d2;
-extern crate r2d2_diesel;
 
 #[macro_use]
 extern crate diesel_migrations;
@@ -33,6 +31,8 @@ extern crate inflector;
 extern crate regex;
 extern crate darksky;
 extern crate tzdata;
+
+pub use diesel::r2d2;
 
 pub mod schema;
 pub mod models;
