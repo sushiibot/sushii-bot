@@ -11,7 +11,7 @@ use diesel_migrations::run_pending_migrations;
 
 use r2d2::Pool;
 use r2d2::PooledConnection;
-use r2d2_diesel::ConnectionManager;
+use diesel::r2d2::ConnectionManager;
 
 use serenity;
 use std::env;
@@ -41,7 +41,7 @@ pub fn init() -> ConnectionPool {
     // run pending (embedded) migrations 
     info!("Running pending migrations...");
     let conn = (&pool).get().unwrap();
-    if let Err(e) = run_pending_migrations(&*conn) {
+    if let Err(e) = run_pending_migrations(&conn) {
         error!("Error while running pending migrations: {}", e);
     };
 
@@ -82,7 +82,7 @@ impl ConnectionPool {
 
         diesel::insert_into(guilds::table)
             .values(&new_guild_obj)
-            .get_result::<GuildConfig>(&*conn)
+            .get_result::<GuildConfig>(&conn)
             .expect("Error saving new guild.")
     }
 
@@ -94,7 +94,7 @@ impl ConnectionPool {
 
         let rows = guilds
             .filter(id.eq(guild_id as i64))
-            .load::<GuildConfig>(&*conn)
+            .load::<GuildConfig>(&conn)
             .expect("Error loading guild config");
 
         if rows.len() == 1 {
@@ -113,7 +113,7 @@ impl ConnectionPool {
         match diesel::update(guilds::table)
             .filter(id.eq(config.id))
             .set(config)
-            .execute(&*conn) {
+            .execute(&conn) {
                 Err(e) => error!("Error while updating a guild: {}", e),
                 _ => {},
         };
@@ -137,7 +137,7 @@ impl ConnectionPool {
         // fetch event
         let result = guilds
             .filter(id.eq(guild_id as i64))
-            .load::<GuildConfig>(&*conn)
+            .load::<GuildConfig>(&conn)
             .ok();
 
 
@@ -158,7 +158,7 @@ impl ConnectionPool {
         // update the guild row
         match diesel::update(guilds.filter(id.eq(guild_id as i64)))
             .set(prefix.eq(new_prefix))
-            .execute(&*conn) {
+            .execute(&conn) {
                 Err(e) => error!("Error while setting a guild prefix: {}", e),
                 _ => {}
         };
@@ -178,14 +178,14 @@ impl ConnectionPool {
         // fetch event
         let rows = events
             .filter(name.eq(&event_name))
-            .load::<EventCounter>(&*conn)?;
+            .load::<EventCounter>(&conn)?;
 
         // check if a row was found
         if rows.len() == 1 {
             // increment the counter
             diesel::update(events.filter(name.eq(&event_name)))
                 .set(count.eq(rows[0].count + 1))
-                .execute(&*conn)?;
+                .execute(&conn)?;
         } else {
             let new_event_obj = NewEventCounter {
                 name: &event_name,
@@ -194,7 +194,7 @@ impl ConnectionPool {
 
             diesel::insert_into(events::table)
                 .values(&new_event_obj)
-                .execute(&*conn)?;
+                .execute(&conn)?;
         }
 
         Ok(())
@@ -208,7 +208,7 @@ impl ConnectionPool {
 
         let results = events
             .order(name.asc())
-            .load::<EventCounter>(&*conn)?;
+            .load::<EventCounter>(&conn)?;
 
         Ok(results)
     }
@@ -220,7 +220,7 @@ impl ConnectionPool {
 
         diesel::update(events)
             .set(count.eq(0))
-            .execute(&*conn)?;
+            .execute(&conn)?;
 
         Ok(())
     }
@@ -236,7 +236,7 @@ impl ConnectionPool {
         let user = levels
             .filter(user_id.eq(id_user as i64))
             .filter(guild_id.eq(id_guild as i64))
-            .load::<UserLevel>(&*conn)?;
+            .load::<UserLevel>(&conn)?;
 
         // get current timestamp
         let utc: DateTime<Utc> = Utc::now();
@@ -257,7 +257,7 @@ impl ConnectionPool {
                     msg_day.eq(new_interval_user.msg_day + 1),
                     last_msg.eq(now),
                 ))
-                .execute(&*conn)?;
+                .execute(&conn)?;
         } else {
 
             // create a new level row for the user + guild
@@ -273,7 +273,7 @@ impl ConnectionPool {
 
             diesel::insert_into(levels::table)
                 .values(&new_level_obj)
-                .execute(&*conn)?;
+                .execute(&conn)?;
         }
 
         Ok(())
@@ -297,7 +297,7 @@ impl ConnectionPool {
         "#)
             .bind::<BigInt, i64>(id_guild as i64)
             .bind::<BigInt, i64>(id_user as i64)
-            .load(&*conn)
+            .load(&conn)
             .ok() {
 
             val.get(0).map(|x| level_interval_ranked(&x))
@@ -314,7 +314,7 @@ impl ConnectionPool {
 
         let user = users
             .filter(id.eq(id_user as i64))
-            .first::<User>(&*conn)
+            .first::<User>(&conn)
             .ok();
 
         // get current timestamp
@@ -337,7 +337,7 @@ impl ConnectionPool {
                     msg_activity.eq(updated_activity),
                     last_msg.eq(now),
                 ))
-                .execute(&*conn)
+                .execute(&conn)
                 .expect("Failed to update user row.");
         } else {
             // create vector of 24 0's
@@ -356,7 +356,7 @@ impl ConnectionPool {
 
             diesel::insert_into(users::table)
                 .values(&new_user)
-                .execute(&*conn)
+                .execute(&conn)
                 .expect("Failed to insert new user row.");
         }
     }
@@ -368,7 +368,7 @@ impl ConnectionPool {
 
         users
             .filter(id.eq(id_user as i64))
-            .load::<User>(&*conn)
+            .load::<User>(&conn)
             .ok().map(|x: Vec<User>| x[0].clone())
     }
 
@@ -379,7 +379,7 @@ impl ConnectionPool {
 
         users
             .filter(id.eq(id_user as i64))
-            .load::<User>(&*conn)
+            .load::<User>(&conn)
             .ok().map(|x: Vec<User>| x[0].last_msg.clone())
     }
 
@@ -391,7 +391,7 @@ impl ConnectionPool {
         users
             .filter(id.eq(id_user as i64))
             .select(last_rep)
-            .first::<Option<NaiveDateTime>>(&*conn)
+            .first::<Option<NaiveDateTime>>(&conn)
             .unwrap_or(None)
     }
 
@@ -406,18 +406,18 @@ impl ConnectionPool {
         // update last_rep timestamp
         if let Err(e) = diesel::update(users.filter(id.eq(id_user as i64)))
             .set(last_rep.eq(now))
-            .execute(&*conn) {
+            .execute(&conn) {
                 error!("[Rep] Error when updating last rep: {}", e);
             }
 
         let result = if action == "+" {
             diesel::update(users.filter(id.eq(id_target as i64)))
                 .set(rep.eq(rep + 1))
-                .execute(&*conn)
+                .execute(&conn)
         } else {
             diesel::update(users.filter(id.eq(id_target as i64)))
                 .set(rep.eq(rep - 1))
-                .execute(&*conn)
+                .execute(&conn)
         };
         
         if let Err(e) = result {
@@ -445,7 +445,7 @@ impl ConnectionPool {
 
         diesel::insert_into(reminders::table)
             .values(&new_reminder_obj)
-            .execute(&*conn)
+            .execute(&conn)
             .expect("Failed to insert new reminder.");
     }
 
@@ -460,7 +460,7 @@ impl ConnectionPool {
 
         reminders
             .filter(time_to_remind.lt(now))
-            .load::<Reminder>(&*conn)
+            .load::<Reminder>(&conn)
             .ok()
     }
 
@@ -470,7 +470,7 @@ impl ConnectionPool {
         let conn = self.connection();
 
         diesel::delete(reminders.filter(id.eq(reminder_id)))
-            .execute(&*conn)
+            .execute(&conn)
             .expect("Error deleting reminder.");
     }
 
@@ -481,7 +481,7 @@ impl ConnectionPool {
 
         reminders
             .filter(user_id.eq(id_user as i64))
-            .load::<Reminder>(&*conn)
+            .load::<Reminder>(&conn)
             .ok()
     }
 
@@ -499,7 +499,7 @@ impl ConnectionPool {
 
         diesel::insert_into(notifications::table)
             .values(&new_notification)
-            .execute(&*conn)
+            .execute(&conn)
             .expect("Failed to insert new notification.");
     }
 
@@ -514,7 +514,7 @@ impl ConnectionPool {
         notifications
             .filter(guild_id.eq(guild as i64))
             .filter(strpos(msg, keyword).gt(0))
-            .load::<Notification>(&*conn)
+            .load::<Notification>(&conn)
             .ok()
     }
 
@@ -526,7 +526,7 @@ impl ConnectionPool {
 
         notifications
             .filter(user_id.eq(user as i64))
-            .load::<Notification>(&*conn)
+            .load::<Notification>(&conn)
             .ok()
     }
 
@@ -541,7 +541,7 @@ impl ConnectionPool {
                 .filter(guild_id.eq(guild as i64))
                 .filter(keyword.eq(kw))
             )
-            .execute(&*conn)
+            .execute(&conn)
             .unwrap_or(0);
 
         if result == 0 {
@@ -567,7 +567,7 @@ impl ConnectionPool {
         let new_case_id = mod_log
             .select(max(case_id))
             .filter(guild_id.eq(guild as i64))
-            .first::<Option<i32>>(&*conn)
+            .first::<Option<i32>>(&conn)
             .expect("Failed to get next mod case id.")
             .unwrap_or(0) + 1;
 
@@ -588,7 +588,7 @@ impl ConnectionPool {
         // add the action and return the new action
         diesel::insert_into(mod_log::table)
             .values(&new_action)
-            .get_result::<ModAction>(&*conn)
+            .get_result::<ModAction>(&conn)
             .expect("Failed to insert new mod action.")
     }
 
@@ -603,7 +603,7 @@ impl ConnectionPool {
                 .filter(guild_id.eq(guild as i64))
                 .filter(case_id.eq(case))
             )
-            .execute(&*conn) {
+            .execute(&conn) {
                 error!("Error while removing a mod action due to failed ban: {}", e);
         }
     }
@@ -618,7 +618,7 @@ impl ConnectionPool {
         diesel::update(mod_log::table)
             .filter(id.eq(entry.id))
             .set(&entry)
-            .execute(&*conn)
+            .execute(&conn)
             .expect("Failed to update mod_log row.");
     }
 
@@ -631,7 +631,7 @@ impl ConnectionPool {
             .select(case_id)
             .filter(guild_id.eq(guild as i64))
             .order(case_id.desc())
-            .first(&*conn)
+            .first(&conn)
             .unwrap_or(0)
     }
 
@@ -644,7 +644,7 @@ impl ConnectionPool {
             .filter(guild_id.eq(guild as i64))
             .filter(case_id.between(lower, upper))
             .order(case_id.asc())
-            .load::<ModAction>(&*conn)
+            .load::<ModAction>(&conn)
             .ok()
     }
 
@@ -658,7 +658,7 @@ impl ConnectionPool {
             .filter(action.eq(mod_action))
             .filter(user_id.eq(user as i64))
             .filter(pending.eq(true))
-            .first::<ModAction>(&*conn)
+            .first::<ModAction>(&conn)
             .ok()
     }
 
@@ -679,7 +679,7 @@ impl ConnectionPool {
 
         if let Err(e) = diesel::insert_into(messages::table)
             .values(&new_message)
-            .execute(&*conn) {
+            .execute(&conn) {
                 error!("Error while logging new message: {}", e);
             }
     }
@@ -693,7 +693,7 @@ impl ConnectionPool {
         if let Err(e) = diesel::update(messages::table)
             .filter(id.eq(msg_id as i64))
             .set(content.eq(new_content))
-            .execute(&*conn) {
+            .execute(&conn) {
                 error!("[Message] Error updating message: {}", e);
         }
     }
@@ -711,7 +711,7 @@ impl ConnectionPool {
                 longitude.eq(Some(lng)),
                 address.eq(Some(loc))
             ))
-            .execute(&*conn) {
+            .execute(&conn) {
                 Err(e) => error!("Error while updating a user weather location: {}", e),
                 _ => {},
         };
@@ -725,7 +725,7 @@ impl ConnectionPool {
         users
             .filter(id.eq(id_user as i64))
             .select((latitude, longitude, address))
-            .first(&*conn)
+            .first(&conn)
             .ok()
     }
 }
