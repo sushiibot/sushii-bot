@@ -31,6 +31,7 @@ extern crate inflector;
 extern crate regex;
 extern crate darksky;
 extern crate tzdata;
+extern crate psutil;
 
 pub use diesel::r2d2;
 
@@ -207,7 +208,7 @@ fn main() {
             .group("Meta", |g| g
                 // .command("helpp", |c| c.exec_help(help_commands::plain))
                 .command("ping", |c| c
-                    .desc("Gets the ping")
+                    .desc("Gets the ping.")
                     .cmd(commands::meta::ping)
                 )
                 // .command("latency", |c| c
@@ -217,6 +218,10 @@ fn main() {
                 .command("events", |c| c
                     .desc("Shows the number of events handled by the bot.")
                     .cmd(commands::meta::events)
+                )
+                .command("stats", |c| c
+                    .desc("Shows bot stats.")
+                    .cmd(commands::meta::stats)
                 )
             )
             .group("Moderation", |g| g
