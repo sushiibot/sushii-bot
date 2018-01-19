@@ -728,6 +728,53 @@ impl ConnectionPool {
             .first(&conn)
             .ok()
     }
+
+    pub fn add_mute(&self, id_user: u64, id_guild: u64) {
+        use schema::mutes;
+
+        let conn = self.connection();
+
+        let new_mute = NewMute {
+            user_id: id_user as i64,
+            guild_id: id_guild as i64,
+        };
+
+        if let Err(e) = diesel::insert_into(mutes::table)
+            .values(&new_mute)
+            .execute(&conn) {
+                warn!("[DB:add_mute] Error while adding new mute: {}", e);
+            }
+    }
+
+    pub fn should_mute(&self, id_user: u64, id_guild: u64) -> bool {
+        use schema::mutes::dsl::*;
+
+        let conn = self.connection();
+
+        if let Ok(_) = mutes
+            .filter(user_id.eq(id_user as i64))
+            .filter(guild_id.eq(id_guild as i64))
+            .first::<Mute>(&conn) {
+            
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn delete_mute(&self, id_user: u64, id_guild: u64) {
+        use schema::mutes::dsl::*;
+
+        let conn = self.connection();
+
+        if let Err(e) = diesel::delete(mutes
+                .filter(user_id.eq(id_user as i64))
+                .filter(guild_id.eq(id_guild as i64))
+            )
+            .execute(&conn) {
+                warn!("[DB:delete_mute] Error while deleting mute: {}", e);
+        }
+    }
 }
 
 
