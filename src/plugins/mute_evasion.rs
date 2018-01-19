@@ -17,7 +17,7 @@ pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &mut 
                 "mute",
                 guild_id.0,
                 &user,
-                Some("User left with a mute role."),
+                Some("Automated Mute: User left with a mute role."),
                 true,
                 None,
             ).case_id;

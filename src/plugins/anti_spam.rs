@@ -49,7 +49,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 "mute",
                 guild.id.0,
                 &msg.author,
-                Some("User exceeded mention limit. (10)"),
+                Some("Automated Mute: User exceeded mention limit. (10)"),
                 true,
                 None,
             ).case_id;
@@ -60,7 +60,6 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                     "Error while adding auto mute role exceeding mention limit: {}",
                     e
                 );
-
 
                 // remove pending action if mute failed
                 pool.remove_mod_action(guild.id.0, &msg.author, case_id);
