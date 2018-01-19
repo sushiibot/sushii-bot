@@ -6,6 +6,7 @@ use schema::notifications;
 use schema::users;
 use schema::mod_log;
 use schema::messages;
+use schema::mutes;
 
 use chrono::naive::NaiveDateTime;
 use diesel::sql_types::*;
@@ -241,4 +242,18 @@ pub struct NewMessage<'a> {
     pub guild: Option<i64>,
     pub created: NaiveDateTime,
     pub content: &'a str,
+}
+
+#[derive(Queryable, Clone)]
+pub struct Mute {
+    pub id: i32,
+    pub user_id: i64,
+    pub guild_id: i64,
+}
+
+#[derive(Insertable)]
+#[table_name = "mutes"]
+pub struct NewMute {
+    pub user_id: i64,
+    pub guild_id: i64,
 }

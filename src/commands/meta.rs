@@ -2,9 +2,9 @@ use serenity::framework::standard::CommandError;
 use serenity::client::CACHE;
 use chrono::Utc;
 use psutil;
+use utils::config::get_pool;
 
 use std::fmt::Write;
-use database;
 
 // no .latency() on serenity::client::bridge::gateway::ShardMessenger?
 // command!(latency(ctx, msg) {
@@ -21,7 +21,11 @@ command!(ping(_ctx, msg) {
     let start = Utc::now();
     let mut msg = match msg.channel_id.say("Ping!") {
         Ok(val) => val,
-        Err(_) => return Ok(()),
+        Err(e) => {
+            warn!("[CMD:ping] Error sending message: {}", e);
+            
+            return Ok(());
+        },
     };
 
     let end = Utc::now();
@@ -37,8 +41,7 @@ command!(ping(_ctx, msg) {
 });
 
 command!(events(ctx, msg) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
 
     if let Ok(evts) = pool.get_events() {
         let mut s = "```ruby\n".to_owned();
@@ -58,8 +61,7 @@ command!(events(ctx, msg) {
 });
 
 command!(reset_events(ctx, msg) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
 
     if let Ok(()) = pool.reset_events() {
         let _ = msg.channel_id.say("Events have been reset.");
@@ -71,7 +73,7 @@ command!(stats(_ctx, msg) {
     let processes = match psutil::process::all() {
         Ok(processes) => processes,
         Err(why) => {
-            warn!("Err getting processes: {:?}", why);
+            warn!("[CMD:stats] Error getting processes: {:?}", why);
 
             return Err(CommandError::from("Error getting process list"));
         },
@@ -80,6 +82,7 @@ command!(stats(_ctx, msg) {
     let process = match processes.iter().find(|p| p.pid == psutil::getpid()) {
         Some(process) => process,
         None => {
+            warn!("[CMD:stats] Error getting process stats");
             return Err(CommandError::from("Error getting process stats"));
         },
     };
@@ -87,7 +90,7 @@ command!(stats(_ctx, msg) {
     let memory = match process.memory() {
         Ok(memory) => memory,
         Err(why) => {
-            warn!("Err getting process memory: {:?}", why);
+            warn!("[CMD:stats] Error getting process memory: {:?}", why);
 
             return Err(CommandError::from("Error getting process memory"));
         },

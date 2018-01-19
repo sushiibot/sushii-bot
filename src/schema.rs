@@ -67,6 +67,14 @@ table! {
 }
 
 table! {
+    mutes (id) {
+        id -> Int4,
+        user_id -> Int8,
+        guild_id -> Int8,
+    }
+}
+
+table! {
     notifications (id) {
         id -> Int4,
         user_id -> Int8,
@@ -104,6 +112,7 @@ allow_tables_to_appear_in_same_query!(
     levels,
     messages,
     mod_log,
+    mutes,
     notifications,
     reminders,
     users,
