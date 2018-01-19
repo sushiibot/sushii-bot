@@ -22,7 +22,12 @@ pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &mut 
     }
 }
 
-pub fn on_guild_member_removal(ctx: &Context, guild_id: &GuildId, user: &User, member: &Option<Member>) {
+pub fn on_guild_member_removal(
+    ctx: &Context,
+    guild_id: &GuildId,
+    user: &User,
+    member: &Option<Member>,
+) {
     if let &Some(ref memb) = member {
         let pool = get_pool(&ctx);
         let config = pool.get_guild_config(guild_id.0);
