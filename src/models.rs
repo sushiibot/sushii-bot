@@ -52,7 +52,6 @@ pub struct NewGuildConfig {
     pub max_mention: i32,
 }
 
-
 #[derive(Queryable)]
 pub struct EventCounter {
     pub name: String,
@@ -65,7 +64,6 @@ pub struct NewEventCounter<'a> {
     pub name: &'a str,
     pub count: i64,
 }
-
 
 #[derive(Queryable, Clone)]
 pub struct UserLevel {
@@ -147,7 +145,6 @@ pub struct NewReminder<'a> {
     pub time_set: &'a NaiveDateTime,
     pub time_to_remind: &'a NaiveDateTime,
 }
-
 
 #[derive(Queryable)]
 pub struct Notification {

@@ -86,7 +86,11 @@ impl EventHandler for Handler {
     }
 
     fn guild_member_addition(&self, ctx: Context, guild: GuildId, mut member: Member) {
-        exec_on_guild_member_addition!([&ctx, &guild, &mut member], join_leave_message, mute_evasion);
+        exec_on_guild_member_addition!(
+            [&ctx, &guild, &mut member],
+            join_leave_message,
+            mute_evasion
+        );
 
         update_event(&ctx, "GUILD_MEMBER_ADD");
     }
@@ -98,17 +102,16 @@ impl EventHandler for Handler {
         user: User,
         member: Option<Member>,
     ) {
-        exec_on_guild_member_removal!([&ctx, &guild, &user, &member], join_leave_message, mute_evasion);
+        exec_on_guild_member_removal!(
+            [&ctx, &guild, &user, &member],
+            join_leave_message,
+            mute_evasion
+        );
 
         update_event(&ctx, "GUILD_MEMBER_REMOVE");
     }
 
-    fn guild_member_update(
-        &self,
-        ctx: Context,
-        prev_member: Option<Member>,
-        curr_member: Member,
-    ) {
+    fn guild_member_update(&self, ctx: Context, prev_member: Option<Member>, curr_member: Member) {
         exec_on_guild_member_update!([&ctx, &prev_member, &curr_member], mod_log);
         update_event(&ctx, "GUILD_MEMBER_UPDATE");
     }
