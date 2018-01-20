@@ -31,7 +31,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             let user = UserId(notification.user_id as u64);
 
             if let Ok(channel) = user.create_dm_channel() {
-                let desc = format!("Your notification `{}` was triggered in {}", notification.keyword, msg.channel_id.mention());
+                let desc = format!(":speech_left: Your notification `{}` was triggered in {}", notification.keyword, msg.channel_id.mention());
 
                 // maybe switch to use Channel::messages() instead?
                 let mut messages = pool.get_messages(msg.channel_id.0, 3);
