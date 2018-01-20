@@ -2,28 +2,34 @@ use serenity::framework::standard::CommandError;
 use serenity::CACHE;
 
 use std::fmt::Write;
-use models::Notification;
 use database;
 use utils::config::get_pool;
 
 command!(add_notification(ctx, msg, args) {
-    let keyword = args.full().to_lowercase();
+    let mut keyword = args.full().to_lowercase();
 
     if keyword.is_empty() {
         return Err(CommandError("Missing keyword".to_owned()));
     }
 
+    let guild_id = if keyword.starts_with("global") {
+        keyword = keyword.replace("global ", "");
+        0
+    } else {
+        msg.guild_id().map_or(0, |x| x.0)
+    };
+
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-    let guild_id = match msg.guild_id() {
-        Some(val) => val.0,
-        None => return Err(CommandError("No guild".to_owned())),
-    };
-
     pool.new_notification(msg.author.id.0, guild_id, &keyword);
 
-    let s = format!("Added a new notification with keyword `{}`", keyword);
+    let s = if guild_id == 0 {
+        format!("Added a new **global** notification with keyword `{}`", keyword)
+    } else {
+        format!("Added a new notification with keyword `{}`", keyword)
+    };
+
     let _ = msg.channel_id.say(&s);
 });
 
@@ -39,8 +45,49 @@ command!(list_notifications(ctx, msg, _args) {
     };
     let cache = CACHE.read();
 
+    notifications.sort_by(|a, b| a.keyword.cmp(&b.keyword));
+    let mut s = String::new();
+
+    if notifications.len() == 0 {
+        let _ = write!(s, "You have no notifications set.");
+    } else {
+        let _ = write!(s, "Your notifications:\n```\n");
+        let mut counter = 1;
+
+        for noti in notifications {
+            let noti_scope = if let Some(guild_id) = msg.guild_id() {
+                if noti.guild_id as u64 == guild_id.0 {
+                    "This server".to_owned()
+                } else if noti.guild_id == 0 {
+                    "Global".to_owned()
+                } else {
+                    match cache.guild(noti.guild_id as u64) {
+                        Some(val) => val.read().name.clone(),
+                        None => noti.guild_id.to_string(),
+                    }
+                }
+            } else {
+                match cache.guild(noti.guild_id as u64) {
+                    Some(val) => val.read().name.clone(),
+                    None => noti.guild_id.to_string(),
+                }
+            };
+
+            let _ = write!(s, "[{:02}] {} ({})\n", counter, noti.keyword, noti_scope);
+            
+            counter += 1;
+        }
+
+        let _ = write!(s, "```");
+    }
+
+    let _ = msg.channel_id.say(&s);
+
+    /*
+
     if let Some(guild_id) = msg.guild_id() {
         // get the notifications in this server
+        
         let notifications_server: Vec<&Notification> = notifications.iter().filter(|x| guild_id.0 == x.guild_id as u64).collect();
         let mut s = String::new();
         if notifications_server.len() == 0 {
@@ -49,7 +96,7 @@ command!(list_notifications(ctx, msg, _args) {
             let _ = write!(s, "Your notifications in this server:\n```\n");
 
             for noti in notifications_server {
-                let _ = write!(s, "{}\n", noti.keyword);
+                let _ = write!(s, "[{:02}] {}\n", noti.notification_id, noti.keyword);
             }
 
             let _ = write!(s, "```");
@@ -67,7 +114,7 @@ command!(list_notifications(ctx, msg, _args) {
                     None => noti.guild_id.to_string(),
                 };
 
-                let _ = write!(s, "{} ({})\n", noti.keyword, guild_name);
+                let _ = write!(s, "[{:02}] {} ({})\n", noti.notification_id, noti.keyword, guild_name);
             }
 
             let _ = write!(s, "```");
@@ -83,32 +130,54 @@ command!(list_notifications(ctx, msg, _args) {
                 None => noti.guild_id.to_string(),
             };
 
-            let _ = write!(s, "{} ({})\n", noti.keyword, guild_name);
+            let _ = write!(s, "[{:02}] {} ({})\n", noti.notification_id, noti.keyword, guild_name);
         }
         let _ = write!(s, "```");
         let _ = msg.channel_id.say(&s);
     }
+
+    */
 });
 
 command!(delete_notification(ctx, msg, args) {
-    let keyword = args.full();
+    let keyword_or_id = args.full();
 
-    if keyword.is_empty() {
-        return Err(CommandError::from("Missing keyword."));
+    if keyword_or_id.is_empty() {
+        return Err(CommandError::from("Missing keyword or ID."));
     }
 
-    let guild_id = match msg.guild_id() {
-        Some(val) => val.0,
-        None => return Err(CommandError::from("No guild, try this in a server.")),
+    // is keyword or id?
+    let mut is_keyword;
+
+    let notification_id = match keyword_or_id.parse::<i32>() {
+        Ok(val) => {
+            is_keyword = false;
+            val
+        },
+        Err(_) => {
+            is_keyword = true;
+            0
+        }
     };
 
     let pool = get_pool(&ctx);
-    let result = pool.delete_notification(msg.author.id.0, guild_id, &keyword);
 
-    if result {
-        let s = format!("Deleted the keyword `{}`.", keyword);
+    let guild_id = msg.guild_id().map(|x| x.0);
+
+    let result = if is_keyword {
+        if guild_id.is_none() {
+            return Err(CommandError::from(get_msg!("error/notification_delete_by_keyword")));
+        }
+
+        pool.delete_notification(msg.author.id.0, guild_id, Some(&keyword_or_id), None)
+    } else {
+        pool.delete_notification(msg.author.id.0, None, None, Some(notification_id))
+    };
+
+    if let Some(deleted) = result {
+        let s = format!("Deleted the keyword `{}`.", deleted.keyword);
         let _ = msg.channel_id.say(&s);
     } else {
-        return Err(CommandError::from("You don't have that keyword set."));
+        return Err(CommandError::from(get_msg!("error/notification_delete_failed")));
     }
 });
