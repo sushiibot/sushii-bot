@@ -1,10 +1,16 @@
 use std::error::Error;
 use serenity::framework::standard::CommandError;
 
+use SerenityShardManager;
+
 command!(quit(ctx, msg, _args) {
     let _ = msg.channel_id.say("cya");
 
-    ctx.quit();
+    let data = ctx.data.lock();
+    let close_handle = data.get::<SerenityShardManager>()
+        .unwrap();
+    
+    close_handle.lock().shutdown_all();
 });
 
 command!(username(ctx, msg, args) {
