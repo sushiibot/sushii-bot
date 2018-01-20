@@ -24,3 +24,4 @@ regex = "0.2.3"
 darksky = { version = "0.7", features = ["reqwest"]}
 tzdata = "0.4.1"
 psutil = "1.1.0"
+parking_lot = "0.5.3"
