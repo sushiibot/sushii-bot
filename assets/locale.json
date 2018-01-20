@@ -28,7 +28,11 @@
         "weather_saved_location": "Saved a new location.  You won't have to pass a location argument to get the weather of this location.",
         "rep_given": "I gave {} {}1 rep.",
 
-        "list_ids_attached": "Server roles have been attached in the file (Exceeded message size limit)."
+        "list_ids_attached": "Server roles have been attached in the file (Exceeded message size limit).",
+
+        "gallery_added": "A gallery has been added for <#{}>",
+        "galleries_none": "This guild has no gallery channels.",
+        "gallery_deleted": "Gallery has been deleted."
     },
     "error": {
         "no_guild": "No guild found.",
@@ -37,6 +41,7 @@
         "no_role_config": "There isn't a role config set.",
         "no_mute_role": "There isn't a mute role set.",
         "no_user_given": "Please give a user id or mention.",
+        "no_webhook_given": "Please give a webhook url.",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
@@ -44,6 +49,8 @@
         "invalid_user": "Invalid mention or ID.",
         "invalid_rep_option": "Invalid rep action, please provide `+` or `-`.",
         "invalid_number": "Invalid number.",
+        "invalid_webhook": "Invalid webhook.",
+        "invalid_gallery_id": "Invalid gallery ID.  Use `gallery list` to get a gallery's ID.",
 
         "prune_too_high": "Invalid prune amount, must be between 1 and 99",
 
@@ -70,6 +77,11 @@
         "weather_invalid_save": "Saved location data is missing or invalid, please provide a location.  You can save a location with `weather save [location]`.",
 
         "rep_too_soon": "You can rep again {}.",
-        "rep_self": "You can't rep yourself.  Sorry."
+        "rep_self": "You can't rep yourself.  Sorry.",
+
+        "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
+
+        "notification_delete_by_keyword": "Please provide a keyword ID instead of the actual keyword, or try this in the respective guild instead.",
+        "notification_delete_failed": "You don't have that keyword set, or keyword ID is not valid."
     }
 }
