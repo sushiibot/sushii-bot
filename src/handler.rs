@@ -9,6 +9,7 @@ use std::vec::Vec;
 
 use plugins::*;
 use tasks::*;
+use utils::info::bot_update_info;
 
 use database;
 
@@ -17,7 +18,7 @@ pub struct Handler;
 impl EventHandler for Handler {
     fn ready(&self, ctx: Context, ready: Ready) {
         info!("Connected as {}", ready.user.tag());
-        util::bot_update_info(&format!("READY: Connected as {}", ready.user.tag()));
+        bot_update_info(&format!("READY: Connected as {}", ready.user.tag()));
 
         exec_on_ready!([&ctx, &ready], reminders);
 
@@ -26,7 +27,7 @@ impl EventHandler for Handler {
 
     fn resume(&self, ctx: Context, resume: ResumedEvent) {
         info!("Resumed");
-        util::bot_update_info(&format!("RESUMED: \n```{:?}```", resume));
+        bot_update_info(&format!("RESUMED: \n```{:?}```", resume));
 
         update_event(&ctx, "RESUMED");
     }
@@ -142,11 +143,12 @@ impl EventHandler for Handler {
             [&ctx, &msg],
             levels,
             random_hi,
-            notifications,
             user_info_activity,
             invite_guard,
             anti_spam,
-            message_log
+            message_log,
+            notifications,
+            gallery
         );
     }
 
