@@ -1,8 +1,10 @@
 use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
+use std::fmt::Write;
 
 use database::ConnectionPool;
+use utils::time::now_utc;
 
 pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     // skip empty messages, images / embeds / etc
@@ -30,14 +32,31 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             let user = UserId(notification.user_id as u64);
 
             if let Ok(channel) = user.create_dm_channel() {
-                let s = format!(
-                    "{0} mentioned `{1}` in {2}:\n```{0}: {3}```",
-                    msg.author.tag(),
-                    notification.keyword,
-                    msg.channel_id.mention(),
-                    msg.content
+                let desc = format!("Your notification `{}` was triggered in {}", notification.keyword, msg.channel_id.mention());
+                let messages = pool.get_messages(msg.channel_id.0, 3);
+
+                let mut s = String::new();
+
+                if let Some(mut msgs) = messages {
+                    msgs.reverse();
+                    for m in msgs {
+                        // bold the keyword
+                        let content = m.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
+                        let _ = write!(s, "`[{}] {}:` {}\n", m.created.format("%H:%M:%S UTC"), m.tag, content);
+                    }
+                } else {
+                    let content = msg.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
+                    let _ = write!(s, "`[{}] {}:` {}\n", msg.timestamp.format("%H:%M:%S UTC"), msg.author.tag(), content);
+                }
+
+                let _ = channel.id.send_message(|m| m
+                    .embed(|e| e
+                        .color(0xf58b28)
+                        .description(desc)
+                        .field(&notification.keyword, s, false)
+                        .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string())
+                    )
                 );
-                let _ = channel.id.say(&s);
             } else {
                 let s = format!(
                     "Failed sending notification message to: {}",

@@ -7,6 +7,7 @@ use schema::users;
 use schema::mod_log;
 use schema::messages;
 use schema::mutes;
+use schema::galleries;
 
 use chrono::naive::NaiveDateTime;
 use diesel::sql_types::*;
@@ -252,5 +253,21 @@ pub struct Mute {
 #[table_name = "mutes"]
 pub struct NewMute {
     pub user_id: i64,
+    pub guild_id: i64,
+}
+
+#[derive(Queryable, Clone)]
+pub struct Gallery {
+    pub id: i32,
+    pub watch_channel: i64,
+    pub webhook_url: String,
+    pub guild_id: i64,
+}
+
+#[derive(Insertable)]
+#[table_name = "galleries"]
+pub struct NewGallery<'a> {
+    pub watch_channel: i64,
+    pub webhook_url: &'a str,
     pub guild_id: i64,
 }
