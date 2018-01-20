@@ -1,7 +1,6 @@
 use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
-use std::fmt::Write;
 
 use database::ConnectionPool;
 use utils::time::now_utc;
@@ -33,29 +32,37 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
             if let Ok(channel) = user.create_dm_channel() {
                 let desc = format!("Your notification `{}` was triggered in {}", notification.keyword, msg.channel_id.mention());
-                let messages = pool.get_messages(msg.channel_id.0, 3);
 
-                let mut s = String::new();
+                // maybe switch to use Channel::messages() instead?
+                let mut messages = pool.get_messages(msg.channel_id.0, 3);
 
-                if let Some(mut msgs) = messages {
-                    msgs.reverse();
-                    for m in msgs {
-                        // bold the keyword
-                        let content = m.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
-                        let _ = write!(s, "`[{}] {}:` {}\n", m.created.format("%H:%M:%S UTC"), m.tag, content);
-                    }
-                } else {
-                    let content = msg.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
-                    let _ = write!(s, "`[{}] {}:` {}\n", msg.timestamp.format("%H:%M:%S UTC"), msg.author.tag(), content);
-                }
 
                 let _ = channel.id.send_message(|m| m
-                    .embed(|e| e
-                        .color(0xf58b28)
+                    .embed(|e| {
+                        let mut e = e.color(0xf58b28)
                         .description(desc)
-                        .field(&notification.keyword, s, false)
-                        .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string())
-                    )
+                        .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string());
+
+                        if let Some(ref mut messages) = messages {
+                            messages.reverse();
+                            for message in messages {
+                                // bold the keyword
+                                let content = message.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
+
+                                e = e.field(format!("[{}] {}", message.created.format("%H:%M:%S UTC"), message.tag),
+                                    format!("> {}", content),
+                                    false);
+                            }
+                        } else {
+                            let content = msg.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
+
+                            e = e.field(format!("[{}] {}", msg.timestamp.format("%H:%M:%S UTC"), msg.author.tag()),
+                                format!("> {}", content),
+                                false);
+                        }
+
+                        e
+                    })
                 );
             } else {
                 let s = format!(
