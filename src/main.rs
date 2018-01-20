@@ -260,52 +260,52 @@ fn main() {
                 .guild_only(true)
                 .command("prefix", |c| c
                     .desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
-                    .cmd(commands::settings::prefix)
+                    .cmd(commands::settings::bot::prefix)
                 )
                 .command("joinmsg", |c| c
                     .desc("Gets the guild's join message or sets one if given.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::joinmsg)
+                    .cmd(commands::settings::messages::joinmsg)
                 )
                 .command("leavemsg", |c| c
                     .desc("Gets the guild's leave message or sets one if given.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::leavemsg)
+                    .cmd(commands::settings::messages::leavemsg)
                 )
                 .command("modlog", |c| c
                     .desc("Sets the moderation log channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::modlog)
+                    .cmd(commands::settings::logs::modlog)
                 )
                 .command("msglog", |c| c
                     .desc("Sets the message log channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::msglog)
+                    .cmd(commands::settings::logs::msglog)
                 )
                 .command("memberlog", |c| c
                     .desc("Sets the member log channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::memberlog)
+                    .cmd(commands::settings::logs::memberlog)
                 )
                 .command("inviteguard", |c| c
                     .desc("Enables or disables the invite guard.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::inviteguard)
+                    .cmd(commands::settings::chat::inviteguard)
                 )
                 .command("muterole", |c| c
                     .desc("Sets the mute role.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::mute_role)
+                    .cmd(commands::settings::roles::mute_role)
                 )
                 .command("maxmentions", |c| c
                     .desc("Sets the maximum mentions a user can have in a single message before automatically being muted.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::max_mentions)
+                    .cmd(commands::settings::chat::max_mentions)
                 )
                 .command("listids", |c| c
                     .desc("Lists the server role ids.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::list_ids)
+                    .cmd(commands::settings::roles::list_ids)
                 )
             )
             .group("Roles", |g| g
@@ -314,17 +314,17 @@ fn main() {
                 .command("roles set", |c| c
                     .desc("Sets the role configuration.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::roles_set)
+                    .cmd(commands::settings::roles::roles_set)
                 )
                 .command("roles get", |c| c
                     .desc("Gets the role configuration.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::roles_get)
+                    .cmd(commands::settings::roles::roles_get)
                 )
                 .command("roles channel", |c| c
                     .desc("Sets the roles channel.")
                     .required_permissions(Permissions::MANAGE_GUILD)
-                    .cmd(commands::settings::roles_channel)
+                    .cmd(commands::settings::roles::roles_channel)
                 )
             )
             .group("Misc", |g| g
