@@ -6,6 +6,7 @@ use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use diesel::ExpressionMethods;
 use diesel::dsl::max;
+use diesel::BoolExpressionMethods;
 
 use diesel_migrations::run_pending_migrations;
 
@@ -486,7 +487,7 @@ impl ConnectionPool {
     }
 
     /// Creates a new notification
-    pub fn new_notification(&self, user: u64, guild: u64, keyword: &str) {
+    pub fn new_notification(&self, user: u64, guild: u64, kw: &str) {
         use schema::notifications;
 
         let conn = self.connection();
@@ -494,7 +495,7 @@ impl ConnectionPool {
         let new_notification = NewNotification {
             user_id: user as i64,
             guild_id: guild as i64,
-            keyword: keyword,
+            keyword: kw,
         };
 
         diesel::insert_into(notifications::table)
@@ -512,7 +513,7 @@ impl ConnectionPool {
         let conn = self.connection();
 
         notifications
-            .filter(guild_id.eq(guild as i64))
+            .filter(guild_id.eq(guild as i64).or(guild_id.eq(0)))
             .filter(strpos(msg, keyword).gt(0))
             .load::<Notification>(&conn)
             .ok()
@@ -530,26 +531,52 @@ impl ConnectionPool {
             .ok()
     }
 
-    pub fn delete_notification(&self, user: u64, guild: u64, kw: &str) -> bool {
+    pub fn delete_notification(&self, user: u64, guild: Option<u64>,
+            kw: Option<&str>, notification_id: Option<i32>) -> Option<Notification> {
+
         use schema::notifications::dsl::*;
 
         let conn = self.connection();
 
-        let result = diesel::delete(
-            notifications
-                .filter(user_id.eq(user as i64))
-                .filter(guild_id.eq(guild as i64))
-                .filter(keyword.eq(kw))
-            )
-            .execute(&conn)
-            .unwrap_or(0);
+        if let Some(notification_id) = notification_id {
+            // delete with a #
+            if let Some(mut v) = self.list_notifications(user) {
+                v.sort_by(|a, b| a.keyword.cmp(&b.keyword));
 
-        if result == 0 {
-            // nothing found, or some error occured
-            false
+                let target = match v.get((notification_id - 1) as usize) {
+                    Some(val) => val.clone(),
+                    None => return None,
+                };
+
+                diesel::delete(
+                    notifications
+                        .filter(user_id.eq(user as i64))
+                        .filter(guild_id.eq(target.guild_id))
+                        .filter(keyword.eq(&target.keyword))
+                    )
+                    .get_result::<Notification>(&conn)
+                    .ok()
+            } else {
+                return None;
+            }
+
+           
+        } else if let Some(guild) = guild {
+            if let Some(kw) = kw {
+                // delete with keyword in a guild
+                diesel::delete(
+                    notifications
+                        .filter(user_id.eq(user as i64))
+                        .filter(guild_id.eq(guild as i64))
+                        .filter(keyword.eq(kw))
+                    )
+                    .get_result::<Notification>(&conn)
+                    .ok()
+            } else {
+                None
+            }
         } else {
-            // found and deleted a notification
-            true
+            None
         }
     }
 
@@ -698,6 +725,19 @@ impl ConnectionPool {
         }
     }
 
+    pub fn get_messages(&self, channel_id: u64, limit: i64) -> Option<Vec<Message>> {
+        use schema::messages::dsl::*;
+
+        let conn = self.connection();
+
+        messages
+            .filter(channel.eq(channel_id as i64))
+            .order(created.desc())
+            .limit(limit)
+            .load(&conn)
+            .ok()
+    }
+
     pub fn save_weather_location(&self, id_user: u64, lat: f64, lng: f64, loc: &str) {
         use schema::users;
         use schema::users::dsl::*;
@@ -729,6 +769,8 @@ impl ConnectionPool {
             .ok()
     }
 
+
+    /// MUTES
     pub fn add_mute(&self, id_user: u64, id_guild: u64) {
         use schema::mutes;
 
@@ -774,6 +816,79 @@ impl ConnectionPool {
             .execute(&conn) {
                 warn!("[DB:delete_mute] Error while deleting mute: {}", e);
         }
+    }
+
+    /// GALLERY
+    
+    pub fn add_gallery(&self, channel: u64, guild: u64, webhook: &str) {
+        use schema::galleries;
+
+        let conn = self.connection();
+
+
+        let new_gallery = NewGallery {
+            watch_channel: channel as i64,
+            webhook_url: webhook,
+            guild_id: guild as i64,
+        };
+
+        if let Err(e) = diesel::insert_into(galleries::table)
+            .values(&new_gallery)
+            .execute(&conn) {
+                warn!("[DB:add_gallery] Error while adding new gallery: {}", e);
+            }
+    }
+
+    pub fn get_gallery_webhook(&self, channel: u64) -> Option<Vec<String>> {
+        use schema::galleries::dsl::*;
+
+        let conn = self.connection();
+
+        galleries
+            .select(webhook_url)
+            .filter(watch_channel.eq(channel as i64))
+            .load(&conn)
+            .ok()
+    }
+
+    pub fn list_galleries(&self, guild: u64) -> Option<Vec<Gallery>> {
+        use schema::galleries::dsl::*;
+
+        let conn = self.connection();
+
+        galleries
+            .filter(guild_id.eq(guild as i64))
+            .load::<Gallery>(&conn)
+            .ok()
+    }
+
+    pub fn delete_gallery(&self, guild: u64, id_gallery: i32) -> bool {
+        use schema::galleries::dsl::*;
+
+        let conn = self.connection();
+
+        let mut current = match self.list_galleries(guild) {
+            Some(val) => val,
+            None => return false,
+        };
+
+        current.sort_by(|a, b| a.watch_channel.cmp(&b.watch_channel));
+
+        if let Some(entry) = current.get((id_gallery - 1) as usize) {
+            if let Err(e) = diesel::delete(galleries
+                    .filter(watch_channel.eq(entry.watch_channel))
+                    .filter(webhook_url.eq(&entry.webhook_url))
+                )
+                .execute(&conn) {
+                
+                warn!("[DB:delete_gallery] Error while deleting gallery: {}", e);
+                false
+            } else {
+                true
+            }
+        } else {
+            false
+        }        
     }
 }
 

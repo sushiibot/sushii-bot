@@ -32,6 +32,7 @@ extern crate regex;
 extern crate darksky;
 extern crate tzdata;
 extern crate psutil;
+extern crate parking_lot;
 
 pub use diesel::r2d2;
 
@@ -54,6 +55,10 @@ use serenity::framework::standard::DispatchError::*;
 use serenity::model::Permissions;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
+use serenity::client::bridge::gateway::ShardManager;
+
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 use std::collections::HashSet;
 use std::env;
@@ -64,6 +69,11 @@ use database::ConnectionPool;
 
 impl Key for ConnectionPool {
     type Value = ConnectionPool;
+}
+
+pub struct SerenityShardManager;
+impl Key for SerenityShardManager {
+    type Value = Arc<Mutex<ShardManager>>;
 }
 
 embed_migrations!("./migrations");
@@ -88,6 +98,7 @@ fn main() {
         let pool = database::init();
 
         data.insert::<ConnectionPool>(pool);
+        data.insert::<SerenityShardManager>(Arc::clone(&client.shard_manager));
     }
 
     let owners: HashSet<UserId> = env::var("OWNER")
@@ -306,6 +317,22 @@ fn main() {
                     .desc("Lists the server role ids.")
                     .required_permissions(Permissions::MANAGE_GUILD)
                     .cmd(commands::settings::roles::list_ids)
+                )
+            )
+            .group("Gallery", |g| g
+                .guild_only(true)
+                .required_permissions(Permissions::MANAGE_GUILD)
+                .command("gallery list", |c| c
+                    .desc("Lists active galleries.")
+                    .cmd(commands::settings::gallery::gallery_list)
+                )
+                .command("gallery add", |c| c
+                    .desc("Adds a gallery.")
+                    .cmd(commands::settings::gallery::gallery_add)
+                )
+                .command("gallery delete", |c| c
+                    .desc("Deletes a gallery.")
+                    .cmd(commands::settings::gallery::gallery_delete)
                 )
             )
             .group("Roles", |g| g
