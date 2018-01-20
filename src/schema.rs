@@ -6,6 +6,15 @@ table! {
 }
 
 table! {
+    galleries (id) {
+        id -> Int4,
+        watch_channel -> Int8,
+        webhook_url -> Text,
+        guild_id -> Int8,
+    }
+}
+
+table! {
     guilds (id) {
         id -> Int8,
         name -> Nullable<Text>,
@@ -108,6 +117,7 @@ table! {
 
 allow_tables_to_appear_in_same_query!(
     events,
+    galleries,
     guilds,
     levels,
     messages,
