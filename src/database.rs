@@ -355,10 +355,12 @@ impl ConnectionPool {
                 address: None,
             };
 
-            diesel::insert_into(users::table)
+            if let Err(e) = diesel::insert_into(users::table)
                 .values(&new_user)
-                .execute(&conn)
-                .expect("Failed to insert new user row.");
+                .execute(&conn) {
+
+                warn!("Failed to insert new user row: {}", e);
+            }
         }
     }
 
