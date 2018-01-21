@@ -7,8 +7,10 @@ command!(quit(ctx, msg, _args) {
     let _ = msg.channel_id.say("cya");
 
     let data = ctx.data.lock();
-    let close_handle = data.get::<SerenityShardManager>()
-        .unwrap();
+    let close_handle = match data.get::<SerenityShardManager>() {
+        Some(v) => v,
+        None => return Err(CommandError::from("There was a problem getting the shard manager")),
+    };
     
     close_handle.lock().shutdown_all();
 });
