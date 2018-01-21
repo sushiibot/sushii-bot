@@ -8,13 +8,12 @@ use diesel::ExpressionMethods;
 use diesel::dsl::max;
 use diesel::BoolExpressionMethods;
 
-use diesel_migrations::run_pending_migrations;
-
 use r2d2::Pool;
 use r2d2::PooledConnection;
 use diesel::r2d2::ConnectionManager;
 
 use serenity;
+use std;
 use std::env;
 
 use models::*;
@@ -30,6 +29,8 @@ pub struct ConnectionPool {
     pool: Pool<ConnectionManager<PgConnection>>,
 }
 
+embed_migrations!("./migrations");
+
 pub fn init() -> ConnectionPool {
     let database_url =
         env::var("DATABASE_URL").expect("DATABASE_URL must be set in the environment.");
@@ -42,10 +43,9 @@ pub fn init() -> ConnectionPool {
     // run pending (embedded) migrations 
     info!("Running pending migrations...");
     let conn = (&pool).get().unwrap();
-    if let Err(e) = run_pending_migrations(&conn) {
+    if let Err(e) = embedded_migrations::run_with_output(&conn, &mut std::io::stdout()) {
         error!("Error while running pending migrations: {}", e);
     };
-
 
     ConnectionPool { pool }
 }
