@@ -16,17 +16,27 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         return;
     }
 
-
     let guild = match msg.guild() {
         Some(val) => val.read().clone(),
         None => return,
     };
+
+    // get configs
+    let config = pool.get_guild_config(guild.id.0);
+    let role_config = check_opt!(config.role_config);
+    let role_channel = check_opt!(config.role_channel);
+
+    // check if in correct channel
+    if msg.channel_id.0 != role_channel as u64 {
+        return;
+    }
 
     // searching for multiple role assignments
     lazy_static! {
         static ref RE: Regex = RegexBuilder::new(r"(-|\+)([\w ]*)").case_insensitive(true).build().unwrap();
     }
 
+    // actions and role search strings for further parsing
     let mut to_modify = Vec::new();
 
     // check if there are any matches or no
@@ -62,23 +72,13 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     // check if user wants to reset roles
     let should_reset = if msg.content.to_lowercase() == "reset" {
-        found = true;
         true
     } else {
         false
     };
 
     // none found, exit
-    if !found {
-        return;
-    }
-
-    let config = pool.get_guild_config(guild.id.0);
-    let role_config = check_opt!(config.role_config);
-    let role_channel = check_opt!(config.role_channel);
-
-    // check if in correct channel
-    if msg.channel_id.0 != role_channel as u64 {
+    if !found && !should_reset {
         return;
     }
 
@@ -90,10 +90,14 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         },
     };
 
-    let mut current_roles = member.roles.iter().map(|x| x.0).collect::<Vec<u64>>();
-
     let role_config = check_opt!(role_config.as_object());
 
+
+    // roles of the member, this is modified on role add / remove
+    let mut current_roles = member.roles.iter().map(|x| x.0).collect::<Vec<u64>>();
+
+    // hashmap grouped into category and roles,
+    // this is used just for keeping track of roles in each category
     let mut member_roles: HashMap<String, Vec<u64>> = HashMap::new();
 
     // add the current member's roles
