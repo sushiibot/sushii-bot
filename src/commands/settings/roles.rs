@@ -29,26 +29,37 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
                 }
                 // check if each role has correct properties
                 for (role_name, role_data) in obj.iter() {
-                    let role_fields = ["search", "primary", "secondary"];
-
-                    // check for each property
-                    for role_field in role_fields.iter() {
-                        if let Some(val) = role_data.get(role_field) {
-                            if role_field == &"search" {
-                                if !val.is_string() {
-                                    let _ = write!(s, "Field `{}` for role `{}` in category `{}` must be a string (Supports RegEx)\n", 
-                                        role_field, role_name, cat_name);
-                                }
-                            } else {
-                                if !val.is_u64() {
-                                    let _ = write!(s, "Field `{}` for role `{}` in category `{}` has to be a number (Role ID)\n", 
-                                        role_field, role_name, cat_name);
-                                }
-                            }
-                        } else {
-                            let _ = write!(s, "Role `{}` in category `{}` is missing field `{}`\n", 
-                                role_name, cat_name, role_field);
+                    // search
+                    if let Some(val) = role_data.get("search") {
+                        if !val.is_string() {
+                            let _ = write!(s, "Field `` for rolsearche `{}` in category `{}` must be a string (Supports RegEx)\n", 
+                                role_name, cat_name);
                         }
+                    } else {
+                        let _ = write!(s, "Role `{}` in category `{}` is missing field `search`\n", 
+                            role_name, cat_name);
+                    }
+
+                    // primary
+                    if let Some(val) = role_data.get("primary") {
+                        if !val.is_u64() {
+                            let _ = write!(s, "Field `primary` for role `{}` in category `{}` has to be a number (Role ID)\n", 
+                                role_name, cat_name);
+                        }
+                    } else {
+                        let _ = write!(s, "Role `{}` in category `{}` is missing field `primary`\n", 
+                            role_name, cat_name);
+                    }
+
+                    // secondary
+                    if let Some(val) = role_data.get("secondary") {
+                        if !val.is_u64() {
+                            let _ = write!(s, "Field `secondary` for role `{}` in category `{}` has to be a number (Role ID), set to 0 to disable\n", 
+                                role_name, cat_name);
+                        }
+                    } else {
+                        let _ = write!(s, "Role `{}` in category `{}` is missing field `secondary`\n", 
+                            role_name, cat_name);
                     }
                 }
             } else {
@@ -93,9 +104,15 @@ command!(roles_set(ctx, msg, args) {
     };
 
     let validated = validate_roles_config(&role_config);
-    if !validated.is_empty() {
-        return Err(CommandError::from(validated));
+    let errs = if validated.len() > 1950 {
+        format!("{}\n... and more", &validated[..1950])
+    } else {
+        validated
     };
+
+    if !errs.is_empty() {
+        return Err(CommandError::from(errs));
+    }
 
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(&ctx);
