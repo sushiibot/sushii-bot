@@ -1,21 +1,38 @@
 use serenity::framework::standard::CommandError;
 use serenity::client::CACHE;
+use serenity::client::bridge::gateway::ShardId;
 use chrono::Utc;
 use psutil;
 use utils::config::get_pool;
 
+use SerenityShardManager;
 use std::fmt::Write;
 
-// no .latency() on serenity::client::bridge::gateway::ShardMessenger?
-// command!(latency(ctx, msg) {
-//     let ltncy = ctx.shard.lock()
-//         .latency()
-//         .map_or_else(|| "N/A".to_owned(), |s| {
-//             format!("{}.{}s", s.as_secs(), s.subsec_nanos())
-//         });
-// 
-//     let _ = msg.channel_id.say(ltncy);
-// });
+command!(latency(ctx, msg) {
+    let data = ctx.data.lock();
+    let shard_manager = match data.get::<SerenityShardManager>() {
+        Some(v) => v,
+        None => return Err(CommandError::from("There was a problem getting the shard manager")),
+    };
+
+    let manager = shard_manager.lock();
+    let runners = manager.runners.lock();
+
+    // Shards are backed by a "shard runner" responsible for processing events
+    // over the shard, so we'll get the information about the shard runner for
+    // the shard this command was sent over.
+    let runner = match runners.get(&ShardId(ctx.shard_id)) {
+        Some(runner) => runner,
+        None => return Err(CommandError::from("No shard found")),
+    };
+
+    let runner_latency = match runner.latency {
+        Some(val) => format!("{} ms", val.as_secs() as f64 / 1000.0 + val.subsec_nanos() as f64 * 1e-6),
+        None => "N/A".to_owned(),
+    };
+
+    let _ = msg.channel_id.say(&format!("The shard latency is {}", runner_latency));
+});
 
 command!(ping(_ctx, msg) {
     let start = Utc::now();
