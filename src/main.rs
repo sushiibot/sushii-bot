@@ -50,10 +50,12 @@ mod database;
 
 use serenity::framework::StandardFramework;
 use serenity::framework::standard::help_commands;
+use serenity::framework::standard::HelpBehaviour;
 use serenity::framework::standard::DispatchError::*;
 
 use serenity::model::Permissions;
 use serenity::model::id::UserId;
+use serenity::utils::Colour;
 use serenity::prelude::*;
 use serenity::client::bridge::gateway::ShardManager;
 
@@ -137,6 +139,7 @@ fn main() {
                 })
                 .blocked_users(blocked_users)
                 .allow_whitespace(true)
+                .on_mention(true)
             )
             .on_dispatch_error(|_, msg, error| {
                 let mut s = String::new();
@@ -189,6 +192,17 @@ fn main() {
                 }
             })
             .help(help_commands::with_embeds)
+            .customised_help(help_commands::with_embeds, |c| c
+                .individual_command_tip("Hello!\n\
+                If you want more information about a specific command, just pass the command as argument.")
+                .command_not_found_text("Could not find {}, I'm sorry :(")
+                .suggestion_text("Did you mean {}?")
+                .lacking_permissions(HelpBehaviour::Strike)
+                .lacking_role(HelpBehaviour::Strike)
+                .wrong_channel(HelpBehaviour::Strike)
+                .embed_success_colour(Colour(0x3498db))
+                .embed_error_colour(Colour(0xe74c3c))
+            )
             .simple_bucket("rank_bucket", 15)
             .group("Ranking", |g| g
                 .guild_only(true)
@@ -416,6 +430,8 @@ fn main() {
                 )
             ),
     );
+
+    client.threadpool.set_num_threads(10);
 
     if let Err(why) = client.start() {
         error!("Client error: {:?}", why);
