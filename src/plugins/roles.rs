@@ -175,8 +175,9 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                     }
 
                     // add the role
-                    if member_roles[cat_name].is_empty() {
+                    if member_roles[cat_name].is_empty() || secondary == 0 {
                         // add primary role if it's first in it's category
+                        // OR if secondary is set to 0, which is disabled
                         (*member_roles.get_mut(cat_name).unwrap()).push(primary);
                         // add to actual roles
                         current_roles.push(primary);
