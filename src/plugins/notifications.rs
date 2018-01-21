@@ -34,7 +34,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 let desc = format!(":speech_left: Your notification `{}` was triggered in {}", notification.keyword, msg.channel_id.mention());
 
                 // maybe switch to use Channel::messages() instead?
-                let mut messages = pool.get_messages(msg.channel_id.0, 3);
+                let mut messages = pool.get_messages(msg.channel_id.0, 7);
 
 
                 let _ = channel.id.send_message(|m| m
