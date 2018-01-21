@@ -82,6 +82,9 @@
         "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
 
         "notification_delete_by_keyword": "Please provide a keyword ID instead of the actual keyword, or try this in the respective guild instead.",
-        "notification_delete_failed": "You don't have that keyword set, or keyword ID is not valid."
+        "notification_delete_failed": "You don't have that keyword set, or keyword ID is not valid.",
+
+        "roles_invalid_action": "Invalid role action, use `+[role]` or `-[role]`",
+        "roles_invalid_target": "Invalid role."
     }
 }

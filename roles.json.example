@@ -18,7 +18,7 @@
         "limit": 0,
         "roles": {
             "free_role": {
-                "search": "(free)",
+                "search": "(free|gimme)",
                 "primary": 5,
                 "secondary": 0
             }
