@@ -6,7 +6,7 @@ use std::vec::Vec;
 use std::collections::HashMap;
 use std::fmt::Write;
 
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 
 use database::ConnectionPool;
 
@@ -24,12 +24,15 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     // searching for multiple role assignments
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"(-|\+)([\w ]*)").unwrap();
+        static ref RE: Regex = RegexBuilder::new(r"(-|\+)([\w ]*)").case_insensitive(true).build().unwrap();
     }
 
     let mut to_modify = Vec::new();
 
+    // check if there are any matches or no
+    let mut found = false;
     for caps in RE.captures_iter(&msg.content) {
+        found = true;
         let action = caps.get(1).map_or("", |m| m.as_str());
         let target = caps.get(2).map_or("", |m| m.as_str());
 
@@ -55,6 +58,19 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             // to add / remove, string to search, position in message
             to_modify.push((action, value));
         }
+    }
+
+    // check if user wants to reset roles
+    let should_reset = if msg.content.to_lowercase() == "reset" {
+        found = true;
+        true
+    } else {
+        false
+    };
+
+    // none found, exit
+    if !found {
+        return;
     }
 
     let config = pool.get_guild_config(guild.id.0);
@@ -97,6 +113,13 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             if current_roles.contains(&secondary) {
                 (*member_roles.get_mut(cat_name).unwrap()).push(secondary);
             }
+
+            if should_reset {
+                // remove the role
+                if let Some(role_index) = current_roles.iter().position(|x| *x == primary || *x == secondary) {
+                    current_roles.remove(role_index);
+                }
+            }
         }
     }
 
@@ -120,7 +143,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
                 
                 // compile regex for search
-                let re = match Regex::new(search) {
+                let re = match RegexBuilder::new(search).case_insensitive(true).build() {
                     Ok(val) => val,
                     Err(e) => {
                         let s = format!("Regex compile error for `{}` in `{}`: {}\nPlease fix in role config.", role_name, cat_name, e);
@@ -201,7 +224,9 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         );
     }
 
-    if added_names.is_empty() && removed_names.is_empty() && errors.is_empty() {
+    if should_reset {
+        s = "Your roles have been reset.".to_owned();
+    } else if added_names.is_empty() && removed_names.is_empty() && errors.is_empty() {
         s = "Couldn't modify your roles\n".to_owned();
     }
 
@@ -216,4 +241,3 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         let _ = msg.channel_id.say(&s);
     }
 }
-
