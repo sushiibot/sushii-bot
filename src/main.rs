@@ -78,8 +78,6 @@ impl Key for SerenityShardManager {
     type Value = Arc<Mutex<ShardManager>>;
 }
 
-embed_migrations!("./migrations");
-
 fn main() {
     dotenv().ok();
 
