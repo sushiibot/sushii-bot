@@ -1,4 +1,3 @@
-// pub mod roles;
 #[macro_use]
 pub mod macros;
 
@@ -13,3 +12,4 @@ pub mod anti_spam;
 pub mod message_log;
 pub mod mute_evasion;
 pub mod gallery;
+pub mod roles;
