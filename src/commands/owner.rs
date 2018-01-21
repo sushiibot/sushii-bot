@@ -4,7 +4,7 @@ use serenity::framework::standard::CommandError;
 use SerenityShardManager;
 
 command!(quit(ctx, msg, _args) {
-    let _ = msg.channel_id.say("cya");
+    let _ = msg.channel_id.say("Shutting down all shards");
 
     let data = ctx.data.lock();
     let close_handle = match data.get::<SerenityShardManager>() {
