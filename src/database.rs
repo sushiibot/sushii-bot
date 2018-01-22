@@ -288,10 +288,10 @@ impl ConnectionPool {
             SELECT * 
                 FROM (
                     SELECT *,
-                        PERCENT_RANK() OVER(PARTITION BY EXTRACT(DOY FROM last_msg) ORDER BY msg_day ASC) AS msg_day_rank,
-                        PERCENT_RANK() OVER(PARTITION BY EXTRACT(WEEK FROM last_msg) ORDER BY msg_all_time ASC) AS msg_all_time_rank,
-                        PERCENT_RANK() OVER(PARTITION BY EXTRACT(MONTH FROM last_msg) ORDER BY msg_month ASC) AS msg_month_rank,
-                        PERCENT_RANK() OVER(ORDER BY msg_week ASC) AS msg_week_rank
+                        DENSE_RANK() OVER(PARTITION BY EXTRACT(DOY FROM last_msg) ORDER BY msg_day ASC) AS msg_day_rank,
+                        DENSE_RANK() OVER(PARTITION BY EXTRACT(WEEK FROM last_msg) ORDER BY msg_all_time ASC) AS msg_all_time_rank,
+                        DENSE_RANK() OVER(PARTITION BY EXTRACT(MONTH FROM last_msg) ORDER BY msg_month ASC) AS msg_month_rank,
+                        DENSE_RANK() OVER(ORDER BY msg_week ASC) AS msg_week_rank
                     FROM levels WHERE guild_id = $1 
                 ) t
             WHERE t.user_id = $2 ORDER BY id ASC

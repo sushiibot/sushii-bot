@@ -104,17 +104,17 @@ pub struct UserLevelRanked {
     #[sql_type = "Timestamp"]
     pub last_msg: NaiveDateTime,
 
-    #[sql_type = "Double"]
-    pub msg_day_rank: f64,
+    #[sql_type = "BigInt"]
+    pub msg_day_rank: i64,
 
-    #[sql_type = "Double"]
-    pub msg_all_time_rank: f64,
+    #[sql_type = "BigInt"]
+    pub msg_all_time_rank: i64,
 
-    #[sql_type = "Double"]
-    pub msg_month_rank: f64,
+    #[sql_type = "BigInt"]
+    pub msg_month_rank: i64,
 
-    #[sql_type = "Double"]
-    pub msg_week_rank: f64,
+    #[sql_type = "BigInt"]
+    pub msg_week_rank: i64,
 }
 
 #[derive(Insertable)]
