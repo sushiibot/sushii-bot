@@ -283,27 +283,35 @@ impl ConnectionPool {
     pub fn get_level(&self, id_user: u64, id_guild: u64) -> Option<UserLevelRanked> {
         let conn = self.connection();
 
-        // get percentile ranks
-        if let Some(val) = diesel::sql_query(r#"
+        // get ranks
+        match diesel::sql_query(r#"
             SELECT * 
                 FROM (
                     SELECT *,
-                        DENSE_RANK() OVER(PARTITION BY EXTRACT(DOY FROM last_msg) ORDER BY msg_day ASC) AS msg_day_rank,
-                        DENSE_RANK() OVER(PARTITION BY EXTRACT(WEEK FROM last_msg) ORDER BY msg_all_time ASC) AS msg_all_time_rank,
-                        DENSE_RANK() OVER(PARTITION BY EXTRACT(MONTH FROM last_msg) ORDER BY msg_month ASC) AS msg_month_rank,
-                        DENSE_RANK() OVER(ORDER BY msg_week ASC) AS msg_week_rank
+                        DENSE_RANK() OVER(PARTITION BY EXTRACT(DOY FROM last_msg) ORDER BY msg_day DESC) AS msg_day_rank,
+                        COUNT(*) OVER(PARTITION BY EXTRACT(DOY FROM last_msg)) AS msg_day_total,
+
+                        DENSE_RANK() OVER(PARTITION BY EXTRACT(WEEK FROM last_msg) ORDER BY msg_day DESC) AS msg_week_rank,
+                        COUNT(*) OVER(PARTITION BY EXTRACT(WEEK FROM last_msg)) AS msg_week_total,
+
+                        DENSE_RANK() OVER(PARTITION BY EXTRACT(MONTH FROM last_msg) ORDER BY msg_month DESC) AS msg_month_rank,
+                        COUNT(*) OVER(PARTITION BY EXTRACT(MONTH FROM last_msg)) AS msg_month_total,
+
+                        DENSE_RANK() OVER(ORDER BY msg_all_time DESC) AS msg_all_time_rank,
+                        COUNT(*) OVER() AS msg_all_time_total
                     FROM levels WHERE guild_id = $1 
                 ) t
             WHERE t.user_id = $2 ORDER BY id ASC
         "#)
             .bind::<BigInt, i64>(id_guild as i64)
             .bind::<BigInt, i64>(id_user as i64)
-            .load(&conn)
-            .ok() {
+            .load(&conn) {
 
-            val.get(0).map(|x| level_interval_ranked(&x))
-        } else {
-            None
+            Ok(val) => val.get(0).map(|x| level_interval_ranked(&x)),
+            Err(e) => {
+                warn!("[DB:get_level] Error while getting level: {}", e);
+                None
+            },
         }
     }
 
@@ -967,8 +975,15 @@ pub fn level_interval_ranked(user_level: &UserLevelRanked) -> UserLevelRanked {
         msg_day: msg_day,
         last_msg: user_level.last_msg,
         msg_day_rank: user_level.msg_day_rank,
-        msg_all_time_rank: user_level.msg_all_time_rank,
-        msg_month_rank: user_level.msg_month_rank,
+        msg_day_total: user_level.msg_day_total,
+
         msg_week_rank: user_level.msg_week_rank,
+        msg_week_total: user_level.msg_week_total,
+
+        msg_month_rank: user_level.msg_month_rank,
+        msg_month_total: user_level.msg_month_total,
+
+        msg_all_time_rank: user_level.msg_all_time_rank,
+        msg_all_time_total: user_level.msg_all_time_total,
     }
 }
