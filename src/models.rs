@@ -106,15 +106,23 @@ pub struct UserLevelRanked {
 
     #[sql_type = "BigInt"]
     pub msg_day_rank: i64,
-
     #[sql_type = "BigInt"]
-    pub msg_all_time_rank: i64,
-
-    #[sql_type = "BigInt"]
-    pub msg_month_rank: i64,
+    pub msg_day_total: i64,
 
     #[sql_type = "BigInt"]
     pub msg_week_rank: i64,
+    #[sql_type = "BigInt"]
+    pub msg_week_total: i64,
+
+    #[sql_type = "BigInt"]
+    pub msg_month_rank: i64,
+    #[sql_type = "BigInt"]
+    pub msg_month_total: i64,
+
+    #[sql_type = "BigInt"]
+    pub msg_all_time_rank: i64,
+    #[sql_type = "BigInt"]
+    pub msg_all_time_total: i64,
 }
 
 #[derive(Insertable)]

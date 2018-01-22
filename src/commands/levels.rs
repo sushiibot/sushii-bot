@@ -5,7 +5,6 @@ use std::fmt::Write;
 use std::collections::HashMap;
 
 use utils;
-use utils::num::format_percentile;
 use utils::config::get_pool;
 use utils::time::now_utc;
 
@@ -61,10 +60,10 @@ command!(rank(ctx, msg, args) {
 
     let html = html.replace("{USERNAME}", &user.tag());
     let html = html.replace("{AVATAR_URL}", &user.face());
-    let html = html.replace("{DAILY}", &format!("#{}", level_data.msg_day_rank));
-    let html = html.replace("{WEEKLY}", &format!("#{}", level_data.msg_week_rank));
-    let html = html.replace("{MONTHLY}", &format!("#{}", level_data.msg_month_rank));
-    let html = html.replace("{ALL}", &format!("#{}", level_data.msg_all_time_rank));
+    let html = html.replace("{DAILY}", &format!("#{}/{}", level_data.msg_day_rank, level_data.msg_day_total));
+    let html = html.replace("{WEEKLY}", &format!("#{}/{}", level_data.msg_week_rank, level_data.msg_week_total));
+    let html = html.replace("{MONTHLY}", &format!("#{}/{}", level_data.msg_month_rank, level_data.msg_month_total));
+    let html = html.replace("{ALL}", &format!("#{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total));
     let html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(user_rep));
     let html = html.replace("{REP}", &user_rep.to_string());
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
