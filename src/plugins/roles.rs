@@ -236,7 +236,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     }
 
     if !errors.is_empty() {
-        let _ = write!(s, "There were errors while updating your roles: {}", errors.join(", "));
+        let _ = write!(s, "There were errors while updating your roles:\n{}", errors.join(",\n"));
     }
 
 
