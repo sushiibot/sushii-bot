@@ -1,9 +1,8 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::id::UserId;
 use reqwest;
-use std::fmt::Write;
 use std::collections::HashMap;
-
+use std::fmt::Write;
 use utils;
 use utils::config::get_pool;
 use utils::time::now_utc;
@@ -48,37 +47,45 @@ command!(rank(ctx, msg, args) {
 
     let _ = msg.channel_id.broadcast_typing();
 
-    let mut s = "```ruby\nMessage Count\n".to_owned();
-    let _ = write!(s, "Month: {}\n", level_data.msg_month);
-    let _ = write!(s, "Week: {}\n", level_data.msg_week);
-    let _ = write!(s, "Day: {}\n", level_data.msg_day);
-    let _ = write!(s, "All: {}\n\n", level_data.msg_all_time);
-    let _ = write!(s, "Last Message: {}\n", level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC"));
-    let _ = write!(s, "```");
-
     let mut html = LEVEL_HTML.clone();
 
     let html = html.replace("{USERNAME}", &user.tag());
     let html = html.replace("{AVATAR_URL}", &user.face());
-    let html = html.replace("{DAILY}", &format!("#{}/{}", level_data.msg_day_rank, level_data.msg_day_total));
-    let html = html.replace("{WEEKLY}", &format!("#{}/{}", level_data.msg_week_rank, level_data.msg_week_total));
-    let html = html.replace("{MONTHLY}", &format!("#{}/{}", level_data.msg_month_rank, level_data.msg_month_total));
-    let html = html.replace("{ALL}", &format!("#{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total));
+    let html = html.replace("{DAILY}", &format!("{}/{}", level_data.msg_day_rank, level_data.msg_day_total));
+    let html = html.replace("{WEEKLY}", &format!("{}/{}", level_data.msg_week_rank, level_data.msg_week_total));
+    let html = html.replace("{MONTHLY}", &format!("{}/{}", level_data.msg_month_rank, level_data.msg_month_total));
+    let html = html.replace("{ALL}", &format!("{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total));
     let html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(user_rep));
     let html = html.replace("{REP}", &user_rep.to_string());
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
-    let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", activity));
+    let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
 
     let mut json = HashMap::new();
     json.insert("html", html);
     json.insert("width", "500".to_owned());
     json.insert("height", "350".to_owned());
 
+
+
     let client = reqwest::Client::new();
     let res = match client.post("http://127.0.0.1:3000/html").json(&json).send() {
         Ok(val) => val.error_for_status(),
         Err(_) => {
-            let _ = msg.channel_id.say(&s);
+            let _ = msg.channel_id.send_message(|m|
+                m.embed(|e| e
+                    .author(|a| a
+                        .name(&format!("{} [{} {} rep]", &user.tag(), get_rep_emoji_plain(user_rep), user_rep))
+                        .icon_url(&user.face())
+                    )
+                    .color(0x2ecc71)
+                    .field("Daily", &format!("{}/{}", level_data.msg_day_rank, level_data.msg_day_total), true)
+                    .field("Weekly", &format!("{}/{}", level_data.msg_week_rank, level_data.msg_week_total), true)
+                    .field("Monthly", &format!("{}/{}", level_data.msg_month_rank, level_data.msg_month_total), true)
+                    .field("All Time", &format!("{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total), true)
+                    .field("24 Hour Activity", get_activity_plain_graph(&activity), false)
+                    .thumbnail(&user.face())
+                )
+            );
             return Ok(());
         }
     };
@@ -88,7 +95,21 @@ command!(rank(ctx, msg, args) {
         Err(_) => {
             // in case webserver down or something?
             // fallback to text
-            let _ = msg.channel_id.say(&s);
+            let _ = msg.channel_id.send_message(|m|
+                m.embed(|e| e
+                    .author(|a| a
+                        .name(&format!("{} [{} {} rep]", &user.tag(), get_rep_emoji_plain(user_rep), user_rep))
+                        .icon_url(&user.face())
+                    )
+                    .color(0x2ecc71)
+                    .field("Daily", &format!("{}/{}", level_data.msg_day_rank, level_data.msg_day_total), true)
+                    .field("Weekly", &format!("{}/{}", level_data.msg_week_rank, level_data.msg_week_total), true)
+                    .field("Monthly", &format!("{}/{}", level_data.msg_month_rank, level_data.msg_month_total), true)
+                    .field("All Time", &format!("{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total), true)
+                    .field("24 Hour Activity", get_activity_plain_graph(&activity), false)
+                    .thumbnail(&user.face())
+                )
+            );
             return Ok(());
         },
     };
@@ -119,6 +140,50 @@ fn get_rep_emoji_level(user_rep: i32) -> String {
     format!("{:02}", num)
 }
 
+fn get_rep_emoji_plain(user_rep: i32) -> String {
+    match user_rep {
+        n if n >= 150 => "😀",
+        n if n >= 100 => "😄",
+        n if n >= 50  => "😊",
+        n if n >= 10  => "🙂",
+        n if n >=  0  => "😶",
+        n if n >= -5  => "😨",
+        n if n >= -10 => "🤒",
+        n if n >= -20 => "😦",
+        n if n >= -30 => "☹",
+        n if n >= -40 => "😠",
+        _ => "😡",
+    }.to_owned()
+}
+
+fn get_activity_plain_graph(activity: &Vec<i32>) -> String {
+    let max = activity.iter().max().unwrap_or(&0);
+    let min = activity.iter().min().unwrap_or(&0);
+    let range = max - min;
+    let chunk = range / 8;
+
+    let mut s = "```0  ".to_owned();
+
+    for msgs in activity.iter() {
+        let val = match msgs {
+            x if x > &(chunk * 7) => "█",
+            x if x > &(chunk * 6) => "▇",
+            x if x > &(chunk * 5) => "▆",
+            x if x > &(chunk * 4) => "▅",
+            x if x > &(chunk * 3) => "▄",
+            x if x > &(chunk * 2) => "▃",
+            x if x > &(chunk * 1) => "▂",
+            x if x > &(chunk * 0) => "▁",
+            _ => "_",
+        };
+
+        let _ = write!(s, "{}", val);
+    }
+
+    let _ = write!(s, " 24\n```");
+
+    s
+}
 
 command!(rep(ctx, msg, args) {
     let pool = get_pool(&ctx);
