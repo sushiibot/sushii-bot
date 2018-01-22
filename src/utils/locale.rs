@@ -22,6 +22,7 @@ macro_rules! get_msg {
                 $ptr
             );
 
+            #[allow(unused_mut)]
             let mut s = match LOCALE.pointer(&["/", $ptr].join("")) {
                 Some(val) => match val.as_str() {
                     Some(string) => string.to_owned(),
