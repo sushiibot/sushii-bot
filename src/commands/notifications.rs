@@ -12,7 +12,7 @@ command!(add_notification(ctx, msg, args) {
         return Err(CommandError("Missing keyword".to_owned()));
     }
 
-    let guild_id = if keyword.starts_with("global") {
+    let guild_id = if keyword.starts_with("global ") {
         keyword = keyword.replace("global ", "");
         0
     } else {
