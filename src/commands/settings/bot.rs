@@ -41,7 +41,7 @@ command!(prefix(ctx, msg, args) {
                 let _ = msg.channel_id.say(get_msg!("info/prefix_existing", &pref));
             }
         } else {
-            return Err(CommandError::from("error/prefix_no_perms"));
+            return Err(CommandError::from(get_msg!("error/prefix_no_perms")));
         }
         
     } else {
