@@ -177,24 +177,24 @@ impl ConnectionPool {
         let conn = self.connection();
 
         // fetch event
-        let rows = events
+        let event = events
             .filter(name.eq(&event_name))
-            .load::<EventCounter>(&conn)?;
+            .first::<EventCounter>(&conn);
 
         // check if a row was found
-        if rows.len() == 1 {
+        if event.is_ok() {
             // increment the counter
             diesel::update(events.filter(name.eq(&event_name)))
-                .set(count.eq(rows[0].count + 1))
+                .set(count.eq(count + 1))
                 .execute(&conn)?;
         } else {
-            let new_event_obj = NewEventCounter {
+            let new_event = NewEventCounter {
                 name: &event_name,
                 count: 1,
             };
 
             diesel::insert_into(events::table)
-                .values(&new_event_obj)
+                .values(&new_event)
                 .execute(&conn)?;
         }
 
@@ -309,7 +309,7 @@ impl ConnectionPool {
 
             Ok(val) => val.get(0).map(|x| level_interval_ranked(&x)),
             Err(e) => {
-                warn!("[DB:get_level] Error while getting level: {}", e);
+                warn_discord!("[DB:get_level] Error while getting level: {}", e);
                 None
             },
         }
@@ -367,7 +367,7 @@ impl ConnectionPool {
                 .values(&new_user)
                 .execute(&conn) {
 
-                warn!("Failed to insert new user row: {}", e);
+                warn_discord!("Failed to insert new user row: {}", e);
             }
         }
     }
@@ -794,7 +794,7 @@ impl ConnectionPool {
         if let Err(e) = diesel::insert_into(mutes::table)
             .values(&new_mute)
             .execute(&conn) {
-                warn!("[DB:add_mute] Error while adding new mute: {}", e);
+                warn_discord!("[DB:add_mute] Error while adding new mute: {}", e);
             }
     }
 
@@ -824,7 +824,7 @@ impl ConnectionPool {
                 .filter(guild_id.eq(id_guild as i64))
             )
             .execute(&conn) {
-                warn!("[DB:delete_mute] Error while deleting mute: {}", e);
+                warn_discord!("[DB:delete_mute] Error while deleting mute: {}", e);
         }
     }
 
@@ -845,7 +845,7 @@ impl ConnectionPool {
         if let Err(e) = diesel::insert_into(galleries::table)
             .values(&new_gallery)
             .execute(&conn) {
-                warn!("[DB:add_gallery] Error while adding new gallery: {}", e);
+                warn_discord!("[DB:add_gallery] Error while adding new gallery: {}", e);
             }
     }
 
@@ -891,7 +891,7 @@ impl ConnectionPool {
                 )
                 .execute(&conn) {
                 
-                warn!("[DB:delete_gallery] Error while deleting gallery: {}", e);
+                warn_discord!("[DB:delete_gallery] Error while deleting gallery: {}", e);
                 false
             } else {
                 true
