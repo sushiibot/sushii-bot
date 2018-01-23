@@ -36,7 +36,7 @@ macro_rules! warn_discord {
             )*
 
             warn!("[{}] {}", &now, &s);
-            bot_update_info(&format!("[{}] WARN: {}", &now, &s));
+            bot_update_info(&format!("`[{}] WARN: {}`", &now, &s));
         }
     }
 }
@@ -57,7 +57,7 @@ macro_rules! info_discord {
             )*
 
             info!("[{}] {}", &now, &s);
-            bot_update_info(&format!("[{}] INFO: {}", &now, &s));
+            bot_update_info(&format!("`[{}] INFO: {}`", &now, &s));
         }
     }
 }
