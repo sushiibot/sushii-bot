@@ -22,7 +22,19 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 * ...and more to be added
 
 # Installation
-Currently you will have to build everything yourself.  Later on, SQL migrations may be moved into binary downloads to simplify installation, removing the need for cloning this repository or installing Rust, Cargo, and Diesel CLI.
+1. Download the latest version from the [releases](releases) page, currently only supporting x86_64-unknown-linux-gnu.
+    ```bash
+    $ chmod +x x86_64-unknown-linux-gnu
+    ```
+2. Allow the file to be executed.
+    ```bash
+    $ chmod +x x86_64-unknown-linux-gnu
+    ```
+3. Create an `.env` file in the same directory and update accordingly [`.env.example`](.env.example).  All variables must exist except for `BLOCKED_USERS` or the bot will panic and not work properly.
+
+4. Run with `./x86_64-unknown-linux-gnu` or with a process manager like [Supervisor](http://supervisord.org).
+
+# Building from Source
 
 1. Install dependencies.
     * [PostgreSQL](https://www.postgresql.org) (9.4+)
