@@ -2,6 +2,8 @@ use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
 
+use regex::Regex;
+
 use database::ConnectionPool;
 use utils::time::now_utc;
 
@@ -25,6 +27,13 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             // skip notifications for self
             if notification.user_id as u64 == msg.author.id.0 {
                 continue;
+            }
+
+            let re = check_res!(Regex::new(&format!(r"\b{}\b", notification.keyword)));
+
+            // keyword is in the middle of another word which is what we don't want
+            if !re.is_match(&msg.content) {
+                return
             }
 
             // message user
