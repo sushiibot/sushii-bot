@@ -23,9 +23,6 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 
 # Installation
 1. Download the latest version from the [releases](releases) page, currently only supporting x86_64-unknown-linux-gnu.
-    ```bash
-    $ chmod +x x86_64-unknown-linux-gnu
-    ```
 2. Allow the file to be executed.
     ```bash
     $ chmod +x x86_64-unknown-linux-gnu
