@@ -27,18 +27,20 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 continue;
             }
 
-            let start = check_opt!(msg.content.rfind(&notification.keyword));
+            let lowered = msg.content.to_lowercase();
+
+            let start = check_opt!(lowered.rfind(&notification.keyword));
             let end = start + notification.keyword.len();
 
             if start > 1 {
-                let before = check_opt!(msg.content.chars().nth(start - 1));
+                let before = check_opt!(lowered.chars().nth(start - 1));
                 if before.is_alphanumeric() {
                     return;
                 }
             }
 
-            if end < msg.content.len() - 1 {
-                let after = check_opt!(msg.content.chars().nth(end));
+            if end < lowered.len() - 1 {
+                let after = check_opt!(lowered.chars().nth(end));
                 if after.is_alphanumeric() {
                     return;
                 }
@@ -64,7 +66,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                             messages.reverse();
                             for message in messages {
                                 // bold the keyword
-                                let content = if let Some(start) = message.content.rfind(&notification.keyword) {
+                                let content = if let Some(start) = message.content.to_lowercase().rfind(&notification.keyword) {
                                     let end = start + notification.keyword.len();
 
                                     let mut content = message.content.clone();
