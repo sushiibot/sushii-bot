@@ -2,8 +2,6 @@ use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
 
-use regex::Regex;
-
 use database::ConnectionPool;
 use utils::time::now_utc;
 
@@ -29,11 +27,21 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 continue;
             }
 
-            let re = check_res!(Regex::new(&format!(r"\b{}\b", notification.keyword)));
+            let start = check_opt!(msg.content.rfind(&notification.keyword));
+            let end = start + notification.keyword.len();
 
-            // keyword is in the middle of another word which is what we don't want
-            if !re.is_match(&msg.content) {
-                return
+            if start > 1 {
+                let before = check_opt!(msg.content.chars().nth(start - 1));
+                if before.is_alphanumeric() {
+                    return;
+                }
+            }
+
+            if end < msg.content.len() - 1 {
+                let after = check_opt!(msg.content.chars().nth(end));
+                if after.is_alphanumeric() {
+                    return;
+                }
             }
 
             // message user
@@ -56,7 +64,18 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                             messages.reverse();
                             for message in messages {
                                 // bold the keyword
-                                let content = message.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
+                                let content = if let Some(start) = message.content.rfind(&notification.keyword) {
+                                    let end = start + notification.keyword.len();
+
+                                    let mut content = message.content.clone();
+                                    content.insert_str(end, "**");
+                                    content.insert_str(start, "**");
+
+                                    content
+                                } else {
+                                    message.content.replace(&notification.keyword, &format!("**{}**", notification.keyword))
+                                };
+
 
                                 e = e.field(format!("[{}] {}", message.created.format("%H:%M:%S UTC"), message.tag),
                                     format!("> {}", content),
