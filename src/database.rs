@@ -157,7 +157,8 @@ impl ConnectionPool {
         }
 
         // update the guild row
-        match diesel::update(guilds.filter(id.eq(guild_id as i64)))
+        match diesel::update(guilds)
+            .filter(id.eq(guild_id as i64))
             .set(prefix.eq(new_prefix))
             .execute(&conn) {
                 Err(e) => error!("Error while setting a guild prefix: {}", e),
@@ -184,7 +185,8 @@ impl ConnectionPool {
         // check if a row was found
         if event.is_ok() {
             // increment the counter
-            diesel::update(events.filter(name.eq(&event_name)))
+            diesel::update(events)
+                .filter(name.eq(&event_name))
                 .set(count.eq(count + 1))
                 .execute(&conn)?;
         } else {
@@ -247,11 +249,10 @@ impl ConnectionPool {
             let new_interval_user = level_interval(&user[0]);
 
             // found a user object
-            diesel::update(
-                levels
-                    .filter(user_id.eq(id_user as i64))
-                    .filter(guild_id.eq(id_guild as i64))
-                ).set((
+            diesel::update(levels)
+                .filter(user_id.eq(id_user as i64))
+                .filter(guild_id.eq(id_guild as i64))
+                .set((
                     msg_all_time.eq(user[0].msg_all_time + 1),
                     msg_month.eq(new_interval_user.msg_month + 1),
                     msg_week.eq(new_interval_user.msg_week + 1),
@@ -341,7 +342,8 @@ impl ConnectionPool {
                 error!("Error incrementing user {} activity", id_user);
             }
             // update the user
-            diesel::update(users.filter(id.eq(id_user as i64)))
+            diesel::update(users)
+                .filter(id.eq(id_user as i64))
                 .set((
                     msg_activity.eq(updated_activity),
                     last_msg.eq(now),
@@ -415,18 +417,21 @@ impl ConnectionPool {
         let now = now_utc();
 
         // update last_rep timestamp
-        if let Err(e) = diesel::update(users.filter(id.eq(id_user as i64)))
+        if let Err(e) = diesel::update(users)
+            .filter(id.eq(id_user as i64))
             .set(last_rep.eq(now))
             .execute(&conn) {
                 error!("[Rep] Error when updating last rep: {}", e);
             }
 
         let result = if action == "+" {
-            diesel::update(users.filter(id.eq(id_target as i64)))
+            diesel::update(users)
+                .filter(id.eq(id_target as i64))
                 .set(rep.eq(rep + 1))
                 .execute(&conn)
         } else {
-            diesel::update(users.filter(id.eq(id_target as i64)))
+            diesel::update(users)
+                .filter(id.eq(id_target as i64))
                 .set(rep.eq(rep - 1))
                 .execute(&conn)
         };
