@@ -1,8 +1,9 @@
 use serenity::prelude::Context;
 use database;
+use diesel::result::Error;
 use models::GuildConfig;
 
-pub fn get_config_from_context(ctx: &Context, guild_id: u64) -> GuildConfig {
+pub fn get_config_from_context(ctx: &Context, guild_id: u64) -> Result<GuildConfig, Error> {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 

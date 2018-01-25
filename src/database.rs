@@ -32,19 +32,18 @@ pub struct ConnectionPool {
 embed_migrations!("./migrations");
 
 pub fn init() -> ConnectionPool {
-    let database_url =
-        env::var("DATABASE_URL").expect("DATABASE_URL must be set in the environment.");
+    let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set in the environment.");
     let manager = ConnectionManager::<PgConnection>::new(database_url);
 
-    let pool = Pool::builder().build(manager).expect(
-        "Failed to create pool.",
-    );
+    let pool = Pool::builder().build(manager)
+        .expect("Failed to create pool.");
 
     // run pending (embedded) migrations 
     info!("Running pending migrations...");
     let conn = (&pool).get().unwrap();
     if let Err(e) = embedded_migrations::run_with_output(&conn, &mut std::io::stdout()) {
-        error!("Error while running pending migrations: {}", e);
+        warn_discord!("Error while running pending migrations: {}", e);
     };
 
     ConnectionPool { pool }
@@ -58,7 +57,7 @@ impl ConnectionPool {
 
     /// Creates a new config for a guild,
     /// ie when the bot joins a new guild.
-    pub fn new_guild(&self, guild_id: u64) -> GuildConfig {
+    pub fn new_guild(&self, guild_id: u64) -> Result<GuildConfig, Error> {
         use schema::guilds;
 
         let new_guild_obj = NewGuildConfig {
@@ -84,22 +83,20 @@ impl ConnectionPool {
         diesel::insert_into(guilds::table)
             .values(&new_guild_obj)
             .get_result::<GuildConfig>(&conn)
-            .expect("Error saving new guild.")
     }
 
     // gets a guild's config if it exists, or create one if it doesn't
-    pub fn get_guild_config(&self, guild_id: u64) -> GuildConfig {
+    pub fn get_guild_config(&self, guild_id: u64) -> Result<GuildConfig, Error> {
         use schema::guilds::dsl::*;
 
         let conn = self.connection();
 
-        let rows = guilds
+        let config = guilds
             .filter(id.eq(guild_id as i64))
-            .load::<GuildConfig>(&conn)
-            .expect("Error loading guild config");
+            .first::<GuildConfig>(&conn);
 
-        if rows.len() == 1 {
-            rows[0].clone()
+        if let Ok(config) = config {
+            Ok(config)
         } else {
             self.new_guild(guild_id)
         }
@@ -111,22 +108,23 @@ impl ConnectionPool {
 
         let conn = self.connection();
 
-        match diesel::update(guilds::table)
+        if let Err(e) = diesel::update(guilds::table)
             .filter(id.eq(config.id))
             .set(config)
             .execute(&conn) {
-                Err(e) => error!("Error while updating a guild: {}", e),
-                _ => {},
-        };
+                
+                warn_discord!("Error while updating a guild: {}", e)
+        }
     }
 
     /// PREFIX
 
     /// Shortcut function to get the prefix for a guild
     pub fn get_prefix(&self, guild_id: u64) -> Option<String> {
-        let guild = self.get_guild_config(guild_id);
-
-        guild.prefix
+        match self.get_guild_config(guild_id) {
+            Ok(val) => val.prefix,
+            Err(_) => None,
+        }
     }
 
     // sets the prefix for a guild
@@ -153,17 +151,20 @@ impl ConnectionPool {
         } else {
             // check if this is a new guild,
             // make a new config if it is
-            self.new_guild(guild_id);
+            if let Err(_) = self.new_guild(guild_id) {
+                return false;
+            }
         }
 
         // update the guild row
-        match diesel::update(guilds)
+        if let Err(e) = diesel::update(guilds)
             .filter(id.eq(guild_id as i64))
             .set(prefix.eq(new_prefix))
             .execute(&conn) {
-                Err(e) => error!("Error while setting a guild prefix: {}", e),
-                _ => {}
-        };
+            
+                warn_discord!("Error while setting a guild prefix: {}", e);
+                return false;
+        }
 
         true
     }
@@ -342,14 +343,17 @@ impl ConnectionPool {
                 error!("Error incrementing user {} activity", id_user);
             }
             // update the user
-            diesel::update(users)
+            if let Err(e) = diesel::update(users)
                 .filter(id.eq(id_user as i64))
                 .set((
                     msg_activity.eq(updated_activity),
                     last_msg.eq(now),
                 ))
-                .execute(&conn)
-                .expect("Failed to update user row.");
+                .execute(&conn) {
+
+                warn_discord!("Error while updating user activity: {}", e);
+            }
+                
         } else {
             // create vector of 24 0's
             let init_activity = vec![0; 24];
@@ -381,8 +385,8 @@ impl ConnectionPool {
 
         users
             .filter(id.eq(id_user as i64))
-            .load::<User>(&conn)
-            .ok().map(|x: Vec<User>| x[0].clone())
+            .first::<User>(&conn)
+            .ok()
     }
 
     pub fn get_user_last_message(&self, id_user: u64) -> Option<NaiveDateTime> {

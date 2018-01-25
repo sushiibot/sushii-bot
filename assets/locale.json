@@ -35,6 +35,7 @@
         "gallery_deleted": "Gallery has been deleted."
     },
     "error": {
+        "unknown_error": "Something has gone wrong :(  Try this again maybe?",
         "no_guild": "No guild found.",
         "no_channel_given": "No channel given.",
         "no_config_given": "No configuration provided.",

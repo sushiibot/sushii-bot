@@ -22,7 +22,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     };
 
     // get configs
-    let config = pool.get_guild_config(guild.id.0);
+    let config = check_res!(pool.get_guild_config(guild.id.0));
     let role_config = check_opt!(config.role_config);
     let role_channel = check_opt!(config.role_channel);
 

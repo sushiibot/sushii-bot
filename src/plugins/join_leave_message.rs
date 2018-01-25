@@ -7,7 +7,7 @@ use serenity::prelude::*;
 use utils::config::get_config_from_context;
 
 pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &Member) {
-    let config = get_config_from_context(&ctx, guild_id.0);
+    let config = check_res!(get_config_from_context(&ctx, guild_id.0));
 
     if let Some(joinmsg) = config.join_msg.clone() {
         if let Some(msgchannel) = config.msg_channel.clone() {
@@ -34,7 +34,7 @@ pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &Memb
 }
 
 pub fn on_guild_member_removal(ctx: &Context, guild_id: &GuildId, user: &User, _: &Option<Member>) {
-    let config = get_config_from_context(&ctx, guild_id.0);
+    let config = check_res!(get_config_from_context(&ctx, guild_id.0));
 
     if let Some(leavemsg) = config.leave_msg.clone() {
         if let Some(msgchannel) = config.msg_channel.clone() {

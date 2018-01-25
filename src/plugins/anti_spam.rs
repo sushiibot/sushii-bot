@@ -26,7 +26,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         }
 
         // get the config
-        let config = pool.get_guild_config(guild.id.0);
+        let config = check_res!(pool.get_guild_config(guild.id.0));
 
         if msg.mentions.len() > config.max_mention as usize {
             // get the member
