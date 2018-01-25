@@ -13,8 +13,20 @@ macro_rules! check_res {
         match $expr {
             Ok(v) => v,
             Err(e) => {
-                warn!("Error: {}", e);
+                warn_discord!("Error: {}", e);
                 return
+            },
+        }
+    }
+}
+
+macro_rules! check_res_msg {
+    ( $expr:expr ) => {
+        match $expr {
+            Ok(v) => v,
+            Err(e) => {
+                warn_discord!("Error: {}", e);
+                return Err(CommandError::from(get_msg!("error/unknown_error")))
             },
         }
     }

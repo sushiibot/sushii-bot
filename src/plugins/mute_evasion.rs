@@ -10,7 +10,7 @@ pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &mut 
     let user = member.user.read().clone();
 
     if pool.should_mute(user.id.0, guild_id.0) {
-        let config = pool.get_guild_config(guild_id.0);
+        let config = check_res!(pool.get_guild_config(guild_id.0));
 
         if let Some(role) = config.mute_role {
             let case_id = pool.add_mod_action(
@@ -41,7 +41,7 @@ pub fn on_guild_member_removal(
 ) {
     if let &Some(ref memb) = member {
         let pool = get_pool(&ctx);
-        let config = pool.get_guild_config(guild_id.0);
+        let config = check_res!(pool.get_guild_config(guild_id.0));
 
         // check if mute role set in config
         if let Some(role) = config.mute_role {

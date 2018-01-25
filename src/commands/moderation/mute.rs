@@ -29,7 +29,7 @@ command!(mute(ctx, msg, args) {
 
     let pool = get_pool(&ctx);
     // get the mute role, return if there isn't one set
-    let mute_role = match pool.get_guild_config(guild.id.0).mute_role {
+    let mute_role = match check_res_msg!(pool.get_guild_config(guild.id.0)).mute_role {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("error/no_mute_role"))),
     };

@@ -22,7 +22,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         }
 
         // check the guild config if inviteguard is enabled
-        let invite_guard = match pool.get_guild_config(guild.id.0).invite_guard {
+        let invite_guard = match check_res!(pool.get_guild_config(guild.id.0)).invite_guard {
             Some(val) => val,
             None => return,
         };
