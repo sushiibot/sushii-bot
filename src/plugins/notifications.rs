@@ -39,7 +39,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 }
             }
 
-            if end < lowered.len() - 1 {
+            if end < lowered.len() {
                 let after = check_opt!(lowered.chars().nth(end));
                 if after.is_alphanumeric() {
                     return;
