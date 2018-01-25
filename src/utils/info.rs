@@ -1,19 +1,19 @@
 use std::env;
 
 use reqwest;
-use reqwest::header::ContentType;
+
+use std::collections::HashMap;
 
 pub fn bot_update_info(status: &str) {
     let webhook_url = env::var("INFO_WEBHOOK").expect("Expected INFO_WEBHOOK in the environment.");
 
-    let mut data = r#"{"content": "{STATUS}"}"#.to_owned();
-    data = data.replace("{STATUS}", &status);
+    let mut data = HashMap::new();
+    data.insert("content", status);
 
     let client = reqwest::Client::new();
     let res = client
         .post(&webhook_url)
-        .body(data)
-        .header(ContentType::json())
+        .json(&data)
         .send();
 
     match res {
