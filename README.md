@@ -27,7 +27,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.
     ```bash
     $ chmod +x x86_64-unknown-linux-gnu
     ```
-3. Create an `.env` file in the same directory and update accordingly [`.env.example`](.env.example).  All variables must exist except for `BLOCKED_USERS` or the bot will panic and not work properly.
+3. Create an `.env` file in the same directory and update according to [`.env.example`](.env.example).  All variables must exist except for `BLOCKED_USERS` or the bot will panic.
 
 4. Run with `./x86_64-unknown-linux-gnu` or with a process manager like [Supervisor](http://supervisord.org).
 
