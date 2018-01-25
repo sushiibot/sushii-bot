@@ -95,7 +95,7 @@ fn main() {
 
     {
         let mut data = client.data.lock();
-        let pool = database::init();
+        let pool = database::ConnectionPool::new();
 
         data.insert::<ConnectionPool>(pool);
         data.insert::<SerenityShardManager>(Arc::clone(&client.shard_manager));
