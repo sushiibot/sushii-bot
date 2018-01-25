@@ -83,7 +83,14 @@ command!(ban(ctx, msg, args) {
 
 
         // add a pending case, remove if ban errored
-        let case_id = pool.add_mod_action("ban", guild.id.0, &user, reason, true, Some(msg.author.id.0)).case_id;
+        let case_id = match pool.add_mod_action("ban", guild.id.0, &user, reason, true, Some(msg.author.id.0)) {
+            Ok(val) => val.case_id,
+            Err(_) => {
+                let e = format!("Something went wrong with the database.  Try this again?");
+                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                continue;
+            }
+        };
 
         // ban the user
         let _ = match guild.ban(u, &7) {
@@ -190,7 +197,14 @@ command!(unban(ctx, msg, args) {
 
 
         // add a pending case, remove if unban errored
-        let case_id = pool.add_mod_action("unban", guild.id.0, &user, reason, true, Some(msg.author.id.0)).case_id;
+        let case_id = match pool.add_mod_action("unban", guild.id.0, &user, reason, true, Some(msg.author.id.0)) {
+            Ok(val) => val.case_id,
+            Err(_) => {
+                let e = format!("Something went wrong with the database.  Try this again?");
+                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                continue;
+            }
+        };
 
         // unban the user
         let _ = match guild.unban(u) {

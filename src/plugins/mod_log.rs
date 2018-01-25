@@ -25,7 +25,7 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
     // add the action to the database if not pendings
     let mut db_entry = match pool.get_pending_mod_actions("ban", guild.0, user.id.0) {
         Some(val) => val,
-        None => pool.add_mod_action("ban", guild.0, user, None, false, None),
+        None => check_res!(pool.add_mod_action("ban", guild.0, user, None, false, None)),
     };
 
     let (tag, face) = get_user_tag_face(&db_entry);
@@ -53,7 +53,7 @@ pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, user: &User) {
     // add the action to the database if not pendings
     let mut db_entry = match pool.get_pending_mod_actions("unban", guild.0, user.id.0) {
         Some(val) => val,
-        None => pool.add_mod_action("unban", guild.0, user, None, false, None),
+        None => check_res!(pool.add_mod_action("unban", guild.0, user, None, false, None)),
     };
 
     let (tag, face) = get_user_tag_face(&db_entry);
@@ -122,7 +122,7 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
     // check for pending mutes (automated or command mutes)
     let mut db_entry = match pool.get_pending_mod_actions(action, member.guild_id.0, user.id.0) {
         Some(val) => val,
-        None => pool.add_mod_action(action, member.guild_id.0, &user, None, false, None),
+        None => check_res!(pool.add_mod_action(action, member.guild_id.0, &user, None, false, None)),
     };
 
     let (tag, face) = get_user_tag_face(&db_entry);
