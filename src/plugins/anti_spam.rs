@@ -45,14 +45,14 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             };
 
             // create a pending case with mute, reason, no exexcutor (defaults to bot)
-            let case_id = pool.add_mod_action(
+            let case_id = check_res!(pool.add_mod_action(
                 "mute",
                 guild.id.0,
                 &msg.author,
                 Some("Automated Mute: User exceeded mention limit. (10)"),
                 true,
                 None,
-            ).case_id;
+            )).case_id;
 
             // add the mute role
             if let Err(e) = member.add_role(mute_role as u64) {

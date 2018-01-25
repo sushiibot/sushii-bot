@@ -47,7 +47,7 @@ command!(mute(ctx, msg, args) {
     let user = member.user.read().clone();
 
     // add a pending case, remove if ban errored
-    let case_id = pool.add_mod_action("mute", guild.id.0, &user, reason, true, Some(msg.author.id.0)).case_id;
+    let case_id = check_res_msg!(pool.add_mod_action("mute", guild.id.0, &user, reason, true, Some(msg.author.id.0))).case_id;
 
     if let Err(_) = member.add_role(mute_role as u64) {
         // remove failed mod entry

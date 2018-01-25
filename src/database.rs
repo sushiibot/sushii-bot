@@ -31,25 +31,26 @@ pub struct ConnectionPool {
 
 embed_migrations!("./migrations");
 
-pub fn init() -> ConnectionPool {
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set in the environment.");
-    let manager = ConnectionManager::<PgConnection>::new(database_url);
-
-    let pool = Pool::builder().build(manager)
-        .expect("Failed to create pool.");
-
-    // run pending (embedded) migrations 
-    info!("Running pending migrations...");
-    let conn = (&pool).get().unwrap();
-    if let Err(e) = embedded_migrations::run_with_output(&conn, &mut std::io::stdout()) {
-        warn_discord!("Error while running pending migrations: {}", e);
-    };
-
-    ConnectionPool { pool }
-}
 
 impl ConnectionPool {
+    pub fn new() -> ConnectionPool {
+        let database_url = env::var("DATABASE_URL")
+            .expect("DATABASE_URL must be set in the environment.");
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
+
+        let pool = Pool::builder().build(manager)
+            .expect("Failed to create pool.");
+
+        // run pending (embedded) migrations 
+        info!("Running pending migrations...");
+        let conn = (&pool).get().unwrap();
+        if let Err(e) = embedded_migrations::run_with_output(&conn, &mut std::io::stdout()) {
+            warn_discord!("[DB:embedded_migrations] Error while running pending migrations: {}", e);
+        };
+
+        ConnectionPool { pool }
+    }
+
     pub fn connection(&self) -> PooledConnection<ConnectionManager<PgConnection>> {
         // get a connection from the pool
         self.pool.get().unwrap()
@@ -113,7 +114,7 @@ impl ConnectionPool {
             .set(config)
             .execute(&conn) {
                 
-                warn_discord!("Error while updating a guild: {}", e)
+                warn_discord!("[DB:save_guild_config] Error while updating a guild: {}", e)
         }
     }
 
@@ -162,7 +163,7 @@ impl ConnectionPool {
             .set(prefix.eq(new_prefix))
             .execute(&conn) {
             
-                warn_discord!("Error while setting a guild prefix: {}", e);
+                warn_discord!("[DB:set_prefix] Error while setting a guild prefix: {}", e);
                 return false;
         }
 
@@ -340,7 +341,7 @@ impl ConnectionPool {
             if let Some(elem) = updated_activity.get_mut(hour as usize) {
                 *elem = *elem + 1;
             } else {
-                error!("Error incrementing user {} activity", id_user);
+                warn_discord!("[DB:update_user_activity_message] Error incrementing user {} activity", id_user);
             }
             // update the user
             if let Err(e) = diesel::update(users)
@@ -351,7 +352,7 @@ impl ConnectionPool {
                 ))
                 .execute(&conn) {
 
-                warn_discord!("Error while updating user activity: {}", e);
+                warn_discord!("[DB:update_user_activity_message] Error while updating user activity: {}", e);
             }
                 
         } else {
@@ -373,7 +374,7 @@ impl ConnectionPool {
                 .values(&new_user)
                 .execute(&conn) {
 
-                warn_discord!("Failed to insert new user row: {}", e);
+                warn_discord!("[DB:update_user_activity_message] Failed to insert new user row: {}", e);
             }
         }
     }
@@ -425,7 +426,7 @@ impl ConnectionPool {
             .filter(id.eq(id_user as i64))
             .set(last_rep.eq(now))
             .execute(&conn) {
-                error!("[Rep] Error when updating last rep: {}", e);
+                warn_discord!("[DB:rep_user] Error when updating last rep: {}", e);
             }
 
         let result = if action == "+" {
@@ -441,7 +442,7 @@ impl ConnectionPool {
         };
         
         if let Err(e) = result {
-            error!("[Rep] Error when updating rep: {}", e);
+            warn_discord!("[DB:rep_user] Error when updating rep: {}", e);
         }
     }
 
@@ -463,10 +464,12 @@ impl ConnectionPool {
             time_to_remind: time,
         };
 
-        diesel::insert_into(reminders::table)
+        if let Err(e) = diesel::insert_into(reminders::table)
             .values(&new_reminder_obj)
-            .execute(&conn)
-            .expect("Failed to insert new reminder.");
+            .execute(&conn) {
+
+            warn_discord!("[DB:add_reminder] Failed to insert new reminder: {}", e);
+        }
     }
 
     pub fn get_overdue_reminders(&self) -> Option<Vec<Reminder>> {
@@ -489,9 +492,11 @@ impl ConnectionPool {
 
         let conn = self.connection();
 
-        diesel::delete(reminders.filter(id.eq(reminder_id)))
-            .execute(&conn)
-            .expect("Error deleting reminder.");
+        if let Err(e) = diesel::delete(reminders.filter(id.eq(reminder_id)))
+            .execute(&conn) {
+
+            warn_discord!("[DB:remove_reminder] Failed to remove reminder: {}", e);
+        }
     }
 
     pub fn get_reminders(&self, id_user: u64) -> Option<Vec<Reminder>> {
@@ -517,10 +522,12 @@ impl ConnectionPool {
             keyword: kw,
         };
 
-        diesel::insert_into(notifications::table)
+        if let Err(e) = diesel::insert_into(notifications::table)
             .values(&new_notification)
-            .execute(&conn)
-            .expect("Failed to insert new notification.");
+            .execute(&conn) {
+
+            warn_discord!("[DB:new_notification] Failed to insert new notification.", e);
+        }
     }
 
     /// Gets notifications that have been triggered
@@ -601,7 +608,7 @@ impl ConnectionPool {
 
     /// MOD ACTIONS
     pub fn add_mod_action(&self, mod_action: &str, guild: u64, user: &serenity::model::user::User,
-            action_reason: Option<&str>, is_pending: bool, executor: Option<u64>) -> ModAction {
+            action_reason: Option<&str>, is_pending: bool, executor: Option<u64>) -> Result<ModAction, Error> {
         use schema::mod_log;
         use schema::mod_log::dsl::*;
         
@@ -613,8 +620,7 @@ impl ConnectionPool {
         let new_case_id = mod_log
             .select(max(case_id))
             .filter(guild_id.eq(guild as i64))
-            .first::<Option<i32>>(&conn)
-            .expect("Failed to get next mod case id.")
+            .first::<Option<i32>>(&conn)?
             .unwrap_or(0) + 1;
 
         // create new mod action 
@@ -632,10 +638,15 @@ impl ConnectionPool {
         };
 
         // add the action and return the new action
-        diesel::insert_into(mod_log::table)
+        let result = diesel::insert_into(mod_log::table)
             .values(&new_action)
-            .get_result::<ModAction>(&conn)
-            .expect("Failed to insert new mod action.")
+            .get_result::<ModAction>(&conn);
+
+        if let Err(ref e) = result {
+            warn_discord!("[DB:add_mod_action] Error adding mod action: {}", e);
+        }
+
+        result
     }
 
     pub fn remove_mod_action(&self, guild: u64, user: &serenity::model::user::User, case: i32) {
@@ -650,7 +661,7 @@ impl ConnectionPool {
                 .filter(case_id.eq(case))
             )
             .execute(&conn) {
-                error!("Error while removing a mod action due to failed ban: {}", e);
+                warn_discord!("[DB:remove_mod_action] Error while removing a mod action due to failed ban: {}", e);
         }
     }
 
@@ -661,11 +672,13 @@ impl ConnectionPool {
         let conn = self.connection();
 
         // id/entry_id is the unique global serial id, not the case id
-        diesel::update(mod_log::table)
+        if let Err(e) = diesel::update(mod_log::table)
             .filter(id.eq(entry.id))
             .set(&entry)
-            .execute(&conn)
-            .expect("Failed to update mod_log row.");
+            .execute(&conn) {
+
+                warn_discord!("[DB:update_mod_action] Error while updating mod action: {}", e);
+            }
     }
 
     pub fn get_latest_mod_action(&self, guild: u64) -> i32 {
@@ -726,7 +739,7 @@ impl ConnectionPool {
         if let Err(e) = diesel::insert_into(messages::table)
             .values(&new_message)
             .execute(&conn) {
-                error!("Error while logging new message: {}", e);
+                warn_discord!("[DB:log_message] Error while logging new message: {}", e);
             }
     }
 
@@ -740,7 +753,7 @@ impl ConnectionPool {
             .filter(id.eq(msg_id as i64))
             .set(content.eq(new_content))
             .execute(&conn) {
-                error!("[Message] Error updating message: {}", e);
+                warn_discord!("[DB:update_message] Error updating message: {}", e);
         }
     }
 
@@ -771,7 +784,7 @@ impl ConnectionPool {
                 address.eq(Some(loc))
             ))
             .execute(&conn) {
-                Err(e) => error!("Error while updating a user weather location: {}", e),
+                Err(e) => warn_discord!("[DB:save_weather_location] Error while updating a user weather location: {}", e),
                 _ => {},
         };
     }
@@ -907,7 +920,7 @@ impl ConnectionPool {
             }
         } else {
             false
-        }        
+        }
     }
 }
 
