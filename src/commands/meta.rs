@@ -2,11 +2,20 @@ use serenity::framework::standard::CommandError;
 use serenity::client::CACHE;
 use serenity::client::bridge::gateway::ShardId;
 use chrono::Utc;
+use chrono::DateTime;
+use chrono::Duration;
+use chrono_humanize::HumanTime;
 use psutil;
+use sys_info;
 use utils::config::get_pool;
 
 use SerenityShardManager;
 use std::fmt::Write;
+
+
+lazy_static! {
+    static ref START_TIME: DateTime<Utc> = Utc::now();
+}
 
 command!(latency(ctx, msg) {
     let data = ctx.data.lock();
@@ -114,18 +123,95 @@ command!(stats(_ctx, msg) {
     };
 
     const B_TO_MB: u64 = 1024 * 1024;
+    const K_TO_GB: u64 = 1024 * 1024; // same as B_TO_MB but more clear i guess
+    const K_TO_GB_F: f64 = 1024.0 * 1024.0;
 
-    let mem_total = memory.size / B_TO_MB;
     let mem_rss = memory.resident / B_TO_MB;
-    let memory = format!("{}MB/{}MB (RSS/Total)", mem_rss, mem_total);
-    let guilds = CACHE.read().guilds.len();
+    let mem_share = memory.share / B_TO_MB;
+    let mem_total = memory.size / B_TO_MB;
+    let memory = format!("Resident: {} MB\nShared: {} MB\nTotal: {} MB", mem_rss, mem_share, mem_total);
+
+    let cache = CACHE.read();
+    let guilds_count = cache.guilds.len();
+    let channels_count = cache.channels.len();
+    let users_count = cache.users.len();
+
+    let current_time = Utc::now();
+    let uptime = current_time.signed_duration_since(*START_TIME);
+    let uptime_humanized = format!("{:#}", HumanTime::from(uptime)).replace("in ", "");
+
+    let system_uptime_sec = psutil::system::uptime();
+    let system_uptime_duration = Duration::seconds(system_uptime_sec as i64);
+    let system_uptime_diff = current_time - system_uptime_duration;
+    let system_uptime = current_time.signed_duration_since(system_uptime_diff);
+    let system_uptime_humanized = format!("{:#}", HumanTime::from(system_uptime)).replace("in ", "");
+
+    let cpu_num = if let Ok(num) = sys_info::cpu_num() {
+        num.to_string()
+    } else {
+        "N/A".to_owned()
+    };
+
+    let cpu_speed = if let Ok(num) = sys_info::cpu_speed() {
+        (num as f64 / 1000.0).to_string()
+    } else {
+        "N/A".to_owned()
+    };
+
+    let disk_info = if let Ok(disk) = sys_info::disk_info() {
+        let disk_total = disk.total / K_TO_GB;
+        let disk_free = disk.free / K_TO_GB;
+        format!("{} / {} GB",  disk_total - disk_free, disk_total)
+    } else {
+        "N/A".to_owned()
+    };
+
+    let loadavg = if let Ok(load) = sys_info::loadavg() {
+        format!("[{}, {}, {}]", load.one, load.five, load.fifteen)
+    } else {
+        "N/A".to_owned()
+    };
+
+    let system_memory = if let Ok(load) = sys_info::mem_info() {
+        let mem_total = load.total as f64 / K_TO_GB_F;
+        let mem_free = load.free as f64 / K_TO_GB_F;
+        let mem_avail = load.avail as f64 / K_TO_GB_F;
+        let mem_buffers = load.buffers as f64 / K_TO_GB_F;
+        let mem_cached = load.cached as f64 / K_TO_GB_F;
+        format!("total: {:.3} / {:.3} GB\navail: {:.3} GB\nbuffers: {:.3} GB\ncached: {:.3} GB", 
+            mem_total - mem_free, mem_total, mem_avail, mem_buffers, mem_cached)
+    } else {
+        "N/A".to_owned()
+    };
+
+    let os_release = if let Ok(release) = sys_info::os_release() {
+        release
+    } else {
+        "N/A".to_owned()
+    };
+
+    let os_type = if let Ok(os_type) = sys_info::os_type() {
+        os_type
+    } else {
+        "N/A".to_owned()
+    };
+
 
     let _ = msg.channel_id.send_message(|m|
         m.embed(|e| e
-            .title("Stats")
-            .field("Version", "0.1.2", true)
-            .field("Guilds", &guilds.to_string(), true)
+            .color(0x3498db)
+            .title("v0.1.6")
+            .field("Guilds", &guilds_count.to_string(), true)
+            .field("channels", &channels_count.to_string(), true)
+            .field("Users", &users_count.to_string(), true)
             .field("Memory Used", &memory, true)
+            .field("Threads Used", process.num_threads.to_string(), true)
+            .field("Uptime", &uptime_humanized, true)
+            .field("System", &format!("{} {}\n{} cores @ {} GHz", os_type, os_release, cpu_num, cpu_speed), true)
+            .field("System Load", &loadavg, true)
+            .field("System Disk", &disk_info, true)
+            .field("System Memory", &system_memory, true)
+            .field("System Uptime", &system_uptime_humanized, false)
         )
     );
 });

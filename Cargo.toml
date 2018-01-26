@@ -1,6 +1,6 @@
 [package]
 name = "rust-sbot2"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["drklee3 <drklee3@users.noreply.github.com>"]
 
 [dependencies]
@@ -24,4 +24,5 @@ regex = "0.2.3"
 darksky = { version = "0.7", features = ["reqwest"]}
 tzdata = "0.4.1"
 psutil = "1.1.0"
+sys-info = "0.5.6"
 parking_lot = "0.5.3"
