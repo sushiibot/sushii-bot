@@ -29,21 +29,8 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
             let lowered = msg.content.to_lowercase();
 
-            let start = check_opt!(lowered.rfind(&notification.keyword));
-            let end = start + notification.keyword.len();
-
-            if start > 1 {
-                let before = check_opt!(lowered.chars().nth(start - 1));
-                if before.is_alphanumeric() {
-                    return;
-                }
-            }
-
-            if end < lowered.len() {
-                let after = check_opt!(lowered.chars().nth(end));
-                if after.is_alphanumeric() {
-                    return;
-                }
+            if is_mid_word(&lowered, &notification.keyword) {
+                return;
             }
 
             // message user
@@ -65,8 +52,14 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                         if let Some(ref mut messages) = messages {
                             messages.reverse();
                             for message in messages {
+                                let lowered = message.content.to_lowercase();
+                                if !is_mid_word(&lowered, &notification.keyword) {
+
+                                }
                                 // bold the keyword
-                                let content = if let Some(start) = message.content.to_lowercase().rfind(&notification.keyword) {
+                                let content = if is_mid_word(&lowered, &notification.keyword) {
+                                    message.content.clone()
+                                } else if let Some(start) = lowered.rfind(&notification.keyword) {
                                     let end = start + notification.keyword.len();
 
                                     let mut content = message.content.clone();
@@ -103,4 +96,35 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             }
         }
     }
+}
+
+
+fn is_mid_word(msg: &str, search: &str) -> bool {
+    let start = match msg.rfind(&search) {
+        Some(val) => val,
+        None => return true, // should be able to find, this shouldn't ever happen
+    };
+    let end = start + search.len();
+
+    if start > 1 {
+        let before = match msg.chars().nth(start - 1) {
+            Some(val) => val,
+            None => return true,
+        };
+        if before.is_alphanumeric() {
+            return true;
+        }
+    }
+
+    if end < msg.len() {
+        let after = match msg.chars().nth(end) {
+            Some(val) => val,
+            None => return true,
+        };
+        if after.is_alphanumeric() {
+            return true;
+        }
+    }
+
+    false
 }
