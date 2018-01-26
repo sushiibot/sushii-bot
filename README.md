@@ -8,7 +8,7 @@ Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](
 Work in progress.  Features may be either missing, incomplete, or broken.
 
 # Features
-* Ranking system based on percentiles of message counts in daily, weekly, monthly, and all time categories
+* Ranking system based on message counts in daily, weekly, monthly, and all time categories
 * User 24 hour activity tracker
 * Profile image generation for displaying rank and activity graph (with [sbot2-image-server](https://github.com/drklee3/sbot2-image-server))
 * Configurable self assigning role system with multiple categories and limits
