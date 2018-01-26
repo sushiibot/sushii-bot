@@ -1,16 +1,18 @@
 use serenity::framework::standard::CommandError;
 use serenity::client::CACHE;
 use serenity::client::bridge::gateway::ShardId;
+use SerenityShardManager;
+
 use chrono::Utc;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
+
 use psutil;
 use sys_info;
-use utils::config::get_pool;
 
-use SerenityShardManager;
 use std::fmt::Write;
+use utils::config::get_pool;
 
 
 lazy_static! {
@@ -196,21 +198,24 @@ command!(stats(_ctx, msg) {
         "N/A".to_owned()
     };
 
+    let bot_version = env!("CARGO_PKG_VERSION");
 
     let _ = msg.channel_id.send_message(|m|
         m.embed(|e| e
             .color(0x3498db)
-            .title("v0.1.6")
+            .title("Stats")
+            .field("Version", &format!("v{}", bot_version), true)
+            .field("Library", "[serenity-rs](https://github.com/zeyla/serenity/) v0.5.0", true)
             .field("Guilds", &guilds_count.to_string(), true)
-            .field("channels", &channels_count.to_string(), true)
+            .field("Channels", &channels_count.to_string(), true)
             .field("Users", &users_count.to_string(), true)
-            .field("Memory Used", &memory, true)
-            .field("Threads Used", process.num_threads.to_string(), true)
-            .field("Uptime", &uptime_humanized, true)
+            .field("Bot Threads", process.num_threads.to_string(), true)
+            .field("Bot Uptime", &uptime_humanized, false)
+            .field("Bot Memory", &memory, true)
+            .field("System Memory", &system_memory, true)
             .field("System", &format!("{} {}\n{} cores @ {} GHz", os_type, os_release, cpu_num, cpu_speed), true)
             .field("System Load", &loadavg, true)
             .field("System Disk", &disk_info, true)
-            .field("System Memory", &system_memory, true)
             .field("System Uptime", &system_uptime_humanized, false)
         )
     );
