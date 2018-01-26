@@ -188,6 +188,23 @@ fn get_activity_plain_graph(activity: &Vec<i32>) -> String {
 command!(rep(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
+    // print next rep time 
+    if args.is_empty() {
+        if let Some(last_rep) = pool.get_last_rep(msg.author.id.0) {
+            let now = now_utc();
+            let next_rep = last_rep + Duration::hours(24);
+
+            let diff = next_rep.signed_duration_since(now);
+            // precise humanized time 
+            let ht = format!("{:#}", HumanTime::from(diff));
+
+            if next_rep > now {
+                let _ = msg.channel_id.say(&get_msg!("error/rep_too_soon", ht));
+                return Ok(());
+            }
+        };
+    }
+
     let action = if let Ok(action) = args.single::<String>() {
         if action != "+" && action != "-" {
             return Err(CommandError::from(get_msg!("error/invalid_rep_option")));
