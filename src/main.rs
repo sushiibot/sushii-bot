@@ -32,6 +32,7 @@ extern crate regex;
 extern crate darksky;
 extern crate tzdata;
 extern crate psutil;
+extern crate sys_info;
 extern crate parking_lot;
 
 pub use diesel::r2d2;
