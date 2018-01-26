@@ -24,7 +24,7 @@ impl EventHandler for Handler {
     }
 
     fn resume(&self, ctx: Context, resume: ResumedEvent) {
-        info_discord!(format!("RESUMED: \n```{:?}```", resume));
+        info_discord!(format!("RESUMED: {:?}", resume));
 
         update_event(&ctx, "RESUMED");
     }
