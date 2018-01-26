@@ -1,8 +1,9 @@
 use serenity::framework::standard::CommandError;
 use reqwest;
-use reqwest::header::ContentType;
 use regex::Regex;
 use std::fmt::Write;
+
+use serde_json::value::Value;
 
 use chrono::{DateTime, Utc, Duration};
 use chrono_humanize::HumanTime;
@@ -27,18 +28,21 @@ command!(play(_ctx, msg, args) {
     // clean up input
     code = code.replace("```rust", "");
     code = code.replacen("```", "", 2); // 2 in case rust in top of code block isn't used
-    code = code.replace("\"", "\\\"");  // escape quotes
-    code = code.replace("\n", "\\n");   // escape new lines
 
-    // create json data
-    let mut data = r#"{"channel":"stable","mode":"debug","crateType":"bin","tests":false,"code": "{CODE}"}"#.to_owned();
-    data = data.replace("{CODE}", &code);
+    let mut json = json!({
+        "channel": "stable",
+        "mode": "debug",
+        "crateType": "bin",
+        "tests": false,
+        "code": "",
+    });
+
+    *json.get_mut("code").unwrap() = Value::String(code);
 
     // send data
     let client = reqwest::Client::new();
     let res = client.post("http://play.integer32.com/execute")
-        .body(data)
-        .header(ContentType::json())
+        .json(&json)
         .send()?.error_for_status();
 
     // check response
