@@ -13,3 +13,4 @@ pub mod message_log;
 pub mod mute_evasion;
 pub mod gallery;
 pub mod roles;
+pub mod dm;

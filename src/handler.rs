@@ -146,7 +146,8 @@ impl EventHandler for Handler {
             message_log,
             notifications,
             gallery,
-            roles
+            roles,
+            dm
         );
     }
 
@@ -208,6 +209,6 @@ fn update_event(ctx: &Context, event_name: &str) {
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
     if let Err(e) = pool.log_event(event_name) {
-        error!("Failed to log event: {}", e);
+        warn_discord!("Failed to log event: {}", e);
     }
 }
