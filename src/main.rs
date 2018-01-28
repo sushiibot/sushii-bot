@@ -251,6 +251,11 @@ fn main() {
                 )
             )
             .group("Moderation", |g| g
+                .guild_only(true)
+                .command("modping", |c| c
+                    .desc("Pings a moderator for mod action.")
+                    .cmd(commands::moderation::mod_ping::modping)
+                )
                 .command("reason", |c| c
                     .desc("Edits the reason for moderation action cases.")
                     .required_permissions(Permissions::MANAGE_GUILD)
