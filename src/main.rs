@@ -204,13 +204,13 @@ fn main() {
                 .embed_success_colour(Colour(0x3498db))
                 .embed_error_colour(Colour(0xe74c3c))
             )
-            .simple_bucket("rank_bucket", 15)
-            .group("Ranking", |g| g
+            .simple_bucket("profile_bucket", 15)
+            .group("Profile", |g| g
                 .guild_only(true)
-                .command("rank", |c| c
-                    .desc("Shows your current rank.")
-                    .bucket("rank_bucket")
-                    .cmd(commands::levels::rank)
+                .command("profile", |c| c
+                    .desc("Shows your profile.")
+                    .bucket("profile_bucket")
+                    .cmd(commands::levels::profile)
                 )
                 .command("rep", |c| c
                     .desc("Rep a user.")
