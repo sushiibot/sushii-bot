@@ -7,12 +7,14 @@ use utils;
 use utils::config::get_pool;
 use utils::time::now_utc;
 
+use regex::Regex;
+
 use chrono::Duration;
 use chrono_humanize::HumanTime;
 
 const LEVEL_HTML: &'static str = include_str!("../../assets/html/rank.html");
 
-command!(rank(ctx, msg, args) {
+command!(profile(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
     let id = match args.single::<String>() {
@@ -47,6 +49,8 @@ command!(rank(ctx, msg, args) {
 
     let _ = msg.channel_id.broadcast_typing();
 
+    println!("started typing");
+
     let mut html = LEVEL_HTML.clone();
 
     let html = html.replace("{USERNAME}", &user.tag());
@@ -60,14 +64,18 @@ command!(rank(ctx, msg, args) {
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
 
+    println!("created html");
+
     let mut json = HashMap::new();
     json.insert("html", html);
     json.insert("width", "500".to_owned());
     json.insert("height", "350".to_owned());
 
+    println!("created json");
 
 
     let client = reqwest::Client::new();
+    println!("created reqwest client");
     let res = match client.post("http://127.0.0.1:3000/html").json(&json).send() {
         Ok(val) => val.error_for_status(),
         Err(_) => {
@@ -89,6 +97,8 @@ command!(rank(ctx, msg, args) {
             return Ok(());
         }
     };
+
+    println!("got response");
 
     let mut img = match res {
         Ok(val) => val,
@@ -114,10 +124,16 @@ command!(rank(ctx, msg, args) {
         },
     };
 
+    println!("got image");
+
     let mut buf: Vec<u8> = vec![];
+    println!("created buffer");
     img.copy_to(&mut buf)?;
 
+    println!("copied to buffer");
+
     let files = vec![(&buf[..], "level.png")];
+    println!("created files");
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
 });
@@ -205,17 +221,22 @@ command!(rep(ctx, msg, args) {
         };
     }
 
-    let action = if let Ok(action) = args.single::<String>() {
-        if action != "+" && action != "-" {
-            return Err(CommandError::from(get_msg!("error/invalid_rep_option")));
-        }
 
-        action
+    let action_target = args.full();
+
+    let action = if action_target.contains("+") {
+        "+"
+    } else if action_target.contains("-") {
+        "-"
     } else {
         return Err(CommandError::from(get_msg!("error/invalid_rep_option")));
     };
 
-    let target = match args.single::<String>().ok().and_then(|x| utils::user::get_id(&x)) {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(\d{17,18})").unwrap();
+    }
+
+    let target = match RE.find(&action_target).and_then(|x| x.as_str().parse::<u64>().ok()) {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("error/no_user_given"))),
     };
