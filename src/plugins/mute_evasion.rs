@@ -3,10 +3,9 @@ use serenity::model::id::{GuildId, RoleId};
 use serenity::model::user::User;
 use serenity::prelude::*;
 
-use utils::config::get_pool;
+use database::ConnectionPool;
 
-pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &mut Member) {
-    let pool = get_pool(&ctx);
+pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, member: &mut Member) {
     let user = member.user.read().clone();
 
     if pool.should_mute(user.id.0, guild_id.0) {
@@ -34,13 +33,13 @@ pub fn on_guild_member_addition(ctx: &Context, guild_id: &GuildId, member: &mut 
 }
 
 pub fn on_guild_member_removal(
-    ctx: &Context,
+    _ctx: &Context,
+    pool: &ConnectionPool,
     guild_id: &GuildId,
     user: &User,
     member: &Option<Member>,
 ) {
     if let &Some(ref memb) = member {
-        let pool = get_pool(&ctx);
         let config = check_res!(pool.get_guild_config(guild_id.0));
 
         // check if mute role set in config
