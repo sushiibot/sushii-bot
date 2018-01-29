@@ -87,6 +87,7 @@ impl EventHandler for Handler {
         exec_on_guild_member_addition!(
             [&ctx, &guild, &mut member],
             join_leave_message,
+            member_log,
             mute_evasion
         );
 
@@ -103,6 +104,7 @@ impl EventHandler for Handler {
         exec_on_guild_member_removal!(
             [&ctx, &guild, &user, &member],
             join_leave_message,
+            member_log,
             mute_evasion
         );
 

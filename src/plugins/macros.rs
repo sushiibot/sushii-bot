@@ -31,20 +31,26 @@ macro_rules! exec_on_ready {
 }
 
 macro_rules! exec_on_guild_member_addition {
-    ( [$ctx:expr, $GuildId:expr, $member:expr], $( $plugin:ident ),* ) => {
+    ( [$ctx:expr, $GuildId:expr, $member:expr], $( $plugin:ident ),* ) => {{
+        use utils::config::get_pool;
+        let pool = get_pool(&$ctx);
+
         $(
-            $plugin::on_guild_member_addition($ctx, $GuildId, $member);
+            $plugin::on_guild_member_addition($ctx, &pool, $GuildId, $member);
         )*
-    }
+    }}
 }
 
 
 macro_rules! exec_on_guild_member_removal {
-    ( [$ctx:expr, $GuildId:expr, $user:expr, $member:expr], $( $plugin:ident ),* ) => {
+    ( [$ctx:expr, $GuildId:expr, $user:expr, $member:expr], $( $plugin:ident ),* ) => {{
+        use utils::config::get_pool;
+        let pool = get_pool(&$ctx);
+
         $(
-            $plugin::on_guild_member_removal($ctx, $GuildId, $user, $member);
+            $plugin::on_guild_member_removal($ctx, &pool, $GuildId, $user, $member);
         )*
-    }
+    }}
 }
 
 macro_rules! exec_on_guild_ban_addition {
