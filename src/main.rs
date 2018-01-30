@@ -188,7 +188,7 @@ fn main() {
 
                     let _ = msg.channel_id.say(&s);
                     println!("Error in {}: {:?}", cmd_name, why);
-                    
+
                     // react x whenever an error occurs
                     let _ = msg.react("❌");
                 }
@@ -386,6 +386,14 @@ fn main() {
                     .usage("(symbol)")
                     .desc("Gets current cryptocurrency prices.")
                     .cmd(commands::crypto::crypto)
+                )
+                .command("patreon", |c| c
+                    .desc("Gets the patreon url. :]")
+                    .exec(|_, msg, _| {
+                        let url = env::var("PATREON_URL").unwrap_or("N/A".to_owned());
+                        let _ = msg.channel_id.say(&format!("You can support me on patreon here: {}\nThanks! :heart:", url))?;
+                        Ok(())
+                    })
                 )
             )
             .group("Reminders", |g| g
