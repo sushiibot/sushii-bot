@@ -79,6 +79,7 @@
 
         "rep_too_soon": "You can rep again {}.",
         "rep_self": "You can't rep yourself.  Sorry.",
+        "rep_no_args": "Give me an action (`+` or `-`) and someone to rep.",
 
         "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
 

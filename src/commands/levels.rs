@@ -218,7 +218,10 @@ command!(rep(ctx, msg, args) {
                 let _ = msg.channel_id.say(&get_msg!("error/rep_too_soon", ht));
                 return Ok(());
             }
-        };
+        }
+
+        // check if can rep and args empty 
+        return Err(CommandError::from(get_msg!("error/rep_no_args")));
     }
 
 
