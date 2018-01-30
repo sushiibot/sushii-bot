@@ -211,6 +211,7 @@ fn main() {
                 .command("profile", |c| c
                     .desc("Shows your profile.")
                     .bucket("profile_bucket")
+                    .known_as("rank")
                     .cmd(commands::levels::profile)
                 )
                 .command("rep", |c| c
