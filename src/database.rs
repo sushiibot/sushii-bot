@@ -18,7 +18,7 @@ use std::env;
 
 use models::*;
 
-use chrono::{DateTime, Utc, Datelike, Timelike};
+use chrono::{DateTime, Utc, Datelike, Timelike, Duration};
 use chrono::naive::NaiveDateTime;
 
 use utils::time::now_utc;
@@ -241,21 +241,30 @@ impl ConnectionPool {
         let user = levels
             .filter(user_id.eq(id_user as i64))
             .filter(guild_id.eq(id_guild as i64))
-            .load::<UserLevel>(&conn)?;
+            .first::<UserLevel>(&conn);
 
-        // get current timestamp
-        let utc: DateTime<Utc> = Utc::now();
-        let now = utc.naive_utc();
+        let now = now_utc();
 
-        if user.len() == 1 {
-            let new_interval_user = level_interval(&user[0]);
+        if let Ok(user) = user {
+            let next_level_update = user.last_msg + Duration::minutes(1);
+
+            // has not been 1 minute since last "message"
+            // last message will always have inaccuracy
+            // +/- 1 minute because of this check
+            // could potentially create another user field
+            // to have last_level_update or something
+            if next_level_update > now {
+                return Ok(());
+            }
+
+            let new_interval_user = level_interval(&user);
 
             // found a user object
             diesel::update(levels)
                 .filter(user_id.eq(id_user as i64))
                 .filter(guild_id.eq(id_guild as i64))
                 .set((
-                    msg_all_time.eq(user[0].msg_all_time + 1),
+                    msg_all_time.eq(user.msg_all_time + 1),
                     msg_month.eq(new_interval_user.msg_month + 1),
                     msg_week.eq(new_interval_user.msg_week + 1),
                     msg_day.eq(new_interval_user.msg_day + 1),
@@ -326,16 +335,23 @@ impl ConnectionPool {
 
         let user = users
             .filter(id.eq(id_user as i64))
-            .first::<User>(&conn)
-            .ok();
+            .first::<User>(&conn);
 
         // get current timestamp
-        let utc: DateTime<Utc> = Utc::now();
-        let now = utc.naive_utc();
-
+        let now = now_utc();
         let hour = now.hour();
 
-        if let Some(user) = user {
+        if let Ok(user) = user {
+            // check if should upate
+            let next_activity_update = user.last_msg + Duration::minutes(1);
+
+            // has not been 1 minute since last "message"
+            // last message will always have inaccuracy
+            // +/- 1 minute because of this check
+            if next_activity_update > now {
+                return;
+            }
+
             // update the useractivity
             let mut updated_activity = user.msg_activity.clone();
             if let Some(elem) = updated_activity.get_mut(hour as usize) {
@@ -344,12 +360,13 @@ impl ConnectionPool {
                 warn_discord!("[DB:update_user_activity_message] Error incrementing user {} activity", id_user);
             }
             // update the user
+            // does not modify last_message, this plugin
+            // executes after the level plugin which updates the
+            // last message timestamp.  If last_message is updated here
+            // the level plugin will never execute (needs 1 min since last msg)
             if let Err(e) = diesel::update(users)
                 .filter(id.eq(id_user as i64))
-                .set((
-                    msg_activity.eq(updated_activity),
-                    last_msg.eq(now),
-                ))
+                .set(msg_activity.eq(updated_activity))
                 .execute(&conn) {
 
                 warn_discord!("[DB:update_user_activity_message] Error while updating user activity: {}", e);

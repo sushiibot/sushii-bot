@@ -140,9 +140,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "MESSAGE_CREATE");
         exec_on_message!(
             [&ctx, &msg],
+            user_info_activity,
             levels,
             random_hi,
-            user_info_activity,
             invite_guard,
             anti_spam,
             message_log,

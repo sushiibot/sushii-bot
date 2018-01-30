@@ -8,5 +8,8 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         None => return,
     };
 
-    let _ = pool.update_level(msg.author.id.0, guild_id);
+    if let Err(e) = pool.update_level(msg.author.id.0, guild_id) {
+        let e = format!("[PLUGIN:levels] Error updating user level: {}", e);
+        warn_discord!(&e);
+    }
 }
