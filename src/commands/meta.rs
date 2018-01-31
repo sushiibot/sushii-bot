@@ -180,7 +180,7 @@ command!(stats(_ctx, msg) {
         let mem_avail = load.avail as f64 / K_TO_GB_F;
         let mem_buffers = load.buffers as f64 / K_TO_GB_F;
         let mem_cached = load.cached as f64 / K_TO_GB_F;
-        format!("total: {:.3} / {:.3} GB\navail: {:.3} GB\nbuffers: {:.3} GB\ncached: {:.3} GB", 
+        format!("Total: {:.3} / {:.3} GB\nAvail: {:.3} GB\nBuffers: {:.3} GB\nCached: {:.3} GB", 
             mem_total - mem_free, mem_total, mem_avail, mem_buffers, mem_cached)
     } else {
         "N/A".to_owned()
@@ -213,9 +213,7 @@ command!(stats(_ctx, msg) {
             .field("Bot Uptime", &uptime_humanized, false)
             .field("Bot Memory", &memory, true)
             .field("System Memory", &system_memory, true)
-            .field("System", &format!("{} {}\n{} cores @ {} GHz", os_type, os_release, cpu_num, cpu_speed), true)
-            .field("System Load", &loadavg, true)
-            .field("System Disk", &disk_info, true)
+            .field("System", &format!("{} {}\n{} cores @ {} GHz\nLoad Average: {}\nDisk Usage:{}", os_type, os_release, cpu_num, cpu_speed, loadavg, disk_info), true)
             .field("System Uptime", &system_uptime_humanized, false)
         )
     );
