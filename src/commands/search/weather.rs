@@ -10,7 +10,7 @@ use env;
 
 use utils::time::now_utc;
 use utils::config::get_pool;
-use tzdata;
+use hourglass::Timezone;
 
 const GOOGLE_MAPS_URL: &str = "https://maps.googleapis.com/maps/api/geocode/json?address={ADDRESS}&key={KEY}";
 
@@ -138,7 +138,7 @@ command!(weather(ctx, msg, args) {
     let icon_weekly = get_icon(&daily.icon);
 
     // timezone info
-    let tz = tzdata::Timezone::new(&forecast.timezone).unwrap_or(tzdata::Timezone::utc());
+    let tz = Timezone::new(&forecast.timezone).unwrap_or(Timezone::utc());
 
     // temperatures
     let temp = get_temp(&currently.temperature);
@@ -296,9 +296,9 @@ fn get_temp(temp: &Option<f64>) -> String {
     }
 }
 
-fn get_time(tz: &tzdata::Timezone, time: &Option<u64>) -> String {
+fn get_time(tz: &Timezone, time: &Option<u64>) -> String {
     if let &Some(time) = time {
-        tz.unix(time as i64, 0).format("%H:%M:%S %Z")
+        tz.unix(time as i64, 0).map(|x| x.format("%H:%M:%S %Z").unwrap_or("N/A".to_owned())).unwrap()
     } else {
         "N/A".to_owned()
     }
