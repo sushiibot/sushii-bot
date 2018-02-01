@@ -32,7 +32,7 @@ extern crate rand;
 extern crate inflector;
 extern crate regex;
 extern crate darksky;
-extern crate tzdata;
+extern crate hourglass;
 extern crate psutil;
 extern crate sys_info;
 extern crate parking_lot;
