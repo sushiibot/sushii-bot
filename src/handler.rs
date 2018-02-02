@@ -10,6 +10,8 @@ use std::vec::Vec;
 use plugins::*;
 use tasks::*;
 
+use serde_json::Value;
+
 use database;
 
 pub struct Handler;
@@ -33,11 +35,17 @@ impl EventHandler for Handler {
         update_event(&ctx, "CHANNEL_CREATE");
     }
 
-    // fn category_create(&self, ctx: Context, _: Arc<RwLock<ChannelCategory>>) {}
+    fn category_create(&self, ctx: Context, _: Arc<RwLock<ChannelCategory>>) {
+        update_event(&ctx, "CATEGORY_CREATE")
+    }
 
-    // fn category_delete(&self, ctx: Context, _: Arc<RwLock<ChannelCategory>>) {}
+    fn category_delete(&self, ctx: Context, _: Arc<RwLock<ChannelCategory>>) {
+        update_event(&ctx, "CATEGORY_DELETE")
+    }
 
-    // fn private_channel_create(&self, ctx: Context, _: Arc<RwLock<PrivateChannel>>) {}
+    fn private_channel_create(&self, ctx: Context, _: Arc<RwLock<PrivateChannel>>) {
+        update_event(&ctx, "PRIVATE_CHANNEL_CREATE")
+    }
 
     fn channel_delete(&self, ctx: Context, _: Arc<RwLock<GuildChannel>>) {
         update_event(&ctx, "CHANNEL_DELETE");
@@ -47,9 +55,13 @@ impl EventHandler for Handler {
         update_event(&ctx, "CHANNEL_PINS_UPDATE");
     }
 
-    // fn channel_recipient_addition(&self, ctx: Context, _: ChannelId, _: User) {}
+    fn channel_recipient_addition(&self, ctx: Context, _: ChannelId, _: User) {
+        update_event(&ctx, "CHANNEL_RECIPIENT_ADDITION")
+    }
 
-    // fn channel_recipient_removal(&self, ctx: Context, _: ChannelId, _: User) {}
+    fn channel_recipient_removal(&self, ctx: Context, _: ChannelId, _: User) {
+        update_event(&ctx, "CHANNEL_RECIPIENT_REMOVAL")
+    }
 
     fn channel_update(&self, ctx: Context, _: Option<Channel>, _: Channel) {
         update_event(&ctx, "CHANNEL_UPDATE");
@@ -116,7 +128,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_MEMBER_UPDATE");
     }
 
-    // fn guild_members_chunk(&self, ctx: Context, _: GuildId, _: HashMap<UserId, Member>) {}
+    fn guild_members_chunk(&self, ctx: Context, _: GuildId, _: HashMap<UserId, Member>) {
+        update_event(&ctx, "GUILD_MEMBERS_CHUNK")
+    }
 
     fn guild_role_create(&self, ctx: Context, _: GuildId, _: Role) {
         update_event(&ctx, "GUILD_ROLE_CREATE");
@@ -130,7 +144,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_ROLE_UPDATE");
     }
 
-    // fn guild_unavailable(&self, ctx: Context, _: GuildId) {}
+    fn guild_unavailable(&self, ctx: Context, _: GuildId) {
+        update_event(&ctx, "GUILD_UNAVAILABLE")
+    }
 
     fn guild_update(&self, ctx: Context, _: Option<Arc<RwLock<Guild>>>, _: PartialGuild) {
         update_event(&ctx, "GUILD_UPDATE");
@@ -178,7 +194,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "MESSAGE_UPDATE");
     }
 
-    // fn presence_replace(&self, ctx: Context, _: Vec<Presence>) {}
+    fn presence_replace(&self, ctx: Context, _: Vec<Presence>) {
+        update_event(&ctx, "PRESENCE_REPLACE")
+    }
 
     fn presence_update(&self, ctx: Context, _: PresenceUpdateEvent) {
         update_event(&ctx, "PRESENCE_UPDATE");
@@ -188,9 +206,13 @@ impl EventHandler for Handler {
         update_event(&ctx, "TYPING_START");
     }
 
-    // fn unknown(&self, ctx: Context, _: String, _: Value) {}
+    fn unknown(&self, ctx: Context, _: String, _: Value) {
+        update_event(&ctx, "UNKNOWN")
+    }
 
-    // fn user_update(&self, ctx: Context, _: CurrentUser, _: CurrentUser) {}
+    fn user_update(&self, ctx: Context, _: CurrentUser, _: CurrentUser) {
+        update_event(&ctx, "USER_UPDATE")
+    }
 
     fn voice_server_update(&self, ctx: Context, _: VoiceServerUpdateEvent) {
         update_event(&ctx, "VOICE_SERVER_UPDATE");
