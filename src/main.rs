@@ -65,6 +65,9 @@ use serenity::client::bridge::gateway::ShardManager;
 use parking_lot::Mutex;
 use std::sync::Arc;
 
+use chrono::DateTime;
+use chrono::Utc;
+
 use std::collections::HashSet;
 use std::env;
 use dotenv::dotenv;
@@ -79,6 +82,11 @@ impl Key for ConnectionPool {
 pub struct SerenityShardManager;
 impl Key for SerenityShardManager {
     type Value = Arc<Mutex<ShardManager>>;
+}
+
+pub struct Uptime;
+impl Key for Uptime {
+    type Value = DateTime<Utc>;
 }
 
 fn main() {
@@ -102,6 +110,7 @@ fn main() {
 
         data.insert::<ConnectionPool>(pool);
         data.insert::<SerenityShardManager>(Arc::clone(&client.shard_manager));
+        data.insert::<Uptime>(Utc::now());
     }
 
     let owners: HashSet<UserId> = env::var("OWNER")

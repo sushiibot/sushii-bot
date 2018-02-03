@@ -2,9 +2,9 @@ use serenity::framework::standard::CommandError;
 use serenity::client::CACHE;
 use serenity::client::bridge::gateway::ShardId;
 use SerenityShardManager;
+use Uptime;
 
 use chrono::Utc;
-use chrono::DateTime;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
 
@@ -14,10 +14,6 @@ use sys_info;
 use std::fmt::Write;
 use utils::config::get_pool;
 
-
-lazy_static! {
-    static ref START_TIME: DateTime<Utc> = Utc::now();
-}
 
 command!(latency(ctx, msg) {
     let data = ctx.data.lock();
@@ -97,7 +93,7 @@ command!(reset_events(ctx, msg) {
 });
 
 // https://github.com/zeyla/nanobot/blob/master/src/commands/owner.rs#L213-L260
-command!(stats(_ctx, msg) {
+command!(stats(ctx, msg) {
     let processes = match psutil::process::all() {
         Ok(processes) => processes,
         Err(why) => {
@@ -139,7 +135,14 @@ command!(stats(_ctx, msg) {
     let users_count = cache.users.len();
 
     let current_time = Utc::now();
-    let uptime = current_time.signed_duration_since(*START_TIME);
+    let start_time = {
+        let data = ctx.data.lock();
+        match data.get::<Uptime>() {
+            Some(v) => v.clone(),
+            None => return Err(CommandError::from("There was a problem getting the shard manager")),
+        }
+    };
+    let uptime = current_time.signed_duration_since(start_time);
     let uptime_humanized = format!("{:#}", HumanTime::from(uptime)).replace("in ", "");
 
     let system_uptime_sec = psutil::system::uptime();
@@ -208,12 +211,12 @@ command!(stats(_ctx, msg) {
             .field("Library", "[serenity-rs](https://github.com/zeyla/serenity/) v0.5.0", true)
             .field("Guilds", &guilds_count.to_string(), true)
             .field("Channels", &channels_count.to_string(), true)
-            .field("Users", &users_count.to_string(), true)
+            .field("Users (Cached)", &users_count.to_string(), true)
             .field("Bot Threads", process.num_threads.to_string(), true)
             .field("Bot Uptime", &uptime_humanized, false)
             .field("Bot Memory", &memory, true)
             .field("System Memory", &system_memory, true)
-            .field("System", &format!("{} {}\n{} cores @ {} GHz\nLoad Average: {}\nDisk Usage:{}", os_type, os_release, cpu_num, cpu_speed, loadavg, disk_info), true)
+            .field("System", &format!("{} {}\n{} cores @ {} GHz\nLoad Average: {}\nDisk Usage: {}", os_type, os_release, cpu_num, cpu_speed, loadavg, disk_info), true)
             .field("System Uptime", &system_uptime_humanized, false)
         )
     );
