@@ -28,16 +28,14 @@ command!(fm(ctx, msg, args) {
 
         // remove the set arg
         username_or_set.replace("set ", "")
+    } else if !username_or_set.is_empty() {
+        username_or_set.to_owned()
     } else {
         match pool.get_lastfm_username(msg.author.id.0) {
             Some(val) => val,
-            None => username_or_set.to_owned(),
+            None => return Err(CommandError::from(get_msg!("error/fm_no_username"))),
         }
     };
-
-    if username.is_empty() {
-        return Err(CommandError::from(get_msg!("error/fm_no_username")));
-    }
 
     let url = FM_RECENT_TRACKS_URL.replace("{USER}", &username)
         .replace("{KEY}", &fm_key);
@@ -67,8 +65,19 @@ command!(fm(ctx, msg, args) {
         }
     };
 
-    let last_track_time = data.pointer("/recenttracks/track/0/date/uts").and_then(|x| x.as_i64()).unwrap_or(0);
+    let last_track_time = data.pointer("/recenttracks/track/0/date/uts")
+        .and_then(|x| x.as_str()).and_then(|x| x.parse::<i64>().ok()).unwrap_or(0);
     let last_track_timestamp = NaiveDateTime::from_timestamp(last_track_time, 0).format("%Y-%m-%dT%H:%M:%S");
+
+    let last_track_is_now_playing = if let Some(nowplaying) = data.pointer("/recenttracks/track/0/@attr/nowplaying").and_then(|x| x.as_str()) {
+        if nowplaying == "true" {
+            true
+        } else {
+            false
+        }
+    } else {
+        false
+    };
 
     let _ = msg.channel_id.send_message(|m| {
         let mut m = m;
@@ -81,7 +90,7 @@ command!(fm(ctx, msg, args) {
             let mut e = e;
 
             e = e.author(|a| a
-                .name(format!("{} - Last Track", username))
+                .name(&format!("{} - Last Track", username))
                 .url(&format!("https://www.last.fm/user/{}", username))
                 .icon_url("https://i.imgur.com/C7u8gqg.jpg")
             )
@@ -93,6 +102,12 @@ command!(fm(ctx, msg, args) {
 
             if last_track_time != 0 {
                 e = e.timestamp(last_track_timestamp.to_string());
+            }
+
+            if last_track_is_now_playing {
+                e = e.footer(|f| f
+                    .text("Now Playing 🎵")
+                )
             }
 
             e
