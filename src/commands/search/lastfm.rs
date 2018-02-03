@@ -1,14 +1,11 @@
 use serenity::framework::standard::CommandError;
 use reqwest;
 use serde_json::Value;
-
 use chrono::Utc;
 use chrono::naive::NaiveDateTime;
-
-use env;
-
 use utils::config::get_pool;
 use utils::user::get_id;
+use env;
 
 
 const FM_RECENT_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user={USER}&api_key={KEY}&format=json";

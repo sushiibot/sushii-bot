@@ -1,13 +1,4 @@
-use schema::guilds;
-use schema::events;
-use schema::levels;
-use schema::reminders;
-use schema::notifications;
-use schema::users;
-use schema::mod_log;
-use schema::messages;
-use schema::mutes;
-use schema::galleries;
+use schema::*;
 
 use chrono::naive::NaiveDateTime;
 use diesel::sql_types::*;
@@ -280,4 +271,26 @@ pub struct NewGallery<'a> {
     pub watch_channel: i64,
     pub webhook_url: &'a str,
     pub guild_id: i64,
+}
+
+#[derive(Queryable, Clone)]
+pub struct Tag {
+    pub id: i32,
+    pub owner_id: i64,
+    pub guild_id: i64,
+    pub tag_name: String,
+    pub content: String,
+    pub count: i32,
+    pub created: NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[table_name = "tags"]
+pub struct NewTag<'a> {
+    pub owner_id: i64,
+    pub guild_id: i64,
+    pub tag_name: &'a str,
+    pub content: &'a str,
+    pub count: i32,
+    pub created: &'a NaiveDateTime,
 }

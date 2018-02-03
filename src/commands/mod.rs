@@ -4,7 +4,7 @@ pub mod owner;
 pub mod levels;
 pub mod settings;
 pub mod userinfo;
-pub mod crypto;
 pub mod notifications;
 pub mod moderation;
 pub mod search;
+pub mod tags;
