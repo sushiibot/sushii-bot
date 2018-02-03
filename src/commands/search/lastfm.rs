@@ -81,7 +81,7 @@ command!(fm(ctx, msg, args) {
             let mut e = e;
 
             e = e.author(|a| a
-                .name(username)
+                .name(format!("{} - Last Track", username))
                 .url(&format!("https://www.last.fm/user/{}", username))
                 .icon_url("https://i.imgur.com/C7u8gqg.jpg")
             )
