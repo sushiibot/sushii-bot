@@ -415,6 +415,11 @@ fn main() {
                     .desc("Gets the weather of a location")
                     .cmd(commands::search::weather::weather)
                 )
+                .command("fm", |c| c
+                    .usage("[username] or set [username]")
+                    .desc("Gets the last played track on last.fm")
+                    .cmd(commands::search::lastfm::fm)
+                )
             )
             .group("User Info", |g| g
                 .command("userinfo", |c| c

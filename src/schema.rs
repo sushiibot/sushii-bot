@@ -112,6 +112,7 @@ table! {
         latitude -> Nullable<Float8>,
         longitude -> Nullable<Float8>,
         address -> Nullable<Text>,
+        lastfm -> Nullable<Text>,
     }
 }
 

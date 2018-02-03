@@ -87,6 +87,9 @@
         "notification_delete_failed": "You don't have that keyword set, or keyword ID is not valid.",
 
         "roles_invalid_action": "Invalid role action, use `+[role]` or `-[role]`",
-        "roles_invalid_target": "Invalid role."
+        "roles_invalid_target": "Invalid role.",
+
+        "fm_no_username": "No Last.fm username given or saved.  Pass a username as an argument or use `fm set [username]` to save your username.",
+        "fm_fetch_error": "Something went wrong fetching last.fm data."
     }
 }
