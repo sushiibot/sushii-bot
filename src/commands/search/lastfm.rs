@@ -2,11 +2,13 @@ use serenity::framework::standard::CommandError;
 use reqwest;
 use serde_json::Value;
 
+use chrono::Utc;
 use chrono::naive::NaiveDateTime;
 
 use env;
 
 use utils::config::get_pool;
+use utils::user::get_id;
 
 
 const FM_RECENT_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user={USER}&api_key={KEY}&format=json";
@@ -28,6 +30,13 @@ command!(fm(ctx, msg, args) {
 
         // remove the set arg
         username_or_set.replace("set ", "")
+    } else if let Some(user_mention) = get_id(username_or_set) {
+        // check if @mention someone, then look up if they have a saved username
+        // fall back to just use the args as a username
+        match pool.get_lastfm_username(user_mention) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/fm_no_username_mentioned"))),
+        }
     } else if !username_or_set.is_empty() {
         username_or_set.to_owned()
     } else {
@@ -65,19 +74,26 @@ command!(fm(ctx, msg, args) {
         }
     };
 
-    let last_track_time = data.pointer("/recenttracks/track/0/date/uts")
-        .and_then(|x| x.as_str()).and_then(|x| x.parse::<i64>().ok()).unwrap_or(0);
-    let last_track_timestamp = NaiveDateTime::from_timestamp(last_track_time, 0).format("%Y-%m-%dT%H:%M:%S");
+    // get the last track timestamp,
+    // if it's currently playing, use now timestamp
+    let last_track_timestamp = data.pointer("/recenttracks/track/0/date/uts")
+        .and_then(|x| x.as_str())
+        .and_then(|x| x.parse::<i64>().ok())
+        .and_then(|x| Some(NaiveDateTime::from_timestamp(x, 0)))
+        .unwrap_or(Utc::now().naive_utc())
+        .format("%Y-%m-%dT%H:%M:%S");
 
-    let last_track_is_now_playing = if let Some(nowplaying) = data.pointer("/recenttracks/track/0/@attr/nowplaying").and_then(|x| x.as_str()) {
+    let last_track_status = if let Some(nowplaying) = data.pointer("/recenttracks/track/0/@attr/nowplaying").and_then(|x| x.as_str()) {
         if nowplaying == "true" {
-            true
+            "Now Playing"
         } else {
-            false
+            "Last Track"
         }
     } else {
-        false
+        "Last Track"
     };
+
+    let total_tracks = data.pointer("/recenttracks/@attr/total").and_then(|x| x.as_str()).unwrap_or("N/A");
 
     let _ = msg.channel_id.send_message(|m| {
         let mut m = m;
@@ -86,31 +102,20 @@ command!(fm(ctx, msg, args) {
             m = m.content(get_msg!("info/fm_saved_username"));
         }
 
-        m.embed(|e| {
-            let mut e = e;
-
-            e = e.author(|a| a
-                .name(&format!("{} - Last Track", username))
+        m.embed(|e| e
+            .author(|a| a
+                .name(&format!("{} - {}", username, last_track_status))
                 .url(&format!("https://www.last.fm/user/{}", username))
                 .icon_url("https://i.imgur.com/C7u8gqg.jpg")
             )
             .color(0xb90000)
-            .field("Song", format!("[{}]({})", last_track_name, last_track_url), true)
+            .field("Artist - Song", format!("{} - [{}]({})", last_track_artist, last_track_name, last_track_url), true)
             .field("Album", last_track_album, true)
-            .field("Artist", last_track_artist, true)
-            .thumbnail(last_track_image);
-
-            if last_track_time != 0 {
-                e = e.timestamp(last_track_timestamp.to_string());
-            }
-
-            if last_track_is_now_playing {
-                e = e.footer(|f| f
-                    .text("Now Playing 🎵")
-                )
-            }
-
-            e
-        })
+            .thumbnail(last_track_image)
+            .footer(|f| f
+                .text(format!("Total Tracks: {}", total_tracks))
+            )
+            .timestamp(last_track_timestamp.to_string())
+        )
     });
 });

@@ -92,6 +92,7 @@
         "roles_invalid_target": "Invalid role.",
 
         "fm_no_username": "No Last.fm username given or saved.  Pass a username as an argument or use `fm set [username]` to save your username.",
+        "fm_no_username_mentioned": "No Last.fm username found for this user.",
         "fm_fetch_error": "Something went wrong fetching last.fm data."
     }
 }
