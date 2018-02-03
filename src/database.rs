@@ -385,6 +385,7 @@ impl ConnectionPool {
                 latitude: None,
                 longitude: None,
                 address: None,
+                lastfm: None,
             };
 
             if let Err(e) = diesel::insert_into(users::table)
@@ -938,6 +939,33 @@ impl ConnectionPool {
         } else {
             false
         }
+    }
+
+    pub fn set_lastfm_username(&self, user_id: u64, fm_username: &str) {
+        use schema::users;
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+
+        if let Err(e) = diesel::update(users::table)
+            .filter(id.eq(user_id as i64))
+            .set(lastfm.eq(fm_username))
+            .execute(&conn) {
+                warn_discord!("[DB:set_lastfm_username] Error setting lastfm username: {}", e);
+        }
+    }
+
+    pub fn get_lastfm_username(&self, user_id: u64) -> Option<String> {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .filter(id.eq(user_id as i64))
+            .select(lastfm)
+            .first::<Option<String>>(&conn)
+            .unwrap_or(None)
     }
 }
 

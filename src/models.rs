@@ -181,6 +181,7 @@ pub struct User {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub address: Option<String>,
+    pub lastfm: Option<String>,
 }
 
 #[derive(Insertable)]
@@ -194,6 +195,7 @@ pub struct NewUser<'a> {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub address: Option<&'a str>,
+    pub lastfm: Option<&'a str>,
 }
 
 #[derive(Queryable, AsChangeset, Clone)]

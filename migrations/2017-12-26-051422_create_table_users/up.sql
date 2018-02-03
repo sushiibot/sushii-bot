@@ -7,5 +7,6 @@ CREATE TABLE users (
     last_rep TIMESTAMP,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
-    address TEXT
+    address TEXT,
+    lastfm TEXT
 )
