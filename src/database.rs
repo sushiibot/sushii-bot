@@ -1,12 +1,13 @@
 use diesel;
-use diesel::sql_types::BigInt;
+use diesel::QueryDsl;
+use diesel::dsl::max;
+use diesel::RunQueryDsl;
 use diesel::result::Error;
 use diesel::pg::PgConnection;
-use diesel::QueryDsl;
-use diesel::RunQueryDsl;
+use diesel::sql_types::BigInt;
 use diesel::ExpressionMethods;
-use diesel::dsl::max;
 use diesel::BoolExpressionMethods;
+use diesel::TextExpressionMethods;
 
 use r2d2::Pool;
 use r2d2::PooledConnection;
@@ -941,6 +942,7 @@ impl ConnectionPool {
         }
     }
 
+    /// LASTFM
     pub fn set_lastfm_username(&self, user_id: u64, fm_username: &str) {
         use schema::users;
         use schema::users::dsl::*;
@@ -967,6 +969,152 @@ impl ConnectionPool {
             .first::<Option<String>>(&conn)
             .unwrap_or(None)
     }
+
+    /// TAGS
+    pub fn add_tag(&self, user_id: u64, guild: u64, name: &str, cntent: &str) -> bool {
+        use schema::tags;
+
+        let conn = self.connection();
+
+        let now = now_utc();
+
+        let new_tag = NewTag {
+            owner_id: user_id as i64,
+            guild_id: guild as i64,
+            tag_name: name,
+            content: cntent,
+            count: 0,
+            created: &now,
+        };
+
+        if let Err(e) = diesel::insert_into(tags::table)
+            .values(&new_tag)
+            .execute(&conn) {
+                warn_discord!("[DB:add_tag] Error while adding new tag: {}", e);
+                false
+        } else {
+            true
+        }
+    }
+
+    pub fn increment_tag(&self, guild: u64, name: &str) {
+        use schema::tags;
+        use schema::tags::dsl::*;
+
+        let conn = self.connection();
+
+        if let Err(e) = diesel::update(tags::table)
+            .filter(guild_id.eq(guild as i64))
+            .filter(tag_name.eq(name))
+            .set(count.eq(count + 1))
+            .execute(&conn) {
+                warn_discord!("[DB:edit_tag] Error while incrementing tag count: {}", e);
+        }
+    }
+
+    pub fn get_tag(&self, guild: u64, name: &str) -> Option<Tag> {
+        use schema::tags::dsl::*;
+
+        let conn = self.connection();
+
+        tags
+            .filter(tag_name.eq(name))
+            .filter(guild_id.eq(guild as i64))
+            .first::<Tag>(&conn)
+            .ok()
+    }
+
+    pub fn get_tags(&self, guild: u64) -> Option<Vec<Tag>> {
+        use schema::tags::dsl::*;
+
+        let conn = self.connection();
+
+        tags
+            .filter(guild_id.eq(guild as i64))
+            .load::<Tag>(&conn)
+            .ok()
+    }
+
+    pub fn get_tags_top(&self, guild: u64) -> Option<Vec<Tag>> {
+        use schema::tags::dsl::*;
+
+        let conn = self.connection();
+
+        tags
+            .filter(guild_id.eq(guild as i64))
+            .order(count.desc())
+            .limit(10)
+            .load::<Tag>(&conn)
+            .ok()
+    }
+
+    pub fn search_tag(&self, guild: u64, name: &str) -> Option<Vec<Tag>> {
+        use schema::tags::dsl::*;
+
+        let conn = self.connection();
+
+        tags
+            .filter(guild_id.eq(guild as i64))
+            .filter(tag_name.like(&format!("%{}%", name)))
+            .order(count.desc())
+            .limit(10)
+            .load::<Tag>(&conn)
+            .ok()
+    }
+
+    pub fn delete_tag(&self, user_id: u64, guild: u64, name: &str) -> bool {
+        use schema::tags::dsl::*;
+
+        let conn = self.connection();
+
+        match diesel::delete(tags
+                    .filter(owner_id.eq(user_id as i64))
+                    .filter(guild_id.eq(guild as i64))
+                    .filter(tag_name.eq(name))
+                )
+                .execute(&conn) {
+
+                
+                Ok(rows) => {
+                    // returns number of rows affected, this should be 1
+                    // if it was successfully deleted
+                    if rows == 1 {
+                        true
+                    } else {
+                        false
+                    }
+                },
+                Err(e) => {
+                    warn_discord!("[DB:delete_tag] Error while deleting tag: {}", e);
+                    false
+                }
+        }
+    }
+
+    pub fn edit_tag(&self, user_id: u64, guild: u64, name: &str, new_name: &str, new_content: &str) -> bool {
+        use schema::tags;
+        use schema::tags::dsl::*;
+
+        let conn = self.connection();
+
+        if let Err(e) = diesel::update(tags::table)
+            .filter(owner_id.eq(user_id as i64))
+            .filter(guild_id.eq(guild as i64))
+            .filter(tag_name.eq(name))
+            .set((
+                tag_name.eq(new_name),
+                content.eq(new_content),
+            ))
+            .execute(&conn) {
+                warn_discord!("[DB:edit_tag] Error while updating tag: {}", e);
+
+                false
+        } else {
+            true
+        }
+    }
+
+    
 }
 
 

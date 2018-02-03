@@ -103,6 +103,18 @@ table! {
 }
 
 table! {
+    tags (id) {
+        id -> Int4,
+        owner_id -> Int8,
+        guild_id -> Int8,
+        tag_name -> Text,
+        content -> Text,
+        count -> Int4,
+        created -> Timestamp,
+    }
+}
+
+table! {
     users (id) {
         id -> Int8,
         last_msg -> Timestamp,
@@ -126,5 +138,6 @@ allow_tables_to_appear_in_same_query!(
     mutes,
     notifications,
     reminders,
+    tags,
     users,
 );

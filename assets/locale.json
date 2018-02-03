@@ -34,7 +34,11 @@
         "galleries_none": "This guild has no gallery channels.",
         "gallery_deleted": "Gallery has been deleted.",
 
-        "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info."
+        "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
+
+        "tag_added": "Added a tag named `{}` with response `{}`.",
+        "tag_edited": "Edited `{}` with new name `{}` and response `{}`.",
+        "tag_deleted": "Deleted the tag `{}`."
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -45,6 +49,9 @@
         "no_mute_role": "There isn't a mute role set.",
         "no_user_given": "Please give a user id or mention.",
         "no_webhook_given": "Please give a webhook url.",
+        "no_tag_name_given": "Please give a tag name.",
+        "no_tag_content_given": "Please give tag content.",
+        "no_tag_search_given": "Please give a tag search.",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
@@ -68,6 +75,7 @@
         "failed_get_bans": "Failed to fetch server bans.",
         "failed_get_messages": "Failed to fetch messages.",
         "failed_delete_messages": "Failed to delete messages.",
+        "failed_dm": "Failed to send DM, maybe you don't have them enabled?",
 
         "already_muted": "This member is already muted.",
 
@@ -93,6 +101,11 @@
 
         "fm_no_username": "No Last.fm username given or saved.  Pass a username as an argument or use `fm set [username]` to save your username.",
         "fm_no_username_mentioned": "No Last.fm username found for this user.",
-        "fm_fetch_error": "Something went wrong fetching last.fm data."
+        "fm_fetch_error": "Something went wrong fetching last.fm data.",
+
+        "tag_already_exists": "This tag already exists.  Try another name.",
+        "no_tag_found": "There doesn't seem to be a tag named `{}`.",
+        "no_tags_found": "Couldn't find any tags.",
+        "tag_failed_delete": "This tag doesn't belong to you or it doesn't exist."
     }
 }

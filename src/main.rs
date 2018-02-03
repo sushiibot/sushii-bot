@@ -392,16 +392,11 @@ fn main() {
                     .min_args(1)
                     .cmd(commands::misc::play)
                 )
-                .command("crypto", |c| c
-                    .usage("(symbol)")
-                    .desc("Gets current cryptocurrency prices.")
-                    .cmd(commands::crypto::crypto)
-                )
                 .command("patreon", |c| c
                     .desc("Gets the patreon url. :]")
                     .exec(|_, msg, _| {
                         let url = env::var("PATREON_URL").unwrap_or("N/A".to_owned());
-                        let _ = msg.channel_id.say(&format!("You can support me on patreon here: {}\nThanks! :heart:", url))?;
+                        let _ = msg.channel_id.say(&format!("You can support me on patreon here: {} Thanks! :heart:", url))?;
                         Ok(())
                     })
                 )
@@ -418,6 +413,47 @@ fn main() {
                 )
                 
             )
+            .group("Tags", |g| g
+                .guild_only(true)
+                .command("t", |c| c
+                    .usage("[tag name]")
+                    .desc("Gets a tag.")
+                    .cmd(commands::tags::tag)
+                )
+                .command("tag info", |c| c
+                    .usage("[tag name]")
+                    .desc("Gets information about a tag.")
+                    .cmd(commands::tags::tag_info)
+                )
+                .command("tag add", |c| c
+                    .usage("[tag name] [content]")
+                    .desc("Adds a new tag.")
+                    .cmd(commands::tags::tag_add)
+                )
+                .command("tag list", |c| c
+                    .desc("Lists available tags.")
+                    .cmd(commands::tags::tag_list)
+                )
+                .command("tag top", |c| c
+                    .desc("Lists top 10 most used tags.")
+                    .cmd(commands::tags::tag_top)
+                )
+                .command("tag search", |c| c
+                    .usage("[search]")
+                    .desc("Searches for a tag.")
+                    .cmd(commands::tags::tag_search)
+                )
+                .command("tag delete", |c| c
+                    .usage("[tag name]")
+                    .desc("Deletes a tag.")
+                    .cmd(commands::tags::tag_delete)
+                )
+                .command("tag edit", |c| c
+                    .usage("[tag name] [new tag name] [new content]")
+                    .desc("Edits an existing tag.")
+                    .cmd(commands::tags::tag_edit)
+                )
+            )
             .group("Search", |g| g
                 .command("weather", |c| c
                     .usage("[location]")
@@ -428,6 +464,11 @@ fn main() {
                     .usage("[username] or set [username]")
                     .desc("Gets the last played track on last.fm")
                     .cmd(commands::search::lastfm::fm)
+                )
+                .command("crypto", |c| c
+                    .usage("(symbol)")
+                    .desc("Gets current cryptocurrency prices.")
+                    .cmd(commands::search::crypto::crypto)
                 )
             )
             .group("User Info", |g| g
