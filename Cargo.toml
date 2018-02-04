@@ -1,6 +1,6 @@
 [package]
 name = "rust-sbot2"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["drklee3 <drklee3@users.noreply.github.com>"]
 
 [dependencies]

@@ -868,7 +868,7 @@ dependencies = [
 
 [[package]]
 name = "rust-sbot2"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "Inflector 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
