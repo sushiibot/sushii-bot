@@ -1,5 +1,6 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::id::UserId;
+use serenity::model::channel::Message;
 use serenity::CACHE;
 
 use std::fmt::Write;
@@ -8,7 +9,7 @@ use utils::config::get_pool;
 command!(tag(ctx, msg, args) {
     let tag_name = match args.single::<String>() {
         Ok(val) => val,
-        Err(_) => return Err(CommandError::from(get_msg!("error/no_tag_name_given"))),
+        Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
     };
 
     if let Some(guild_id) = msg.guild_id() {
@@ -16,7 +17,7 @@ command!(tag(ctx, msg, args) {
 
         let found_tag = match pool.get_tag(guild_id.0, &tag_name) {
             Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/no_tag_found", tag_name))),
+            None => return Err(CommandError::from(get_msg!("error/tag_not_found", tag_name))),
         };
 
         let _ = msg.channel_id.say(&found_tag.content);
@@ -28,7 +29,7 @@ command!(tag(ctx, msg, args) {
 command!(tag_info(ctx, msg, args) {
     let tag_name = match args.single::<String>() {
         Ok(val) => val,
-        Err(_) => return Err(CommandError::from(get_msg!("error/no_tag_name_given"))),
+        Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
     };
 
     if let Some(guild_id) = msg.guild_id() {
@@ -36,7 +37,7 @@ command!(tag_info(ctx, msg, args) {
 
         let found_tag = match pool.get_tag(guild_id.0, &tag_name) {
             Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/no_tag_found", tag_name))),
+            None => return Err(CommandError::from(get_msg!("error/tag_not_found", tag_name))),
         };
 
         let (user_tag, user_face) = match UserId(found_tag.owner_id as u64).get() {
@@ -75,14 +76,14 @@ command!(tag_add(ctx, msg, args) {
 
     let tag_name = match args.single::<String>() {
         Ok(val) => val,
-        Err(_) => return Err(CommandError::from(get_msg!("error/no_tag_name_given"))),
+        Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
     };
 
     let tag_content = args.full();
 
     // check if tag content is given or no
     if tag_content.is_empty() {
-        return Err(CommandError::from(get_msg!("error/no_tag_content_given")));
+        return Err(CommandError::from(get_msg!("error/tag_no_content_given")));
     }
 
     // if in guild
@@ -106,7 +107,7 @@ command!(tag_list(ctx, msg, _args) {
         let pool = get_pool(&ctx);
         let tags = match pool.get_tags(guild_id.0) {
             Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/no_tags_found"))),
+            None => return Err(CommandError::from(get_msg!("error/tags_not_found"))),
         };
 
         let mut contents = String::new();
@@ -129,7 +130,7 @@ command!(tag_list(ctx, msg, _args) {
 	    }
 	
 	    if !msg.is_private() {
-	        let _ = msg.channel_id.say(":mailbox_with_mail: Sent you a DM with the commands list.");
+	        let _ = msg.channel_id.say(get_msg!("info/tag_list"));
 	    }
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
@@ -143,7 +144,7 @@ command!(tag_top(ctx, msg, _args) {
 
         let top_tags = match pool.get_tags_top(guild_id.0) {
             Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/no_tags_found"))),
+            None => return Err(CommandError::from(get_msg!("error/tags_not_found"))),
         };
 
         let _ = msg.channel_id.send_message(|m| m
@@ -171,7 +172,7 @@ command!(tag_search(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let search = match args.single::<String>() {
             Ok(val) => val,
-            Err(_) => return Err(CommandError::from(get_msg!("error/no_tag_search_given"))),
+            Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_search_given"))),
         };
 
         let pool = get_pool(&ctx);
@@ -193,7 +194,7 @@ command!(tag_search(ctx, msg, args) {
                 })
             );
         } else {
-            return Err(CommandError::from(get_msg!("error/no_tags_found")));
+            return Err(CommandError::from(get_msg!("error/tags_not_found")));
         }
 
         
@@ -206,15 +207,26 @@ command!(tag_delete(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let tag_name = match args.single::<String>() {
             Ok(val) => val,
-            Err(_) => return Err(CommandError::from(get_msg!("error/no_tag_name_given"))),
+            Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
 
         let pool = get_pool(&ctx);
 
-        if pool.delete_tag(msg.author.id.0, guild_id.0, &tag_name) {
+        // get the current tag to check owner
+        let current = match pool.get_tag(guild_id.0, &tag_name) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/tag_not_found"))),
+        };
+
+        // check if user owns the tag or has mod perms
+        if !current.is_owner(msg.author.id.0) && !has_permission(&msg) {
+            return Err(CommandError::from(get_msg!("error/tag_no_permission")))
+        }
+
+        if pool.delete_tag(guild_id.0, &tag_name) {
             let _ = msg.channel_id.say(get_msg!("info/tag_deleted", tag_name));
         } else {
-            return Err(CommandError::from(get_msg!("error/tag_failed_delete")));
+            return Err(CommandError::from(get_msg!("error/tag_not_found_or_not_owner")));
         }
 
     } else {
@@ -228,30 +240,54 @@ command!(tag_edit(ctx, msg, args) {
 
         let tag_name = match args.single::<String>() {
             Ok(val) => val,
-            Err(_) => return Err(CommandError::from(get_msg!("error/no_tag_name_given"))),
+            Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
 
         let tag_new_name = match args.single::<String>() {
             Ok(val) => val,
-            Err(_) => return Err(CommandError::from(get_msg!("error/no_tag_name_given"))),
+            Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
 
         let tag_content = args.full();
 
         // check if tag content is given or no
         if tag_content.is_empty() {
-            return Err(CommandError::from(get_msg!("error/no_tag_content_given")));
+            return Err(CommandError::from(get_msg!("error/tag_no_content_given")));
         }
 
-        // check if new tag name already exists
-        if let Some(_) = pool.get_tag(guild_id.0, &tag_new_name) {
-            return Err(CommandError::from(get_msg!("error/tag_already_exists")));
+        // get the current tag to check owner
+        let current = match pool.get_tag(guild_id.0, &tag_name) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/tag_not_found"))),
+        };
+
+        // check if changing the tag name
+        if tag_name != tag_new_name {
+            // check if new tag name already exists
+            if let Some(_) = pool.get_tag(guild_id.0, &tag_new_name) {
+                return Err(CommandError::from(get_msg!("error/tag_already_exists")));
+            }
+        } else if current.content == tag_content {
+            // if tag is the same, check if content changed
+            // check if content changed
+            return Err(CommandError::from(get_msg!("error/tag_content_unchanged")));
         }
 
-        if pool.edit_tag(msg.author.id.0, guild_id.0, &tag_name, &tag_new_name, &tag_content) {
-            let _ = msg.channel_id.say(get_msg!("info/tag_added", &tag_name, &tag_new_name, &tag_content));
+
+        // check if user owns the tag or has mod perms
+        if !current.is_owner(msg.author.id.0) && !has_permission(&msg) {
+            return Err(CommandError::from(get_msg!("error/tag_no_permission")))
+        }
+
+        if pool.edit_tag(guild_id.0, &tag_name, &tag_new_name, &tag_content) {
+            if tag_name == tag_new_name {
+                // if only content was modified
+                let _ = msg.channel_id.say(get_msg!("info/tag_edited_content", &tag_name, &tag_content));
+            } else {
+                let _ = msg.channel_id.say(get_msg!("info/tag_edited", &tag_name, &tag_new_name, &tag_content));
+            }
         } else {
-            return Err(CommandError::from(get_msg!("error/tag_failed_delete")));
+            return Err(CommandError::from(get_msg!("error/tag_not_found_or_not_owner")));
         }
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
@@ -310,4 +346,28 @@ fn split_message(msg: &str, prepend: Option<&str>, with_code_block: bool) -> Vec
     }
 
     vec
+}
+
+fn has_permission(msg: &Message) -> bool {
+    let guild = match msg.guild() {
+        Some(guild) => guild,
+        None => {
+            warn!("Couldn't get message guild!");
+
+            return false;
+        }
+    };
+    let guild = guild.read();
+
+    // fetch member
+    let member = match guild.members.get(&msg.author.id) {
+        Some(member) => member,
+        None => return false
+    };
+    // check if has perm
+    if let Ok(permissions) = member.permissions() {
+        return permissions.manage_guild();
+    } else {
+        return false;
+    }
 }

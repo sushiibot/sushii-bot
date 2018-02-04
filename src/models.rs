@@ -284,6 +284,12 @@ pub struct Tag {
     pub created: NaiveDateTime,
 }
 
+impl Tag {
+    pub fn is_owner(&self, id: u64) -> bool {
+        id == self.owner_id as u64
+    }
+}
+
 #[derive(Insertable)]
 #[table_name = "tags"]
 pub struct NewTag<'a> {

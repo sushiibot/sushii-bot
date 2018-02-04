@@ -38,7 +38,9 @@
 
         "tag_added": "Added a tag named `{}` with response `{}`.",
         "tag_edited": "Edited `{}` with new name `{}` and response `{}`.",
-        "tag_deleted": "Deleted the tag `{}`."
+        "tag_edited_content": "Edited `{}` with new response `{}`.",
+        "tag_deleted": "Deleted the tag `{}`.",
+        "tag_list": ":mailbox_with_mail: Sent you a DM with the tag list."
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -49,9 +51,6 @@
         "no_mute_role": "There isn't a mute role set.",
         "no_user_given": "Please give a user id or mention.",
         "no_webhook_given": "Please give a webhook url.",
-        "no_tag_name_given": "Please give a tag name.",
-        "no_tag_content_given": "Please give tag content.",
-        "no_tag_search_given": "Please give a tag search.",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
@@ -103,9 +102,15 @@
         "fm_no_username_mentioned": "No Last.fm username found for this user.",
         "fm_fetch_error": "Something went wrong fetching last.fm data.",
 
+
+        "tag_no_name_given": "Please give a tag name.",
+        "tag_no_content_given": "Please give tag content.",
+        "tag_no_search_given": "Please give a tag search.",
         "tag_already_exists": "This tag already exists.  Try another name.",
-        "no_tag_found": "There doesn't seem to be a tag named `{}`.",
-        "no_tags_found": "Couldn't find any tags.",
-        "tag_failed_delete": "This tag doesn't belong to you or it doesn't exist."
+        "tag_not_found": "There doesn't seem to be a tag named `{}`.",
+        "tags_not_found": "Couldn't find any tags.",
+        "tag_not_owner": "This tag doesn't belong to you.",
+        "tag_not_found_or_not_owner": "This tag doesn't belong to you or it doesn't exist.",
+        "tag_content_unchanged": "New tag response is unchanged.  You can either edit the name or content of the tag."
     }
 }

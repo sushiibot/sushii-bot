@@ -1062,13 +1062,13 @@ impl ConnectionPool {
             .ok()
     }
 
-    pub fn delete_tag(&self, user_id: u64, guild: u64, name: &str) -> bool {
+    pub fn delete_tag(&self, guild: u64, name: &str) -> bool {
         use schema::tags::dsl::*;
 
         let conn = self.connection();
 
-        match diesel::delete(tags
-                    .filter(owner_id.eq(user_id as i64))
+        match diesel::delete(
+                tags
                     .filter(guild_id.eq(guild as i64))
                     .filter(tag_name.eq(name))
                 )
@@ -1091,14 +1091,13 @@ impl ConnectionPool {
         }
     }
 
-    pub fn edit_tag(&self, user_id: u64, guild: u64, name: &str, new_name: &str, new_content: &str) -> bool {
+    pub fn edit_tag(&self, guild: u64, name: &str, new_name: &str, new_content: &str) -> bool {
         use schema::tags;
         use schema::tags::dsl::*;
 
         let conn = self.connection();
 
         if let Err(e) = diesel::update(tags::table)
-            .filter(owner_id.eq(user_id as i64))
             .filter(guild_id.eq(guild as i64))
             .filter(tag_name.eq(name))
             .set((
