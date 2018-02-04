@@ -131,7 +131,7 @@ command!(userinfo(ctx, msg, args) {
 command!(avatar(_ctx, msg, args) {
     let name = match args.single::<String>() {
         Ok(val) => val,
-        Err(_) => return Err(CommandError("Missing user.".to_owned())),
+        Err(_) => msg.author.id.0.to_string(),
     };
 
     let id = match get_id(&name) {
