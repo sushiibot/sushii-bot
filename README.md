@@ -1,9 +1,7 @@
 # discord-sbot2
 [![Build Status](https://travis-ci.org/drklee3/discord-sbot2.svg?branch=master)](https://travis-ci.org/drklee3/discord-sbot2)
 
-A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.org/) with [serenity-rs](https://github.com/zeyla/serenity).
-
-Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
+A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.org/) with [serenity-rs](https://github.com/zeyla/serenity).  Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
 
 Work in progress.  Features may be either missing, incomplete, or broken.
 
@@ -12,10 +10,14 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 * User 24 hour activity tracker
 * Profile image generation for displaying rank and activity graph (with [sbot2-image-server](https://github.com/drklee3/sbot2-image-server))
 * Configurable self assigning role system with multiple categories and limits
-* Customizable prefix per guild
+* Configurable prefix per guild
+* Moderation action logs and editable action reasons
+* Mute evasion prevention
+* Mass mention auto-mutes
+* User created tags (custom commands-ish)
+* Channel galleries (sends links & images from a channel to a webhook)
 * Reminders
 * Keyword notifications
-* Moderation action logs and editable action reasons
 * User join and leave messages
 * Rust playground code execution
 * Discord events counter
