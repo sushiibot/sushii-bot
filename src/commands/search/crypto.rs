@@ -17,7 +17,7 @@ struct Usd {
 command!(crypto(_ctx, msg, args) {
     let coins = match args.single::<String>() {
         Ok(val) => val.replace(" ", "").to_uppercase(),
-        Err(_) => "BTC,ETH,EUR,XMR".to_owned(),
+        Err(_) => "BTC,ETH,XRP,BCH,LTC,XLM,NEO".to_owned(),
     };
     
     let _ = msg.channel_id.broadcast_typing();
