@@ -169,7 +169,7 @@ command!(delete_notification(ctx, msg, args) {
             return Err(CommandError::from(get_msg!("error/notification_delete_by_keyword")));
         }
 
-        pool.delete_notification(msg.author.id.0, guild_id, Some(&keyword_or_id), None)
+        pool.delete_notification(msg.author.id.0, guild_id, Some(&keyword_or_id.to_lowercase()), None)
     } else {
         pool.delete_notification(msg.author.id.0, None, None, Some(notification_id))
     };
