@@ -300,3 +300,22 @@ pub struct NewTag<'a> {
     pub count: i32,
     pub created: &'a NaiveDateTime,
 }
+
+
+#[derive(Queryable, Clone)]
+pub struct MemberEvent {
+    pub id: i32,
+    pub guild_id: i64,
+    pub user_id: i64,
+    pub event_name: String,
+    pub event_time: NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[table_name = "member_events"]
+pub struct NewMemberEvent<'a> {
+    pub guild_id: i64,
+    pub user_id: i64,
+    pub event_name: &'a str,
+    pub event_time: &'a NaiveDateTime,
+}
