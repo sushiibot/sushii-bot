@@ -7,6 +7,7 @@ use Uptime;
 use chrono::Utc;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
+use std::env;
 
 use psutil;
 use sys_info;
@@ -203,12 +204,14 @@ command!(stats(ctx, msg) {
 
     let bot_version = env!("CARGO_PKG_VERSION");
 
+    let owner_tag = env::var("OWNER_TAG").unwrap_or("N/A".to_owned());
+
     let _ = msg.channel_id.send_message(|m|
         m.embed(|e| e
             .color(0x3498db)
             .title("Stats")
-            .field("Version", &format!("v{}", bot_version), true)
-            .field("Library", "[serenity-rs](https://github.com/zeyla/serenity/) v0.5.0", true)
+            .field("Author", &owner_tag, true)
+            .field("Version", &format!("v{}\n[serenity-rs](https://github.com/zeyla/serenity/) v0.5.1", bot_version), true)
             .field("Guilds", &guilds_count.to_string(), true)
             .field("Channels", &channels_count.to_string(), true)
             .field("Users (Cached)", &users_count.to_string(), true)
