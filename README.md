@@ -37,15 +37,10 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 
 1. Install dependencies.
     * [PostgreSQL](https://www.postgresql.org) (9.4+)
-    * [Diesel CLI](https://github.com/diesel-rs/diesel/tree/master/diesel_cli)
-        1. Install [Rust and Cargo](http://doc.crates.io).
-            ```bash
-            $ curl -sSf https://static.rust-lang.org/rustup.sh | sh
-            ```
-        2. Install Diesel CLI.
-            ```bash
-            $ cargo install diesel_cli --no-default-features --features "postgres"
-            ```
+    * [Rust / Cargo](http://doc.crates.io).
+        ```bash
+        $ curl -sSf https://static.rust-lang.org/rustup.sh | sh
+        ```
     * [sbot2-image-server](https://github.com/drklee3/sbot2-image-server) (Used for rank image generation, etc)
         1. Install [Node.js and npm](https://nodejs.org/en/download/package-manager/)
             ```bash
@@ -71,12 +66,8 @@ Work in progress.  Features may be either missing, incomplete, or broken.
     $ git clone https://github.com/drklee3/discord-sbot2.git
     $ cd discord-sbot2
     ```
-3. Run SQL migrations.
-    ```bash
-    $ diesel migration run
-    ```
-4. Edit [`.env.example`](.env.example) and rename to `.env`.  Removing any key or leaving them blank will result in panics.
-5. Build and run the bot.
+3. Edit [`.env.example`](.env.example) and rename to `.env`.  Removing any key or leaving them blank will result in panics.
+4. Build and run the bot.
     ```bash
     $ cargo run --release
     ```
