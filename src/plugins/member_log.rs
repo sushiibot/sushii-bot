@@ -27,6 +27,8 @@ pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id:
                 .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string())
             )
         );
+
+        pool.log_member_event(guild_id.0, user.id.0, "join");
     }
 }
 
@@ -49,5 +51,7 @@ pub fn on_guild_member_removal(_ctx: &Context, pool: &ConnectionPool, guild_id: 
                 .timestamp(now_utc().format("%Y-%m-%dT%H:%M:%S").to_string())
             )
         );
+
+        pool.log_member_event(guild_id.0, user.id.0, "leave");
     }
 }

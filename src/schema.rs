@@ -48,6 +48,16 @@ table! {
 }
 
 table! {
+    member_events (id) {
+        id -> Int4,
+        guild_id -> Int8,
+        user_id -> Int8,
+        event_name -> Text,
+        event_time -> Timestamp,
+    }
+}
+
+table! {
     messages (id) {
         id -> Int8,
         author -> Int8,
@@ -133,6 +143,7 @@ allow_tables_to_appear_in_same_query!(
     galleries,
     guilds,
     levels,
+    member_events,
     messages,
     mod_log,
     mutes,

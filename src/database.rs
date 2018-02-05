@@ -1113,7 +1113,27 @@ impl ConnectionPool {
         }
     }
 
-    
+    pub fn log_member_event(&self, guild: u64, user: u64, name: &str) {
+        use schema::member_events;
+
+        let conn = self.connection();
+
+        let now = now_utc();
+
+        let new_member_event = NewMemberEvent {
+            guild_id: guild as i64,
+            user_id: user as i64,
+            event_name: name,
+            event_time: &now,
+        };
+
+        if let Err(e) = diesel::insert_into(member_events::table)
+            .values(&new_member_event)
+            .execute(&conn) {
+
+            warn_discord!("[DB:log_member_event] Failed to insert member event: {}", e);
+        }
+    }
 }
 
 
