@@ -28,6 +28,10 @@
         "weather_saved_location": "Saved your location.  You won't have to pass a location argument to get the weather of this location.",
         "rep_given": "I gave {} {}1 rep.",
 
+        "notification_sent_dm": "Sent you a DM with your notifications. :mailbox_with_mail:",
+        "notification_added": "Added a new notification.",
+        "notification_added_global": "Added a new **global** notification",
+
         "list_ids_attached": "Server roles have been attached in the file (Exceeded message size limit).",
 
         "gallery_added": "A gallery has been added for <#{}>",
