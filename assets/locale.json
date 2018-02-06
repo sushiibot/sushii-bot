@@ -96,6 +96,8 @@
         "rep_no_args": "Give me an action (`+` or `-`) and someone to rep.",
         "rep_bot": "You cant rep bots.",
 
+        "reminder_not_given": "Give me something to remind you with.",
+
         "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
 
         "notification_delete_by_keyword": "Please provide a keyword ID instead of the actual keyword, or try this in the respective guild instead.",
