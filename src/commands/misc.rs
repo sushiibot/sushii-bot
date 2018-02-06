@@ -108,6 +108,10 @@ command!(reminder(ctx, msg, args) {
 
     let content = args.full();
 
+    if content.is_empty() {
+        return Err(CommandError::from(get_msg!("error/reminder_not_given")))
+    }
+
     // throw reminder into the database
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
