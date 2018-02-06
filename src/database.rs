@@ -621,7 +621,18 @@ impl ConnectionPool {
                 None
             }
         } else {
-            None
+            // delete all of a keyword
+            if let Some(kw) = kw {
+                diesel::delete(
+                    notifications
+                        .filter(user_id.eq(user as i64))
+                        .filter(keyword.eq(kw))
+                    )
+                    .get_result::<Notification>(&conn)
+                    .ok()
+            } else {
+                None
+            }
         }
     }
 
