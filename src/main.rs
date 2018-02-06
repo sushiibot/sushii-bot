@@ -389,14 +389,13 @@ fn main() {
                 .command("play", |c| c
                     .usage("[rust code]")
                     .desc("Evaluates Rust code in the playground.")
-                    .min_args(1)
                     .cmd(commands::misc::play)
                 )
                 .command("patreon", |c| c
                     .desc("Gets the patreon url. :]")
                     .exec(|_, msg, _| {
                         let url = env::var("PATREON_URL").unwrap_or("N/A".to_owned());
-                        let _ = msg.channel_id.say(&format!("You can support me on patreon here: {} Thanks! :heart:", url))?;
+                        let _ = msg.channel_id.say(&format!("You can support me on patreon here: <{}> Thanks! :heart:", url))?;
                         Ok(())
                     })
                 )
