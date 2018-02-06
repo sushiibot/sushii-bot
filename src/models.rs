@@ -128,6 +128,14 @@ pub struct NewUserLevel<'a> {
     pub last_msg: &'a NaiveDateTime,
 }
 
+// for leaderboards
+pub struct TopLevels {
+    pub day: Option<Vec<UserLevel>>,
+    pub week: Option<Vec<UserLevel>>,
+    pub month: Option<Vec<UserLevel>>,
+    pub all_time: Option<Vec<UserLevel>>,
+}
+
 #[derive(Queryable)]
 pub struct Reminder {
     pub id: i32,
