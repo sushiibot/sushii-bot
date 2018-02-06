@@ -12,6 +12,8 @@ command!(add_notification(ctx, msg, args) {
         return Err(CommandError("Missing keyword".to_owned()));
     }
 
+    let _ = msg.delete();
+
     let guild_id = if keyword.starts_with("global ") {
         keyword = keyword.replace("global ", "");
         0
@@ -25,9 +27,9 @@ command!(add_notification(ctx, msg, args) {
     pool.new_notification(msg.author.id.0, guild_id, &keyword);
 
     let s = if guild_id == 0 {
-        format!("Added a new **global** notification with keyword `{}`", keyword)
+        get_msg!("info/notification_added_global")
     } else {
-        format!("Added a new notification with keyword `{}`", keyword)
+        get_msg!("info/notification_added")
     };
 
     let _ = msg.channel_id.say(&s);
@@ -49,23 +51,14 @@ command!(list_notifications(ctx, msg, _args) {
     let mut s = String::new();
 
     if notifications.len() == 0 {
-        let _ = write!(s, "You have no notifications set.");
+        let _ = msg.channel_id.say("You have no notifications set.");
     } else {
         let _ = write!(s, "Your notifications:\n```\n");
         let mut counter = 1;
 
         for noti in notifications {
-            let noti_scope = if let Some(guild_id) = msg.guild_id() {
-                if noti.guild_id as u64 == guild_id.0 {
-                    "This server".to_owned()
-                } else if noti.guild_id == 0 {
-                    "Global".to_owned()
-                } else {
-                    match cache.guild(noti.guild_id as u64) {
-                        Some(val) => val.read().name.clone(),
-                        None => noti.guild_id.to_string(),
-                    }
-                }
+            let noti_scope = if noti.guild_id == 0 {
+                "Global".to_owned()
             } else {
                 match cache.guild(noti.guild_id as u64) {
                     Some(val) => val.read().name.clone(),
@@ -81,7 +74,11 @@ command!(list_notifications(ctx, msg, _args) {
         let _ = write!(s, "```");
     }
 
-    let _ = msg.channel_id.say(&s);
+    if let Err(_) = msg.author.direct_message(|m| m.content(&s)) {
+        let _ = msg.channel_id.say(get_msg!("error/failed_dm"));
+    } else {
+        let _ = msg.channel_id.say(get_msg!("info/notification_sent_dm"));
+    }
 
     /*
 
