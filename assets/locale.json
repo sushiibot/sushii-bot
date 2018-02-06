@@ -91,6 +91,8 @@
         "weather_none_given": "Please provide a location to look up the weather.",
         "weather_invalid_save": "Location missing.  You can save a location with `weather save [location]` or pass a location as an argument.",
 
+        "level_no_data": "No level data found.",
+
         "rep_too_soon": "You can rep again {}.",
         "rep_self": "You can't rep yourself.  Sorry.",
         "rep_no_args": "Give me an action (`+` or `-`) and someone to rep.",

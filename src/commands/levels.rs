@@ -21,7 +21,7 @@ command!(profile(ctx, msg, args) {
         Ok(val) => {
             match utils::user::get_id(&val) {
                 Some(id) => id,
-                None => return Err(CommandError("Invalid mention.".to_owned())),
+                None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
             }
         },
         Err(_) => msg.author.id.0,
@@ -29,12 +29,12 @@ command!(profile(ctx, msg, args) {
 
     let guild_id = match msg.guild_id() {
         Some(guild) => guild.0,
-        None => return Err(CommandError("No guild found.".to_owned())),
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
     let level_data = match pool.get_level(id, guild_id) {
         Some(level_data) => level_data,
-        None => return Err(CommandError("No level data found.".to_owned())),
+        None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
     };
 
     let (user_rep, activity) = match pool.get_user(id) {
@@ -44,7 +44,7 @@ command!(profile(ctx, msg, args) {
 
     let user = match UserId(id).get() {
         Ok(val) => val,
-        Err(_) => return Err(CommandError("Could not fetch user.".to_owned())),
+        Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };
 
     let _ = msg.channel_id.broadcast_typing();
@@ -274,4 +274,102 @@ command!(rep(ctx, msg, args) {
     pool.rep_user(msg.author.id.0, target, &action);
 
     let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag(), &action));
+});
+
+fn get_pos_emoji(pos: i64) -> String {
+    match pos {
+        0 => ":first_place:",
+        1 => ":second_place:",
+        2 => ":third_place:",
+        3 => ":four:",
+        4 => ":five:",
+        5 => ":six:",
+        6 => ":seven:",
+        7 => ":eight:",
+        8 => ":nine:",
+        9 => ":keycap_ten:",
+        _ => ":shrug:",
+    }.to_owned()
+}
+
+
+fn next_level(level: i64) -> i64 {
+    50 * (level.pow(2)) - (50 * level)
+}
+
+fn get_level(xp: i64) -> i64 {
+    let mut level = 0;
+    while next_level(level + 1) < xp {
+        level += 1;
+    }
+
+    return level;
+}
+
+command!(top_levels(ctx, msg, _args) {
+    let pool = get_pool(&ctx);
+
+    if let Some(guild_id) = msg.guild_id() {
+        let top = pool.get_top_levels(guild_id.0);
+
+        let daily = if let Some(daily) = top.day {
+            let mut s = String::new();
+            for (i, user) in daily.iter().enumerate() {
+                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_day));
+            }
+
+            s
+        } else {
+            "N/A".to_owned()
+        };
+
+        let weekly = if let Some(weekly) = top.week {
+            let mut s = String::new();
+            for (i, user) in weekly.iter().enumerate() {
+                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_week));
+            }
+
+            s
+        } else {
+            "N/A".to_owned()
+        };
+
+        let monthly = if let Some(monthly) = top.month {
+            let mut s = String::new();
+            for (i, user) in monthly.iter().enumerate() {
+                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_month));
+            }
+
+            s
+        } else {
+            "N/A".to_owned()
+        };
+
+        let all_time = if let Some(all_time) = top.all_time {
+            let mut s = String::new();
+            for (i, user) in all_time.iter().enumerate() {
+                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_all_time));
+            }
+
+            s
+        } else {
+            "N/A".to_owned()
+        };
+
+        let _ = msg.channel_id.send_message(|m|
+                m.embed(|e| e
+                    .author(|a| a
+                        .name("Top Levels")
+                    )
+                    .color(0x2ecc71)
+                    .field("Daily", &daily, true)
+                    .field("Weekly", &weekly, true)
+                    .field("Monthly", &monthly, true)
+                    .field("All Time", &all_time, true)
+                )
+            );
+
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
 });

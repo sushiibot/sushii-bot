@@ -301,16 +301,16 @@ impl ConnectionPool {
             SELECT * 
                 FROM (
                     SELECT *,
-                        DENSE_RANK() OVER(PARTITION BY EXTRACT(DOY FROM last_msg) ORDER BY msg_day DESC) AS msg_day_rank,
+                        ROW_NUMBER() OVER(PARTITION BY EXTRACT(DOY FROM last_msg) ORDER BY msg_day DESC) AS msg_day_rank,
                         COUNT(*) OVER(PARTITION BY EXTRACT(DOY FROM last_msg)) AS msg_day_total,
 
-                        DENSE_RANK() OVER(PARTITION BY EXTRACT(WEEK FROM last_msg) ORDER BY msg_day DESC) AS msg_week_rank,
+                        ROW_NUMBER() OVER(PARTITION BY EXTRACT(WEEK FROM last_msg) ORDER BY msg_day DESC) AS msg_week_rank,
                         COUNT(*) OVER(PARTITION BY EXTRACT(WEEK FROM last_msg)) AS msg_week_total,
 
-                        DENSE_RANK() OVER(PARTITION BY EXTRACT(MONTH FROM last_msg) ORDER BY msg_month DESC) AS msg_month_rank,
+                        ROW_NUMBER() OVER(PARTITION BY EXTRACT(MONTH FROM last_msg) ORDER BY msg_month DESC) AS msg_month_rank,
                         COUNT(*) OVER(PARTITION BY EXTRACT(MONTH FROM last_msg)) AS msg_month_total,
 
-                        DENSE_RANK() OVER(ORDER BY msg_all_time DESC) AS msg_all_time_rank,
+                        ROW_NUMBER() OVER(ORDER BY msg_all_time DESC) AS msg_all_time_rank,
                         COUNT(*) OVER() AS msg_all_time_total
                     FROM levels WHERE guild_id = $1 
                 ) t
@@ -325,6 +325,50 @@ impl ConnectionPool {
                 warn_discord!("[DB:get_level] Error while getting level: {}", e);
                 None
             },
+        }
+    }
+
+    // fetch top 10 for each category
+    pub fn get_top_levels(&self, id_guild: u64) -> TopLevels {
+        use schema::levels::dsl::*;
+
+        let conn = self.connection();
+
+        // daily
+        let day = levels
+            .filter(guild_id.eq(id_guild as i64))
+            .order(msg_day.desc())
+            .limit(5)
+            .load::<UserLevel>(&conn)
+            .ok();
+        
+        let week = levels
+            .filter(guild_id.eq(id_guild as i64))
+            .order(msg_week.desc())
+            .limit(5)
+            .load::<UserLevel>(&conn)
+            .ok();
+        
+        let month = levels
+            .filter(guild_id.eq(id_guild as i64))
+            .order(msg_month.desc())
+            .limit(5)
+            .load::<UserLevel>(&conn)
+            .ok();
+        
+        let all_time = levels
+            .filter(guild_id.eq(id_guild as i64))
+            .order(msg_all_time.desc())
+            .limit(5)
+            .load::<UserLevel>(&conn)
+            .ok();
+        
+
+        TopLevels {
+            day,
+            week,
+            month,
+            all_time,
         }
     }
 
