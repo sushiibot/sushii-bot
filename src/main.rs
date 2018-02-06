@@ -190,13 +190,12 @@ fn main() {
                 println!("{}: {} ", msg.author.tag(), cmd_name);
                 true
             })
-            .after(|_ctx, msg, cmd_name, error| {
+            .after(|_ctx, msg, _cmd_name, error| {
                 //  Print out an error if it happened
                 if let Err(why) = error {
                     let s = format!("Error: {}", why.0);
 
                     let _ = msg.channel_id.say(&s);
-                    println!("Error in {}: {:?}", cmd_name, why);
 
                     // react x whenever an error occurs
                     let _ = msg.react("❌");
