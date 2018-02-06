@@ -2,7 +2,6 @@ use serenity::framework::standard::CommandError;
 use serenity::CACHE;
 
 use std::fmt::Write;
-use database;
 use utils::config::get_pool;
 
 command!(add_notification(ctx, msg, args) {
@@ -12,7 +11,10 @@ command!(add_notification(ctx, msg, args) {
         return Err(CommandError("Missing keyword".to_owned()));
     }
 
+    // delete the invoker message to prevent people from
+    // spamming keywords
     let _ = msg.delete();
+
 
     let guild_id = if keyword.starts_with("global ") {
         keyword = keyword.replace("global ", "");
@@ -21,8 +23,30 @@ command!(add_notification(ctx, msg, args) {
         msg.guild_id().map_or(0, |x| x.0)
     };
 
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
+
+    // check if notification already exists
+    let notifications = pool.list_notifications(msg.author.id.0);
+
+    if let Some(notifications) = notifications {
+        let found = notifications.iter()
+            .find(|&x| (x.keyword == keyword) && (x.guild_id as u64 == guild_id));
+
+        if guild_id == 0 {
+            // check if this global noti already exists
+            if let Some(_) = found {
+                return Err(CommandError::from(get_msg!("error/notification_global_already_exists")));
+            } else {
+                // delete all the local notifications with same keyword
+                pool.delete_notification(msg.author.id.0, None, Some(&keyword), None);
+            }
+        } else {
+            // local noti
+            if let Some(_) = found {
+                return Err(CommandError::from(get_msg!("error/notification_already_exists")));
+            }
+        }
+    }
 
     pool.new_notification(msg.author.id.0, guild_id, &keyword);
 
@@ -36,8 +60,7 @@ command!(add_notification(ctx, msg, args) {
 });
 
 command!(list_notifications(ctx, msg, _args) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
     let mut notifications = match pool.list_notifications(msg.author.id.0) {
         Some(val) => val,
         None => {
@@ -45,16 +68,18 @@ command!(list_notifications(ctx, msg, _args) {
             return Ok(());
         }
     };
-    let cache = CACHE.read();
 
     notifications.sort_by(|a, b| a.keyword.cmp(&b.keyword));
     let mut s = String::new();
 
     if notifications.len() == 0 {
         let _ = msg.channel_id.say("You have no notifications set.");
+        return Ok(());
     } else {
         let _ = write!(s, "Your notifications:\n```\n");
         let mut counter = 1;
+
+        let cache = CACHE.read();
 
         for noti in notifications {
             let noti_scope = if noti.guild_id == 0 {
@@ -76,7 +101,7 @@ command!(list_notifications(ctx, msg, _args) {
 
     if let Err(_) = msg.author.direct_message(|m| m.content(&s)) {
         let _ = msg.channel_id.say(get_msg!("error/failed_dm"));
-    } else {
+    } else if !msg.is_private() {
         let _ = msg.channel_id.say(get_msg!("info/notification_sent_dm"));
     }
 
@@ -137,11 +162,13 @@ command!(list_notifications(ctx, msg, _args) {
 });
 
 command!(delete_notification(ctx, msg, args) {
-    let keyword_or_id = args.full();
+    let mut keyword_or_id = args.full().to_owned();
 
     if keyword_or_id.is_empty() {
         return Err(CommandError::from("Missing keyword or ID."));
     }
+
+    let _ = msg.delete();    
 
     // is keyword or id?
     let mut is_keyword;
@@ -159,21 +186,28 @@ command!(delete_notification(ctx, msg, args) {
 
     let pool = get_pool(&ctx);
 
-    let guild_id = msg.guild_id().map(|x| x.0);
+    let guild_id = if keyword_or_id.starts_with("global ") {
+        keyword_or_id = keyword_or_id.replace("global ", "");
+        0
+    } else {
+        // use guild id or if in DM, use global
+        msg.guild_id().map_or(0, |x| x.0)
+    };
 
     let result = if is_keyword {
-        if guild_id.is_none() {
-            return Err(CommandError::from(get_msg!("error/notification_delete_by_keyword")));
+        if msg.is_private() {
+            // delete all instances of a keyword across servers
+            pool.delete_notification(msg.author.id.0, None, Some(&keyword_or_id.to_lowercase()), None)
+        } else {
+            // only delete keyword in a specific guild
+            pool.delete_notification(msg.author.id.0, Some(guild_id), Some(&keyword_or_id.to_lowercase()), None)
         }
-
-        pool.delete_notification(msg.author.id.0, guild_id, Some(&keyword_or_id.to_lowercase()), None)
     } else {
         pool.delete_notification(msg.author.id.0, None, None, Some(notification_id))
     };
 
-    if let Some(deleted) = result {
-        let s = format!("Deleted the keyword `{}`.", deleted.keyword);
-        let _ = msg.channel_id.say(&s);
+    if let Some(_) = result {
+        let _ = msg.channel_id.say(&get_msg!("info/notification_deleted"));
     } else {
         return Err(CommandError::from(get_msg!("error/notification_delete_failed")));
     }
