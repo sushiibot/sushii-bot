@@ -31,6 +31,7 @@
         "notification_sent_dm": "Sent you a DM with your notifications. :mailbox_with_mail:",
         "notification_added": "Added a new notification.",
         "notification_added_global": "Added a new **global** notification",
+        "notification_deleted": "Deleted notification.",
 
         "list_ids_attached": "Server roles have been attached in the file (Exceeded message size limit).",
 
@@ -93,11 +94,14 @@
         "rep_too_soon": "You can rep again {}.",
         "rep_self": "You can't rep yourself.  Sorry.",
         "rep_no_args": "Give me an action (`+` or `-`) and someone to rep.",
+        "rep_bot": "You cant rep bots.",
 
         "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
 
         "notification_delete_by_keyword": "Please provide a keyword ID instead of the actual keyword, or try this in the respective guild instead.",
         "notification_delete_failed": "You don't have that keyword set, or keyword ID is not valid.",
+        "notification_global_already_exists": "You already have this global notification set.",
+        "notification_already_exists": "You already have this notification set",
 
         "roles_invalid_action": "Invalid role action, use `+[role]` or `-[role]`",
         "roles_invalid_target": "Invalid role.",
