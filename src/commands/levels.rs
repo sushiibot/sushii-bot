@@ -254,6 +254,10 @@ command!(rep(ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };
 
+    if target_user.bot {
+        return Err(CommandError::from(get_msg!("error/rep_bot")));
+    }
+
     if let Some(last_rep) = pool.get_last_rep(msg.author.id.0) {
         let now = now_utc();
         let next_rep = last_rep + Duration::hours(24);
