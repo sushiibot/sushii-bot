@@ -315,7 +315,8 @@ command!(top_levels(ctx, msg, _args) {
         let daily = if let Some(daily) = top.day {
             let mut s = String::new();
             for (i, user) in daily.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_day));
+                let _ = write!(s, "{} <@{}> (Level +{})\n", get_pos_emoji(i as i64),
+                    user.user_id, get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_day));
             }
 
             s
@@ -326,7 +327,8 @@ command!(top_levels(ctx, msg, _args) {
         let weekly = if let Some(weekly) = top.week {
             let mut s = String::new();
             for (i, user) in weekly.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_week));
+                let _ = write!(s, "{} <@{}> (Level +{})\n", get_pos_emoji(i as i64),
+                    user.user_id, get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_week));
             }
 
             s
@@ -337,7 +339,8 @@ command!(top_levels(ctx, msg, _args) {
         let monthly = if let Some(monthly) = top.month {
             let mut s = String::new();
             for (i, user) in monthly.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_month));
+                let _ = write!(s, "{} <@{}> (Level +{})\n", get_pos_emoji(i as i64),
+                    user.user_id, get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_month));
             }
 
             s
@@ -348,7 +351,8 @@ command!(top_levels(ctx, msg, _args) {
         let all_time = if let Some(all_time) = top.all_time {
             let mut s = String::new();
             for (i, user) in all_time.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64), user.user_id, get_level(user.msg_all_time));
+                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64),
+                    user.user_id, get_level(user.msg_all_time));
             }
 
             s
