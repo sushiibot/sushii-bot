@@ -32,7 +32,9 @@ command!(userinfo(ctx, msg, args) {
             let pool = get_pool(&ctx);
             let last_message = pool.get_user_last_message(user.id.0);
 
-            let _ = msg.channel_id.send_message(|m| 
+            println!("got lastmsg");
+
+            if let Err(e) = msg.channel_id.send_message(|m| 
                 m.embed(|e| {
                     let mut e = e.field("ID", user.id, true);
 
@@ -58,6 +60,8 @@ command!(userinfo(ctx, msg, args) {
                     } else {
                         e = e.field("Status", "Offline", true);
                     }
+
+                    println!("got status");
 
                     e = e.field("Created At", user.created_at().format("%Y-%m-%d %H:%M:%S UTC"), true);
 
@@ -86,39 +90,61 @@ command!(userinfo(ctx, msg, args) {
                         author_name = format!("{} [BOT]", author_name);
                     }
 
-                    e = e.author(|a|
-                        a.name(&author_name)
+                    println!("got user name");
+
+                    e = e.author(|a| a
+                        .name(&author_name)
                         .icon_url(&user.face())
                     );
 
+                    println!("author");
+
                     e = e.thumbnail(&user.face());
+
+                    println!("thumbnail");
 
                     // roles
                     let roles = match member.roles() {
                         Some(roles) => {
+                            println!("found roles");
                             let mut roles = roles.clone();
+                            println!("clone roles");
+                            
                             // sort roles by position
                             roles.sort_by(|a, b| b.position.cmp(&a.position));
-
+                            println!("sorted roles");
+                
                             // set the color of embed to highest role color
-                            if roles.len() > 0 {
+                            if roles.len() > 1 {
                                 e = e.color(roles[0].colour);
                             }
+                            println!("role color");
+                            
 
                             // convert roles to string
-                            roles.iter().map(|role| {
+                            let roles_str = roles.iter().map(|role| {
                                 role.name.clone()
-                            }).collect::<Vec<String>>().join(", ")
+                            }).collect::<Vec<String>>().join(", ");
+
+                            if roles_str.is_empty() {
+                                "N/A".to_owned()
+                            } else {
+                                roles_str
+                            }
                         },
-                        None => "".to_owned(),
+                        None => "N/A".to_owned(),
                     };
+
+                    println!("got roles");
 
                     e = e.field("Roles", roles, false);
 
                     // return embed
                     e
                 })
-            );
+            ) {
+                warn!("Error while sending userinfo message: {}", e);
+            }
 
             println!("sent message");
         } else {
