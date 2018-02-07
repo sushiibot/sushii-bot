@@ -116,7 +116,7 @@ command!(userinfo(ctx, msg, args) {
                             println!("sorted roles");
                 
                             // set the color of embed to highest role color
-                            if roles.len() > 1 {
+                            if roles.len() > 0 {
                                 e = e.color(roles[0].colour);
                             }
                             println!("role color");
