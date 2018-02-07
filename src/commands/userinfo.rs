@@ -38,6 +38,17 @@ command!(userinfo(ctx, msg, args) {
                 m.embed(|e| {
                     let mut e = e.field("ID", user.id, true);
 
+
+                    e = e.field("Created At", user.created_at().format("%Y-%m-%d %H:%M:%S UTC"), true);
+
+                    if let Some(joined_date) = member.joined_at {
+                        e = e.field("Joined At", joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC"), true);
+                    }
+
+                    if let Some(last_msg) = last_message {
+                        e = e.field("Last Message", last_msg.format("%Y-%m-%d %H:%M:%S UTC"), true);
+                    }
+
                     if let Some(presence) = guild.presences.get(&user.id) {
                         let mut full_status = presence.status.name().to_owned().to_sentence_case();
 
@@ -56,22 +67,12 @@ command!(userinfo(ctx, msg, args) {
                             full_status = format!("{} - {}", full_status, game);
                         }
 
-                        e = e.field("Status", full_status, true);
+                        e = e.field("Status", full_status, false);
                     } else {
-                        e = e.field("Status", "Offline", true);
+                        e = e.field("Status", "Offline", false);
                     }
 
                     println!("got status");
-
-                    e = e.field("Created At", user.created_at().format("%Y-%m-%d %H:%M:%S UTC"), true);
-
-                    if let Some(joined_date) = member.joined_at {
-                        e = e.field("Joined At", joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC"), true);
-                    }
-
-                    if let Some(last_msg) = last_message {
-                        e = e.field("Last Message", last_msg.format("%Y-%m-%d %H:%M:%S UTC"), true);
-                    }
 
 
                     // AUTHOR - nick - tag [bot]
