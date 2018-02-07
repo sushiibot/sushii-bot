@@ -136,14 +136,14 @@ impl ConnectionPool {
         let conn = self.connection();
 
         // fetch event
-        let result = guilds
+        let guild = guilds
             .filter(id.eq(guild_id as i64))
-            .load::<GuildConfig>(&conn)
+            .first::<GuildConfig>(&conn)
             .ok();
 
 
-        if let Some(rows) = result {
-            let guild = rows[0].clone();
+        if let Some(guild) = guild {
+            let guild = guild.clone();
             // check if guild has same prefix
             if let Some(existing_prefix) = guild.prefix {
                 if new_prefix == existing_prefix {
@@ -460,8 +460,9 @@ impl ConnectionPool {
 
         users
             .filter(id.eq(id_user as i64))
-            .load::<User>(&conn)
-            .ok().map(|x: Vec<User>| x[0].last_msg.clone())
+            .select(last_msg)
+            .first(&conn)
+            .ok()
     }
 
     pub fn get_last_rep(&self, id_user: u64) -> Option<NaiveDateTime> {

@@ -204,7 +204,8 @@ fn main() {
             .help(help_commands::with_embeds)
             .customised_help(help_commands::with_embeds, |c| c
                 .individual_command_tip("Hello!\n\
-                If you want more information about a specific command, just pass the command as argument.")
+                If you want more information about a specific command, just pass the command as argument.\n\
+                This bot is currently in active development, there may be feature additions, removals, and changes at any given time.")
                 .command_not_found_text("Could not find {}, I'm sorry :(")
                 .suggestion_text("Did you mean {}?")
                 .lacking_permissions(HelpBehaviour::Strike)
