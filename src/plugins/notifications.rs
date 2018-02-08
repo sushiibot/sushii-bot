@@ -28,21 +28,33 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 continue;
             }
 
-            // check if in channel / guild that the user doesn't belong in 
-            let channel = match CACHE.read().guild_channel(msg.channel_id) {
-                Some(channel) => channel,
-                None => return,
-            };
+            let cache = CACHE.read();
 
-            let permissions = match channel.read().permissions_for(notification.user_id as u64) {
-                Ok(perms) => perms,
-                Err(_) => return,
-            };
+            {
+                // check if in channel / guild that the user doesn't belong in 
+                let channel = match cache.guild_channel(msg.channel_id) {
+                    Some(channel) => channel,
+                    None => return,
+                };
 
-            // check if user can read messages
-            if !permissions.read_messages() {
-                return;
+                let permissions = match channel.read().permissions_for(notification.user_id as u64) {
+                    Ok(perms) => perms,
+                    Err(_) => return,
+                };
+
+                // check if user can read messages
+                if !permissions.read_messages() {
+                    return;
+                }
+
+                // check if user is in guild
+                if let Some(guild) = cache.guild(guild_id) {
+                    if !guild.read().members.contains_key(&UserId(notification.user_id as u64)) {
+                        return;
+                    }
+                }
             }
+
 
             let lowered = msg.content.to_lowercase();
 
