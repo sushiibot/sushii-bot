@@ -106,7 +106,7 @@ fn is_mid_word(msg: &str, search: &str) -> bool {
     };
     let end = start + search.len();
 
-    if start > 1 {
+    if start > 0 {
         let before = match msg.chars().nth(start - 1) {
             Some(val) => val,
             None => return true,
