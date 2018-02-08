@@ -1,6 +1,7 @@
 use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::prelude::*;
+use serenity::CACHE;
 
 use database::ConnectionPool;
 use utils::time::now_utc;
@@ -25,6 +26,22 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             // skip notifications for self
             if notification.user_id as u64 == msg.author.id.0 {
                 continue;
+            }
+
+            // check if in channel / guild that the user doesn't belong in 
+            let channel = match CACHE.read().guild_channel(msg.channel_id) {
+                Some(channel) => channel,
+                None => return,
+            };
+
+            let permissions = match channel.read().permissions_for(notification.user_id as u64) {
+                Ok(perms) => perms,
+                Err(_) => return,
+            };
+
+            // check if user can read messages
+            if !permissions.read_messages() {
+                return;
             }
 
             let lowered = msg.content.to_lowercase();
