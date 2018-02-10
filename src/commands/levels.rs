@@ -216,7 +216,7 @@ command!(rep(ctx, msg, args) {
     if args.is_empty() {
         if let Some(last_rep) = pool.get_last_rep(msg.author.id.0) {
             let now = now_utc();
-            let next_rep = last_rep + Duration::hours(24);
+            let next_rep = last_rep + Duration::hours(12);
 
             let diff = next_rep.signed_duration_since(now);
             // precise humanized time 
@@ -268,7 +268,7 @@ command!(rep(ctx, msg, args) {
 
     if let Some(last_rep) = pool.get_last_rep(msg.author.id.0) {
         let now = now_utc();
-        let next_rep = last_rep + Duration::hours(24);
+        let next_rep = last_rep + Duration::hours(12);
 
         let diff = next_rep.signed_duration_since(now);
         // precise humanized time 
