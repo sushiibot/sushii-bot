@@ -63,34 +63,75 @@ command!(play(_ctx, msg, args) {
 
 
 command!(reminder(ctx, msg, args) {
-    let time = match args.single::<String>() {
-        Ok(val) => val,
-        Err(_) => return Err(CommandError("Not enough arguments".to_owned())),
-    };
+    let mut full_msg = args.full().to_owned();
+
+
+    if full_msg.is_empty() {
+        return Err(CommandError::from(get_msg!("error/no_reminder_given")));
+    }
+
+    let mut end_pos = 0;
 
     // parse durations for each
-    let re = Regex::new(r"(\d+)\s*d").unwrap();
-    let day = match re.find(&time) {
-        Some(val) => val.as_str().replace("d", "").parse::<i64>().unwrap(),
-        None => 0
+    let re = Regex::new(r"(\d+)\s*d\w*").unwrap();
+    let day = if let Some(caps) = re.captures(&full_msg) {
+        end_pos = caps.get(0).unwrap().end();
+        
+        let start = caps.get(1).unwrap().start();
+        let end = caps.get(1).unwrap().end();
+        full_msg[start..end].parse::<i64>().unwrap()
+    } else {
+        0
     };
     
-    let re = Regex::new(r"(\d+)\s*h").unwrap();
-    let hour = match re.find(&time){
-        Some(val) => val.as_str().replace("h", "").parse::<i64>().unwrap(),
-        None => 0
+    let re = Regex::new(r"(\d+)\s*h\w*").unwrap();
+    let hour = if let Some(caps) = re.captures(&full_msg){
+        let caps_full_end = caps.get(0).unwrap().end();
+        if caps_full_end > end_pos {
+            end_pos = caps_full_end
+        }
+
+        let start = caps.get(1).unwrap().start();
+        let end = caps.get(1).unwrap().end();
+        full_msg[start..end].parse::<i64>().unwrap()
+    } else {
+        0
     };
     
-    let re = Regex::new(r"(\d+)\s*m").unwrap();
-    let min = match re.find(&time) {
-        Some(val) => val.as_str().replace("m", "").parse::<i64>().unwrap(),
-        None => 0
+    let re = Regex::new(r"(\d+)\s*m\w*").unwrap();
+    let min = if let Some(caps) = re.captures(&full_msg) {
+        let caps_full_end = caps.get(0).unwrap().end();
+        if caps_full_end > end_pos {
+            end_pos = caps_full_end
+        }
+
+        let start = caps.get(1).unwrap().start();
+        let end = caps.get(1).unwrap().end();
+        full_msg[start..end].parse::<i64>().unwrap()
+    } else {
+        0
     };
     
-    let re = Regex::new(r"(\d+)\s*s").unwrap();
-    let sec = match re.find(&time) {
-        Some(val) => val.as_str().replace("s", "").parse::<i64>().unwrap(),
-        None => 0
+    let re = Regex::new(r"(\d+)\s*s\w*").unwrap();
+    let sec = if let Some(caps) = re.captures(&full_msg) {
+        let caps_full_end = caps.get(0).unwrap().end();
+        if caps_full_end > end_pos {
+            end_pos = caps_full_end
+        }
+
+        let start = caps.get(1).unwrap().start();
+        let end = caps.get(1).unwrap().end();
+        full_msg[start..end].parse::<i64>().unwrap()
+    } else {
+        0
+    };
+
+    let reminder_content = if let Some(pos) = full_msg.rfind("to ") {
+        &full_msg[pos + 3..]
+    } else if end_pos == 0 {
+        return Err(CommandError::from(get_msg!("error/invalid_reminder")));
+    } else {
+        &full_msg[end_pos..]
     };
 
     // get current time and add up the offsets
@@ -106,9 +147,7 @@ command!(reminder(ctx, msg, args) {
         return Err(CommandError("Reminder must be at least 5 seconds from now".to_owned()));
     }
 
-    let content = args.full();
-
-    if content.is_empty() {
+    if reminder_content.is_empty() {
         return Err(CommandError::from(get_msg!("error/reminder_not_given")))
     }
 
@@ -116,7 +155,7 @@ command!(reminder(ctx, msg, args) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-    pool.add_reminder(msg.author.id.0, &content, &remind_date);
+    pool.add_reminder(msg.author.id.0, &reminder_content, &remind_date);
 
     let now = now.naive_utc();
     let since = remind_date.signed_duration_since(
@@ -125,7 +164,7 @@ command!(reminder(ctx, msg, args) {
 
     let ht = HumanTime::from(since);
 
-    let s = format!("I'll remind you at `{}` ({:#}) to `{}`", remind_date.format("%Y-%m-%d %H:%M:%S UTC"), ht, content);
+    let s = format!("I'll remind you at `{}` ({:#}) to `{}`", remind_date.format("%Y-%m-%d %H:%M:%S UTC"), ht, reminder_content);
     let _ = msg.channel_id.say(&s);
 });
 
