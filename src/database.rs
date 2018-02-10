@@ -1240,19 +1240,26 @@ pub fn level_interval_ranked(user_level: &UserLevelRanked) -> UserLevelRanked {
     let mut msg_week = user_level.msg_week;
     let mut msg_month = user_level.msg_month;
 
+    let mut msg_day_rank = user_level.msg_day_rank;
+    let mut msg_week_rank = user_level.msg_week_rank;
+    let mut msg_month_rank = user_level.msg_month_rank;
+
     // check if new day (could possible be same day 1 year apart but unlikey)
     if now.ordinal() != last_msg.ordinal() {
         msg_day = 0;
+        msg_day_rank = 0;
     }
 
     // check if new week
     if now.iso_week() != last_msg.iso_week() {
         msg_week = 0;
+        msg_week_rank = 0;
     }
 
     // check if new month
     if now.month() != last_msg.month() {
         msg_month = 0;
+        msg_month_rank = 0;
     }
 
     UserLevelRanked {
@@ -1264,13 +1271,13 @@ pub fn level_interval_ranked(user_level: &UserLevelRanked) -> UserLevelRanked {
         msg_week: msg_week,
         msg_day: msg_day,
         last_msg: user_level.last_msg,
-        msg_day_rank: user_level.msg_day_rank,
+        msg_day_rank: msg_day_rank,
         msg_day_total: user_level.msg_day_total,
 
-        msg_week_rank: user_level.msg_week_rank,
+        msg_week_rank: msg_week_rank,
         msg_week_total: user_level.msg_week_total,
 
-        msg_month_rank: user_level.msg_month_rank,
+        msg_month_rank: msg_month_rank,
         msg_month_total: user_level.msg_month_total,
 
         msg_all_time_rank: user_level.msg_all_time_rank,
