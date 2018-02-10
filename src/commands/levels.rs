@@ -55,10 +55,10 @@ command!(profile(ctx, msg, args) {
 
     let html = html.replace("{USERNAME}", &user.tag());
     let html = html.replace("{AVATAR_URL}", &user.face());
-    let html = html.replace("{DAILY}", &format!("{}/{}", level_data.msg_day_rank, level_data.msg_day_total));
-    let html = html.replace("{WEEKLY}", &format!("{}/{}", level_data.msg_week_rank, level_data.msg_week_total));
-    let html = html.replace("{MONTHLY}", &format!("{}/{}", level_data.msg_month_rank, level_data.msg_month_total));
-    let html = html.replace("{ALL}", &format!("{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total));
+    let html = html.replace("{DAILY}", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total));
+    let html = html.replace("{WEEKLY}", &format_rank(&level_data.msg_week_rank, &level_data.msg_week_total));
+    let html = html.replace("{MONTHLY}", &format_rank(&level_data.msg_month_rank, &level_data.msg_month_total));
+    let html = html.replace("{ALL}", &format_rank(&level_data.msg_all_time_rank, &level_data.msg_all_time_total));
     let html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(user_rep));
     let html = html.replace("{REP}", &user_rep.to_string());
     let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
@@ -86,10 +86,10 @@ command!(profile(ctx, msg, args) {
                         .icon_url(&user.face())
                     )
                     .color(0x2ecc71)
-                    .field("Daily", &format!("{}/{}", level_data.msg_day_rank, level_data.msg_day_total), true)
-                    .field("Weekly", &format!("{}/{}", level_data.msg_week_rank, level_data.msg_week_total), true)
-                    .field("Monthly", &format!("{}/{}", level_data.msg_month_rank, level_data.msg_month_total), true)
-                    .field("All Time", &format!("{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total), true)
+                    .field("Daily", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total), true)
+                    .field("Weekly", &format_rank(&level_data.msg_week_rank, &level_data.msg_week_total), true)
+                    .field("Monthly", &format_rank(&level_data.msg_month_rank, &level_data.msg_month_total), true)
+                    .field("All Time", &format_rank(&level_data.msg_all_time_rank, &level_data.msg_all_time_total), true)
                     .field("24 Hour Activity", get_activity_plain_graph(&activity), false)
                     .thumbnail(&user.face())
                 )
@@ -112,10 +112,10 @@ command!(profile(ctx, msg, args) {
                         .icon_url(&user.face())
                     )
                     .color(0x2ecc71)
-                    .field("Daily", &format!("{}/{}", level_data.msg_day_rank, level_data.msg_day_total), true)
-                    .field("Weekly", &format!("{}/{}", level_data.msg_week_rank, level_data.msg_week_total), true)
-                    .field("Monthly", &format!("{}/{}", level_data.msg_month_rank, level_data.msg_month_total), true)
-                    .field("All Time", &format!("{}/{}", level_data.msg_all_time_rank, level_data.msg_all_time_total), true)
+                    .field("Daily", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total), true)
+                    .field("Weekly", &format_rank(&level_data.msg_week_rank, &level_data.msg_week_total), true)
+                    .field("Monthly", &format_rank(&level_data.msg_month_rank, &level_data.msg_month_total), true)
+                    .field("All Time", &format_rank(&level_data.msg_all_time_rank, &level_data.msg_all_time_total), true)
                     .field("24 Hour Activity", get_activity_plain_graph(&activity), false)
                     .thumbnail(&user.face())
                 )
@@ -137,6 +137,14 @@ command!(profile(ctx, msg, args) {
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
 });
+
+fn format_rank<'a>(rank: &'a i64, total: &'a i64) -> String {
+    if *rank == 0 {
+        "N/A".to_owned()
+    } else {
+        format!("{}/{}", rank, total)
+    }
+}
 
 fn get_rep_emoji_level(user_rep: i32) -> String {
     let num = match user_rep {
