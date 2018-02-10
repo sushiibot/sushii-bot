@@ -405,8 +405,8 @@ fn main() {
                 )
             )
             .group("Reminders", |g| g
-                .command("reminder add", |c| c
-                    .usage("[time] [description]")
+                .command("remind me", |c| c
+                    .usage("(in) [time] (to) [description]")
                     .desc("Reminds you to do something after some time.")
                     .cmd(commands::misc::reminder)
                 )

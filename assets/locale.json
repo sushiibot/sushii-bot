@@ -56,6 +56,7 @@
         "no_mute_role": "There isn't a mute role set.",
         "no_user_given": "Please give a user id or mention.",
         "no_webhook_given": "Please give a webhook url.",
+        "no_reminder_given": "Please give a time and reminder.",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
@@ -65,6 +66,7 @@
         "invalid_number": "Invalid number.",
         "invalid_webhook": "Invalid webhook.",
         "invalid_gallery_id": "Invalid gallery ID.  Use `gallery list` to get a gallery's ID.",
+        "invalid_reminder": "Invalid reminder, couldn't parse duration.",
 
         "prune_too_high": "Invalid prune amount, must be between 1 and 99",
 
