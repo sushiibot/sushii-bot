@@ -431,6 +431,7 @@ impl ConnectionPool {
                 longitude: None,
                 address: None,
                 lastfm: None,
+                is_patron: false,
             };
 
             if let Err(e) = diesel::insert_into(users::table)
@@ -475,6 +476,23 @@ impl ConnectionPool {
             .select(last_rep)
             .first::<Option<NaiveDateTime>>(&conn)
             .unwrap_or(None)
+    }
+
+    pub fn set_patron(&self, id_user: u64, status: bool) -> bool {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        if let Err(e) = diesel::update(users)
+                .filter(id.eq(id_user as i64))
+                .set(is_patron.eq(status))
+                .execute(&conn) {
+            
+            warn_discord!("[DB:set_patron] Error while adding a patron: {}", e);
+            false
+        } else {
+            true
+        }
     }
 
     /// REP

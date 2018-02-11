@@ -37,9 +37,9 @@ command!(profile(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
     };
 
-    let (user_rep, activity) = match pool.get_user(id) {
-        Some(val) => (val.rep, val.msg_activity),
-        None => (0, vec![0; 24]),
+    let (user_rep, activity, is_patron) = match pool.get_user(id) {
+        Some(val) => (val.rep, val.msg_activity, val.is_patron),
+        None => (0, vec![0; 24], false),
     };
 
     let user = match UserId(id).get() {
@@ -51,18 +51,23 @@ command!(profile(ctx, msg, args) {
 
     println!("started typing");
 
-    let mut html = LEVEL_HTML.clone();
+    let mut html = LEVEL_HTML.to_owned();
 
-    let html = html.replace("{USERNAME}", &user.tag());
-    let html = html.replace("{AVATAR_URL}", &user.face());
-    let html = html.replace("{DAILY}", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total));
-    let html = html.replace("{WEEKLY}", &format_rank(&level_data.msg_week_rank, &level_data.msg_week_total));
-    let html = html.replace("{MONTHLY}", &format_rank(&level_data.msg_month_rank, &level_data.msg_month_total));
-    let html = html.replace("{ALL}", &format_rank(&level_data.msg_all_time_rank, &level_data.msg_all_time_total));
-    let html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(user_rep));
-    let html = html.replace("{REP}", &user_rep.to_string());
-    let html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
-    let html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
+    html = html.replace("{USERNAME}", &user.tag());
+    html = html.replace("{AVATAR_URL}", &user.face());
+    html = html.replace("{DAILY}", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total));
+    html = html.replace("{WEEKLY}", &format_rank(&level_data.msg_week_rank, &level_data.msg_week_total));
+    html = html.replace("{MONTHLY}", &format_rank(&level_data.msg_month_rank, &level_data.msg_month_total));
+    html = html.replace("{ALL}", &format_rank(&level_data.msg_all_time_rank, &level_data.msg_all_time_total));
+    html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(user_rep));
+    html = html.replace("{REP}", &user_rep.to_string());
+    html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
+    html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
+
+    // check if patron, add a heart
+    if is_patron {
+        html = html.replace("style=\"display:none;\"", "");
+    }
 
     println!("created html");
 

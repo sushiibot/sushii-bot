@@ -487,6 +487,7 @@ fn main() {
                 )
             )
             .group("Owner", |g| g
+                .help_available(false)
                 .command("quit", |c| c
                     .desc("Gracefully shuts down the bot.")
                     .owners_only(true)
@@ -501,6 +502,11 @@ fn main() {
                     .desc("Changes the bot's username.")
                     .owners_only(true)
                     .cmd(commands::owner::username)
+                )
+                .command("patron", |c| c
+                    .desc("Adds or removes a patron.")
+                    .owners_only(true)
+                    .cmd(commands::owner::patron)
                 )
             ),
     );
