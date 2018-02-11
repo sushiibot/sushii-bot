@@ -51,12 +51,16 @@ command!(add_notification(ctx, msg, args) {
     pool.new_notification(msg.author.id.0, guild_id, &keyword);
 
     let s = if guild_id == 0 {
-        get_msg!("info/notification_added_global")
+        get_msg!("info/notification_added_global", &keyword)
     } else {
-        get_msg!("info/notification_added")
+        get_msg!("info/notification_added", &keyword)
     };
 
-    let _ = msg.channel_id.say(&s);
+    if let Err(_) = msg.author.direct_message(|m| m.content(&s)) {
+        return Err(CommandError::from(get_msg!("error/failed_dm")));
+    } else if !msg.is_private() {
+        let _ = msg.channel_id.say(get_msg!("info/notification_added_sent_dm"));
+    }
 });
 
 command!(list_notifications(ctx, msg, _args) {
