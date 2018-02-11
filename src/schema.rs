@@ -135,6 +135,7 @@ table! {
         longitude -> Nullable<Float8>,
         address -> Nullable<Text>,
         lastfm -> Nullable<Text>,
+        is_patron -> Bool,
     }
 }
 

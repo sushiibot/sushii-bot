@@ -46,7 +46,10 @@
         "tag_edited": "Edited `{}` with new name `{}` and response `{}`.",
         "tag_edited_content": "Edited `{}` with new response `{}`.",
         "tag_deleted": "Deleted the tag `{}`.",
-        "tag_list": ":mailbox_with_mail: Sent you a DM with the tag list."
+        "tag_list": ":mailbox_with_mail: Sent you a DM with the tag list.",
+
+        "patron_added": "Added a new patron.",
+        "patron_removed": "Removed a patron."
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -68,6 +71,7 @@
         "invalid_webhook": "Invalid webhook.",
         "invalid_gallery_id": "Invalid gallery ID.  Use `gallery list` to get a gallery's ID.",
         "invalid_reminder": "Invalid reminder, couldn't parse duration.",
+        "invalid_add_remove": "Invalid option, please provide `add` or `remove`.",
 
         "prune_too_high": "Invalid prune amount, must be between 1 and 99",
 
