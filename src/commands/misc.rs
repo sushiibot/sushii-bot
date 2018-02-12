@@ -164,7 +164,7 @@ command!(reminder(ctx, msg, args) {
 
     let ht = HumanTime::from(since);
 
-    let s = format!("I'll remind you at `{}` ({:#}) to `{}`", remind_date.format("%Y-%m-%d %H:%M:%S UTC"), ht, reminder_content);
+    let s = format!("I'll remind you {:#} (`{}`) to `{}`", ht, remind_date.format("%Y-%m-%d %H:%M:%S UTC"), reminder_content);
     let _ = msg.channel_id.say(&s);
 });
 
