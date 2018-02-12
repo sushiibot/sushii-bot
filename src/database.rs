@@ -180,24 +180,19 @@ impl ConnectionPool {
 
         let conn = self.connection();
 
-        // fetch event
-        let event = events
+        // increment the counter
+        if let Err(_) = diesel::update(events)
             .filter(name.eq(&event_name))
-            .first::<EventCounter>(&conn);
+            .set(count.eq(count + 1))
+            .execute(&conn) {
 
-        // check if a row was found
-        if event.is_ok() {
-            // increment the counter
-            diesel::update(events)
-                .filter(name.eq(&event_name))
-                .set(count.eq(count + 1))
-                .execute(&conn)?;
-        } else {
             let new_event = NewEventCounter {
                 name: &event_name,
                 count: 1,
             };
-
+            
+            // error when incremeneting, maybe the row doesn't exist
+            // so create a row
             diesel::insert_into(events::table)
                 .values(&new_event)
                 .execute(&conn)?;
