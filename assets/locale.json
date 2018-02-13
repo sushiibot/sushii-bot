@@ -61,6 +61,7 @@
         "no_user_given": "Please give a user id or mention.",
         "no_webhook_given": "Please give a webhook url.",
         "no_reminder_given": "Please give a time and reminder.",
+        "no_url_or_attachment_given": "Please give a url or attachment.",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
@@ -87,6 +88,7 @@
         "failed_get_messages": "Failed to fetch messages.",
         "failed_delete_messages": "Failed to delete messages.",
         "failed_dm": "Failed to send DM, maybe you don't have them enabled?",
+        "failed_url_request": "Failed to fetch url data.",
 
         "already_muted": "This member is already muted.",
 

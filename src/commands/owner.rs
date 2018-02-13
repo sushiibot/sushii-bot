@@ -1,5 +1,9 @@
 use std::error::Error;
+use std::io::Read;
 use serenity::framework::standard::CommandError;
+use serenity::CACHE;
+use reqwest;
+use base64;
 
 use SerenityShardManager;
 use utils;
@@ -30,6 +34,43 @@ command!(username(ctx, msg, args) {
             let _ = msg.channel_id.say(&format!("Changed my username to {}", &name));
         },
         Err(e) => return Err(CommandError(e.description().to_owned())),
+    }
+});
+
+
+command!(set_avatar(_ctx, msg, args) {
+    let url = match args.single::<String>().ok().or_else(|| msg.attachments.get(0).map(|x| x.url.clone())) {
+        Some(val) => val,
+        None => {
+            return Err(CommandError::from(get_msg!("error/no_url_or_attachment_given")));
+        },
+    };
+
+    let mut resp = match reqwest::get(&url) {
+        Ok(val) => val,
+        Err(_) => return Err(CommandError::from(get_msg!("error/failed_url_request"))),
+    };
+
+    let mut buf = vec![];
+
+    match resp.read_to_end(&mut buf) {
+        Ok(_) => {},
+        Err(e) => return Err(CommandError::from(e)),
+    }
+
+    let b64 = base64::encode(&buf);
+
+    let ext = if url.ends_with("png") {
+        "png"
+    } else {
+        "jpg"
+    };
+
+    match CACHE.write().user.edit(|p| p.avatar(Some(&format!("data:image/{};base64,{}", ext, b64)))) {
+        Ok(_) => {
+            let _ = msg.channel_id.say("Updated avatar.");
+        },
+        Err(e) => return Err(CommandError::from(e)),
     }
 });
 
