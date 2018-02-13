@@ -491,7 +491,7 @@ impl ConnectionPool {
     }
 
     /// REP
-    pub fn rep_user(&self, id_user: u64, id_target: u64, action: &str) {
+    pub fn rep_user(&self, id_user: u64, id_target: u64) {
         use schema::users::dsl::*;
 
         let conn = self.connection();
@@ -505,20 +505,11 @@ impl ConnectionPool {
             .execute(&conn) {
                 warn_discord!("[DB:rep_user] Error when updating last rep: {}", e);
             }
-
-        let result = if action == "+" {
-            diesel::update(users)
+        
+        if let Err(e) = diesel::update(users)
                 .filter(id.eq(id_target as i64))
                 .set(rep.eq(rep + 1))
-                .execute(&conn)
-        } else {
-            diesel::update(users)
-                .filter(id.eq(id_target as i64))
-                .set(rep.eq(rep - 1))
-                .execute(&conn)
-        };
-        
-        if let Err(e) = result {
+                .execute(&conn) {
             warn_discord!("[DB:rep_user] Error when updating rep: {}", e);
         }
     }
