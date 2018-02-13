@@ -167,7 +167,15 @@ command!(avatar(_ctx, msg, args) {
     };
 
     if let Ok(user) = UserId(id).get() {
-        let _ = msg.channel_id.say(user.face());
+        let _ = msg.channel_id.send_message(|m| m
+            .embed(|e| e
+                .author(|a| a
+                    .name(&format!("{}'s avatar", user.tag()))
+                    .url(&user.face())
+                )
+                .color(0x3498db)
+                .image(&user.face())
+            ));
     } else {
         return Err(CommandError("Can't find user.".to_owned()));
     }
