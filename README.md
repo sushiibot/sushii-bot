@@ -1,4 +1,4 @@
-# discord-sbot2
+# sushii bot
 [![Build Status](https://travis-ci.org/drklee3/discord-sbot2.svg?branch=master)](https://travis-ci.org/drklee3/discord-sbot2)
 
 A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.org/) with [serenity-rs](https://github.com/zeyla/serenity).  Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
@@ -37,7 +37,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 
 1. Install dependencies.
     * [PostgreSQL](https://www.postgresql.org) (9.4+)
-    * [Rust / Cargo](http://doc.crates.io).
+    * [Rust / Cargo](http://doc.crates.io)
         ```bash
         $ curl -sSf https://static.rust-lang.org/rustup.sh | sh
         ```
