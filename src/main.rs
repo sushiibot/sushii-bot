@@ -36,6 +36,7 @@ extern crate hourglass;
 extern crate psutil;
 extern crate sys_info;
 extern crate parking_lot;
+extern crate base64;
 
 pub use diesel::r2d2;
 
@@ -502,6 +503,11 @@ fn main() {
                     .desc("Changes the bot's username.")
                     .owners_only(true)
                     .cmd(commands::owner::username)
+                )
+                .command("setavatar", |c| c
+                    .desc("Changes the bot's avatar.")
+                    .owners_only(true)
+                    .cmd(commands::owner::set_avatar)
                 )
                 .command("patron", |c| c
                     .desc("Adds or removes a patron.")
