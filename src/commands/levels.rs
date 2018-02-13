@@ -7,8 +7,6 @@ use utils;
 use utils::config::get_pool;
 use utils::time::now_utc;
 
-use regex::Regex;
-
 use chrono::Duration;
 use chrono_humanize::HumanTime;
 
@@ -237,24 +235,9 @@ command!(rep(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/rep_no_args")));
     }
 
-
-    let action_target = args.full();
-
-    let action = if action_target.contains("+") {
-        "+"
-    } else if action_target.contains("-") {
-        "-"
-    } else {
-        return Err(CommandError::from(get_msg!("error/invalid_rep_option")));
-    };
-
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"(\d{17,18})").unwrap();
-    }
-
-    let target = match RE.find(&action_target).and_then(|x| x.as_str().parse::<u64>().ok()) {
+    let target = match args.single::<String>().ok().and_then(|x| utils::user::get_id(&x)) {
         Some(val) => val,
-        None => return Err(CommandError::from(get_msg!("error/no_user_given"))),
+        None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
     };
 
     // check if repping self
@@ -284,9 +267,9 @@ command!(rep(ctx, msg, args) {
         }
     };
 
-    pool.rep_user(msg.author.id.0, target, &action);
+    pool.rep_user(msg.author.id.0, target);
 
-    let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag(), &action));
+    let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag()));
 });
 
 fn get_pos_emoji(pos: i64) -> String {
@@ -328,8 +311,17 @@ command!(top_levels(ctx, msg, _args) {
         let daily = if let Some(daily) = top.day {
             let mut s = String::new();
             for (i, user) in daily.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level +{})\n", get_pos_emoji(i as i64),
-                    user.user_id, get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_day));
+                let lvl_change = get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_day);
+
+                let _ = if lvl_change > 1 {
+                    write!(s, "{} <@{}> (Gained {} levels)\n", get_pos_emoji(i as i64),
+                        user.user_id, lvl_change)
+                } else if lvl_change > 0 {
+                    write!(s, "{} <@{}> (Gained {} level)\n", get_pos_emoji(i as i64),
+                        user.user_id, lvl_change)
+                } else {
+                    write!(s, "{} <@{}>\n", get_pos_emoji(i as i64), user.user_id)
+                };
             }
 
             s
@@ -340,8 +332,17 @@ command!(top_levels(ctx, msg, _args) {
         let weekly = if let Some(weekly) = top.week {
             let mut s = String::new();
             for (i, user) in weekly.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level +{})\n", get_pos_emoji(i as i64),
-                    user.user_id, get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_week));
+                let lvl_change = get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_day);
+
+                let _ = if lvl_change > 1 {
+                    write!(s, "{} <@{}> (Gained {} levels)\n", get_pos_emoji(i as i64),
+                        user.user_id, lvl_change)
+                } else if lvl_change > 0 {
+                    write!(s, "{} <@{}> (Gained {} level)\n", get_pos_emoji(i as i64),
+                        user.user_id, lvl_change)
+                } else {
+                    write!(s, "{} <@{}>\n", get_pos_emoji(i as i64), user.user_id)
+                };
             }
 
             s
@@ -352,8 +353,17 @@ command!(top_levels(ctx, msg, _args) {
         let monthly = if let Some(monthly) = top.month {
             let mut s = String::new();
             for (i, user) in monthly.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level +{})\n", get_pos_emoji(i as i64),
-                    user.user_id, get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_month));
+                let lvl_change = get_level(user.msg_all_time) - get_level(user.msg_all_time - user.msg_day);
+
+                let _ = if lvl_change > 1 {
+                    write!(s, "{} <@{}> (Gained {} levels)\n", get_pos_emoji(i as i64),
+                        user.user_id, lvl_change)
+                } else if lvl_change > 0 {
+                    write!(s, "{} <@{}> (Gained {} level)\n", get_pos_emoji(i as i64),
+                        user.user_id, lvl_change)
+                } else {
+                    write!(s, "{} <@{}>\n", get_pos_emoji(i as i64), user.user_id)
+                };
             }
 
             s
