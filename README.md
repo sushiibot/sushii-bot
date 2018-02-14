@@ -1,5 +1,5 @@
 # sushii bot
-[![Build Status](https://travis-ci.org/drklee3/discord-sbot2.svg?branch=master)](https://travis-ci.org/drklee3/discord-sbot2)
+[![Build Status](https://travis-ci.org/drklee3/discord-sushii.svg?branch=master)](https://travis-ci.org/drklee3/discord-sushii)
 
 A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.org/) with [serenity-rs](https://github.com/zeyla/serenity).  Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
 
@@ -8,7 +8,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.
 # Features
 * Ranking system based on message counts in daily, weekly, monthly, and all time categories
 * User 24 hour activity tracker
-* Profile image generation for displaying rank and activity graph (with [sbot2-image-server](https://github.com/drklee3/sbot2-image-server))
+* Profile image generation for displaying rank and activity graph (with [sushii-image-server](https://github.com/drklee3/sushii-image-server))
 * Configurable self assigning role system with multiple categories and limits
 * Configurable prefix per guild
 * Moderation action logs and editable action reasons
@@ -41,7 +41,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.
         ```bash
         $ curl -sSf https://static.rust-lang.org/rustup.sh | sh
         ```
-    * [sbot2-image-server](https://github.com/drklee3/sbot2-image-server) (Used for rank image generation, etc)
+    * [sushii-image-server](https://github.com/drklee3/sushii-image-server) (Used for rank image generation, etc)
         1. Install [Node.js and npm](https://nodejs.org/en/download/package-manager/)
             ```bash
             $ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
@@ -49,10 +49,10 @@ Work in progress.  Features may be either missing, incomplete, or broken.
             ```
         2. Clone repository and enter the directory.
             ```bash
-            $ git clone https://github.com/drklee3/sbot2-image-server.git
-            $ cd sbot2-image-server
+            $ git clone https://github.com/drklee3/sushii-image-server.git
+            $ cd sushii-image-server
             ```
-        3. Install sbot2-image-server dependencies.
+        3. Install sushii-image-server dependencies.
             ```bash
             $ npm install
             ```
@@ -63,8 +63,8 @@ Work in progress.  Features may be either missing, incomplete, or broken.
         5. Start with `npm start` or with a process manager like [PM2](https://github.com/Unitech/pm2)
 2. Clone this repository and enter the directory.
     ```bash
-    $ git clone https://github.com/drklee3/discord-sbot2.git
-    $ cd discord-sbot2
+    $ git clone https://github.com/drklee3/discord-sushii.git
+    $ cd discord-sushii
     ```
 3. Edit [`.env.example`](.env.example) and rename to `.env`.  Removing any key or leaving them blank will result in panics.
 4. Build and run the bot.
