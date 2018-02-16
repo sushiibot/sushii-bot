@@ -76,6 +76,8 @@ use dotenv::dotenv;
 use typemap::Key;
 use database::ConnectionPool;
 
+use utils::time::now_utc;
+
 impl Key for ConnectionPool {
     type Value = ConnectionPool;
 }
@@ -188,7 +190,8 @@ fn main() {
                 let _ = msg.react("❌");
             })
             .before(|_ctx, msg, cmd_name| {
-                println!("{}: {} ", msg.author.tag(), cmd_name);
+                let now = now_utc();
+                println!("[{}] {}: {} ", now.format("%Y-%m-%d %H:%M:%S UTC"), msg.author.tag(), cmd_name);
                 true
             })
             .after(|_ctx, msg, _cmd_name, error| {
