@@ -16,3 +16,4 @@ pub mod roles;
 pub mod dm;
 pub mod member_log;
 pub mod bot_game;
+pub mod db_cache;

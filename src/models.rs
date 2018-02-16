@@ -329,3 +329,65 @@ pub struct NewMemberEvent<'a> {
     pub event_name: &'a str,
     pub event_time: &'a NaiveDateTime,
 }
+
+// cache
+#[derive(Queryable, Clone)]
+pub struct CachedUser {
+    pub id: i64,
+    pub avatar: String,
+    pub user_name: String,
+    pub discriminator: i32,
+}
+
+#[derive(Insertable)]
+#[table_name = "cache_users"]
+pub struct NewCachedUser<'a> {
+    pub id: i64,
+    pub avatar: &'a str,
+    pub user_name: &'a str,
+    pub discriminator: i32,
+}
+
+#[derive(Queryable, Clone)]
+pub struct CachedChannel {
+    pub id: i64,
+    pub category_id: Option<i64>,
+    pub guild_id: i64,
+    pub kind: String,
+    pub channel_name: String,
+    pub position: i64,
+    pub topic: Option<String>,
+    pub nsfw: bool,
+}
+
+#[derive(Insertable)]
+#[table_name = "cache_channels"]
+pub struct NewCachedChannel<'a> {
+    pub id: i64,
+    pub category_id: Option<i64>,
+    pub guild_id: i64,
+    pub kind: &'a str,
+    pub channel_name: &'a str,
+    pub position: i64,
+    pub topic: Option<&'a str>,
+    pub nsfw: bool,
+}
+
+#[derive(Queryable, Clone)]
+pub struct CachedGuild {
+    pub id: i64,
+    pub guild_name: String,
+    pub icon: Option<String>,
+    pub member_count: i64,
+    pub owner_id: i64,
+}
+
+#[derive(Insertable, AsChangeset)]
+#[table_name = "cache_guilds"]
+pub struct NewCachedGuild<'a> {
+    pub id: i64,
+    pub guild_name: &'a str,
+    pub icon: Option<&'a str>,
+    pub member_count: i64,
+    pub owner_id: i64,
+}

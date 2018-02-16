@@ -14,6 +14,7 @@ use r2d2::PooledConnection;
 use diesel::r2d2::ConnectionManager;
 
 use serenity;
+use serenity::model::guild::Guild;
 use std;
 use std::env;
 
@@ -1193,6 +1194,32 @@ impl ConnectionPool {
 
             warn_discord!("[DB:log_member_event] Failed to insert member event: {}", e);
         }
+    }
+
+    // DATABASE CACHE FOR WEBSITE
+    pub fn update_cache_guild(&self, guild: &Guild) -> Result<usize, Error> {
+        use schema::cache_guilds::dsl::*;
+
+        let conn = self.connection();
+
+        let icon_url = guild.icon_url();
+
+        let new_cache_guild = NewCachedGuild {
+            id: guild.id.0 as i64,
+            guild_name: &guild.name,
+            icon: icon_url.as_ref().map(|x| &**x),
+            member_count: guild.member_count as i64, // Option<String> to Option<&str>
+            owner_id: guild.owner_id.0 as i64,
+        };
+
+        // inserts new cached guild data,
+        // if it already exists, just update the existing
+        diesel::insert_into(cache_guilds)
+            .values(&new_cache_guild)
+            .on_conflict(id)
+            .do_update()
+            .set(&new_cache_guild)
+            .execute(&conn)
     }
 }
 
