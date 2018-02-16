@@ -1,4 +1,36 @@
 table! {
+    cache_channels (id) {
+        id -> Int8,
+        category_id -> Nullable<Int8>,
+        guild_id -> Nullable<Int8>,
+        kind -> Text,
+        channel_name -> Text,
+        position -> Int8,
+        topic -> Nullable<Text>,
+        nsfw -> Bool,
+    }
+}
+
+table! {
+    cache_guilds (id) {
+        id -> Int8,
+        guild_name -> Text,
+        icon -> Nullable<Text>,
+        member_count -> Int8,
+        owner_id -> Int8,
+    }
+}
+
+table! {
+    cache_users (id) {
+        id -> Int8,
+        avatar -> Text,
+        user_name -> Text,
+        discriminator -> Int4,
+    }
+}
+
+table! {
     events (name) {
         name -> Text,
         count -> Int8,
@@ -139,7 +171,12 @@ table! {
     }
 }
 
+joinable!(cache_channels -> cache_guilds (guild_id));
+
 allow_tables_to_appear_in_same_query!(
+    cache_channels,
+    cache_guilds,
+    cache_users,
     events,
     galleries,
     guilds,

@@ -79,7 +79,8 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_BAN_REMOVE");
     }
 
-    fn guild_create(&self, ctx: Context, _: Guild, _: bool) {
+    fn guild_create(&self, ctx: Context, guild: Guild, if_joined: bool) {
+        exec_on_guild_create!([&ctx, &guild, if_joined], db_cache);
         update_event(&ctx, "GUILD_CREATE");
     }
 

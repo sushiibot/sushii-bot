@@ -76,3 +76,11 @@ macro_rules! exec_on_guild_member_update {
         )*
     }
 }
+
+macro_rules! exec_on_guild_create {
+    ( [$ctx:expr, $guild:expr, $if_joined:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_guild_create($ctx, $guild, $if_joined);
+        )*
+    }
+}
