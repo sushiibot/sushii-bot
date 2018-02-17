@@ -60,6 +60,34 @@ command!(fm(ctx, msg, args) {
     let last_track_name = data.pointer("/recenttracks/track/0/name").and_then(|x| x.as_str()).unwrap_or("N/A");
     let last_track_album = data.pointer("/recenttracks/track/0/album/#text").and_then(|x| x.as_str()).unwrap_or("N/A");
     let last_track_url = data.pointer("/recenttracks/track/0/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
+
+    // check for empty values that break embeds
+    let username = if username.is_empty() {
+        "N/A"
+    } else {
+        username
+    };
+
+    let last_track_artist = if last_track_artist.is_empty() {
+        "N/A"
+    } else {
+        last_track_artist
+    };
+    
+    let last_track_name = if last_track_name.is_empty() {
+        "N/A"
+    } else {
+        last_track_name
+    };
+    
+    let last_track_album = if last_track_album.is_empty() {
+        "N/A"
+    } else {
+        last_track_album
+    };
+    
+
+
     // default blank image for fallback
     let last_track_image = {
         let img = data.pointer("/recenttracks/track/0/image/2/#text").and_then(|x| x.as_str()).unwrap_or("");
