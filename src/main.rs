@@ -78,7 +78,7 @@ use typemap::Key;
 use database::ConnectionPool;
 
 use utils::time::now_utc;
-use utils::datadog;
+use utils::config::get_pool;
 
 impl Key for ConnectionPool {
     type Value = ConnectionPool;
@@ -196,8 +196,12 @@ fn main() {
                 println!("[{}] {}: {} ", now.format("%Y-%m-%d %H:%M:%S UTC"), msg.author.tag(), cmd_name);
                 true
             })
-            .after(|_ctx, msg, _cmd_name, error| {
-                datadog::incr("commands.executed", vec![]);
+            .after(|ctx, msg, _cmd_name, error| {
+                {
+                    let pool = get_pool(&ctx);
+                    pool.update_stat("commands", "executed");
+                }
+
                 //  Print out an error if it happened
                 if let Err(why) = error {
                     let s = format!("Error: {}", why.0);

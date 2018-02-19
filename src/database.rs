@@ -1233,6 +1233,32 @@ impl ConnectionPool {
             .set(&new_cache_guild)
             .execute(&conn)
     }
+
+    // STATS
+    pub fn update_stat(&self, new_cat: &str, new_stat: &str) {
+        use utils::datadog;
+        use schema::stats::dsl::*;
+
+        let conn = self.connection();
+
+        let new_stat = NewStat {
+            stat_name: new_stat,
+            count: 0,
+            category: new_cat,
+        };
+
+        match diesel::insert_into(stats)
+            .values(&new_stat)
+            .on_conflict(stat_name)
+            .do_update()
+            .set(count.eq(count + 1))
+            .get_result::<Stat>(&conn) {
+
+
+            Ok(val) => datadog::set(&format!("sushii.{}.{}", val.category, val.stat_name), val.count, vec![]),
+            Err(e) => warn_discord!("[DB:update_stat] Error while updating statistic: {}", e),
+        };
+    }
 }
 
 
