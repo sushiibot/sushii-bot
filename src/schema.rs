@@ -145,6 +145,14 @@ table! {
 }
 
 table! {
+    stats (stat_name) {
+        stat_name -> Text,
+        count -> Int8,
+        category -> Text,
+    }
+}
+
+table! {
     tags (id) {
         id -> Int4,
         owner_id -> Int8,
@@ -187,6 +195,7 @@ allow_tables_to_appear_in_same_query!(
     mutes,
     notifications,
     reminders,
+    stats,
     tags,
     users,
 );
