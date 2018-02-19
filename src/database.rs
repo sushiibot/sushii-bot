@@ -342,17 +342,25 @@ impl ConnectionPool {
             .load::<UserLevel>(&conn)
             .ok();
         
-        let week = levels
-            .filter(guild_id.eq(id_guild as i64))
-            .order(msg_week.desc())
-            .limit(5)
+        let week = diesel::sql_query(r#"
+            SELECT *,
+                ROW_NUMBER() OVER(PARTITION BY EXTRACT(WEEK FROM last_msg) ORDER BY msg_week DESC)
+            FROM levels WHERE guild_id = $1 
+                AND EXTRACT(WEEK FROM last_msg) = EXTRACT(WEEK FROM NOW())
+                LIMIT 5
+        "#)
+            .bind::<BigInt, i64>(id_guild as i64)
             .load::<UserLevel>(&conn)
             .ok();
         
-        let month = levels
-            .filter(guild_id.eq(id_guild as i64))
-            .order(msg_month.desc())
-            .limit(5)
+        let month = diesel::sql_query(r#"
+            SELECT *,
+                ROW_NUMBER() OVER(PARTITION BY EXTRACT(MONTH FROM last_msg) ORDER BY msg_month DESC)
+            FROM levels WHERE guild_id = $1 
+                AND EXTRACT(MONTH FROM last_msg) = EXTRACT(MONTH FROM NOW())
+                LIMIT 5
+        "#)
+            .bind::<BigInt, i64>(id_guild as i64)
             .load::<UserLevel>(&conn)
             .ok();
         
