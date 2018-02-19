@@ -1243,7 +1243,7 @@ impl ConnectionPool {
 
         let new_stat = NewStat {
             stat_name: new_stat,
-            count: 0,
+            count: 1,
             category: new_cat,
         };
 
