@@ -391,3 +391,18 @@ pub struct NewCachedGuild<'a> {
     pub member_count: i64,
     pub owner_id: i64,
 }
+
+#[derive(Queryable, Clone)]
+pub struct Stat {
+    pub stat_name: String,
+    pub count: i64,
+    pub category: String,
+}
+
+#[derive(Insertable, AsChangeset)]
+#[table_name = "stats"]
+pub struct NewStat<'a> {
+    pub stat_name: &'a str,
+    pub count: i64,
+    pub category: &'a str,
+}
