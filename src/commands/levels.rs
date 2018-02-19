@@ -277,13 +277,8 @@ fn get_pos_emoji(pos: i64) -> String {
         0 => ":first_place:",
         1 => ":second_place:",
         2 => ":third_place:",
-        3 => ":four:",
-        4 => ":five:",
-        5 => ":six:",
-        6 => ":seven:",
-        7 => ":eight:",
-        8 => ":nine:",
-        9 => ":keycap_ten:",
+        3 => ":medal:",
+        4 => ":medal:",
         _ => ":shrug:",
     }.to_owned()
 }
