@@ -37,6 +37,7 @@ extern crate psutil;
 extern crate sys_info;
 extern crate parking_lot;
 extern crate base64;
+extern crate dogstatsd;
 
 pub use diesel::r2d2;
 

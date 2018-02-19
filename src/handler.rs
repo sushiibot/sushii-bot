@@ -13,6 +13,7 @@ use tasks::*;
 use serde_json::Value;
 
 use database;
+use utils::datadog;
 
 pub struct Handler;
 
@@ -79,8 +80,12 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_BAN_REMOVE");
     }
 
-    fn guild_create(&self, ctx: Context, guild: Guild, if_joined: bool) {
-        exec_on_guild_create!([&ctx, &guild, if_joined], db_cache);
+    fn guild_create(&self, ctx: Context, guild: Guild, is_new_guild: bool) {
+        exec_on_guild_create!([&ctx, &guild, is_new_guild], db_cache);
+        if is_new_guild {
+            info_discord!("Joined new guild: {}", guild.name);
+        }
+
         update_event(&ctx, "GUILD_CREATE");
     }
 
@@ -155,6 +160,13 @@ impl EventHandler for Handler {
 
     fn message(&self, ctx: Context, msg: Message) {
         update_event(&ctx, "MESSAGE_CREATE");
+
+        if msg.is_own() {
+            datadog::incr("messages.sent", vec![]);
+        } else {
+            datadog::incr("messages.received", vec![]);
+        }
+
         exec_on_message!(
             [&ctx, &msg],
             user_info_activity,
