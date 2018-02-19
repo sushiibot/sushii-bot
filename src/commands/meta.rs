@@ -20,7 +20,7 @@ command!(latency(ctx, msg) {
     let data = ctx.data.lock();
     let shard_manager = match data.get::<SerenityShardManager>() {
         Some(v) => v,
-        None => return Err(CommandError::from("There was a problem getting the shard manager")),
+        None => return Err(CommandError("There was a problem getting the shard manager")),
     };
 
     let manager = shard_manager.lock();
@@ -35,7 +35,7 @@ command!(latency(ctx, msg) {
     };
 
     let runner_latency = match runner.latency {
-        Some(val) => format!("{} ms", val.as_secs() as f64 / 1000.0 + val.subsec_nanos() as f64 * 1e-6),
+        Some(val) => format!("{:.3} ms", val.as_secs() as f64 / 1000.0 + val.subsec_nanos() as f64 * 1e-6),
         None => "N/A".to_owned(),
     };
 
