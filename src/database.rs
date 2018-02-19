@@ -331,10 +331,14 @@ impl ConnectionPool {
         let conn = self.connection();
 
         // daily
-        let day = levels
-            .filter(guild_id.eq(id_guild as i64))
-            .order(msg_day.desc())
-            .limit(5)
+        let day = diesel::sql_query(r#"
+            SELECT *,
+                ROW_NUMBER() OVER(PARTITION BY EXTRACT(DOY FROM last_msg) ORDER BY msg_day DESC)
+            FROM levels WHERE guild_id = $1 
+                AND EXTRACT(DOY FROM last_msg) = EXTRACT(DOY FROM NOW())
+                LIMIT 5
+        "#)
+            .bind::<BigInt, i64>(id_guild as i64)
             .load::<UserLevel>(&conn)
             .ok();
         

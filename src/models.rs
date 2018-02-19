@@ -57,15 +57,30 @@ pub struct NewEventCounter<'a> {
     pub count: i64,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(QueryableByName, Queryable, Clone, Debug)]
 pub struct UserLevel {
+    #[sql_type = "Integer"]
     pub id: i32,
+
+    #[sql_type = "BigInt"]
     pub user_id: i64,
+
+    #[sql_type = "BigInt"]
     pub guild_id: i64,
+
+    #[sql_type = "BigInt"]
     pub msg_all_time: i64,
+
+    #[sql_type = "BigInt"]
     pub msg_month: i64,
+
+    #[sql_type = "BigInt"]
     pub msg_week: i64,
+
+    #[sql_type = "BigInt"]
     pub msg_day: i64,
+
+    #[sql_type = "Timestamp"]
     pub last_msg: NaiveDateTime,
 }
 
