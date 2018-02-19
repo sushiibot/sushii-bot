@@ -20,7 +20,7 @@ command!(latency(ctx, msg) {
     let data = ctx.data.lock();
     let shard_manager = match data.get::<SerenityShardManager>() {
         Some(v) => v,
-        None => return Err(CommandError("There was a problem getting the shard manager")),
+        None => return Err(CommandError::from("There was a problem getting the shard manager")),
     };
 
     let manager = shard_manager.lock();
