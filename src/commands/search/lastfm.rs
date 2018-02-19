@@ -73,19 +73,18 @@ command!(fm(ctx, msg, args) {
     } else {
         last_track_artist
     };
-    
+
     let last_track_name = if last_track_name.is_empty() {
         "N/A"
     } else {
         last_track_name
     };
-    
+
     let last_track_album = if last_track_album.is_empty() {
         "N/A"
     } else {
         last_track_album
     };
-    
 
 
     // default blank image for fallback

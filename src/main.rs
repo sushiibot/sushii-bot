@@ -78,6 +78,7 @@ use typemap::Key;
 use database::ConnectionPool;
 
 use utils::time::now_utc;
+use utils::datadog;
 
 impl Key for ConnectionPool {
     type Value = ConnectionPool;
@@ -196,6 +197,7 @@ fn main() {
                 true
             })
             .after(|_ctx, msg, _cmd_name, error| {
+                datadog::incr("commands.executed", vec![]);
                 //  Print out an error if it happened
                 if let Err(why) = error {
                     let s = format!("Error: {}", why.0);

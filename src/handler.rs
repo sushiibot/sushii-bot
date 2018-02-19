@@ -71,12 +71,14 @@ impl EventHandler for Handler {
     fn guild_ban_addition(&self, ctx: Context, guild: GuildId, user: User) {
         exec_on_guild_ban_addition!([&ctx, &guild, &user], mod_log);
 
+        datadog::incr("users.banned", vec![]);
         update_event(&ctx, "GUILD_BAN_ADD");
     }
 
     fn guild_ban_removal(&self, ctx: Context, guild: GuildId, user: User) {
         exec_on_guild_ban_removal!([&ctx, &guild, &user], mod_log);
 
+        datadog::incr("users.unbanned", vec![]);
         update_event(&ctx, "GUILD_BAN_REMOVE");
     }
 
@@ -84,6 +86,7 @@ impl EventHandler for Handler {
         exec_on_guild_create!([&ctx, &guild, is_new_guild], db_cache);
         if is_new_guild {
             info_discord!("Joined new guild: {}", guild.name);
+            datadog::incr("guilds.joined", vec![]);
         }
 
         update_event(&ctx, "GUILD_CREATE");
@@ -109,6 +112,7 @@ impl EventHandler for Handler {
             mute_evasion
         );
 
+        datadog::incr("users.added", vec![]);
         update_event(&ctx, "GUILD_MEMBER_ADD");
     }
 
@@ -126,6 +130,7 @@ impl EventHandler for Handler {
             mute_evasion
         );
 
+        datadog::incr("users.removed", vec![]);
         update_event(&ctx, "GUILD_MEMBER_REMOVE");
     }
 
