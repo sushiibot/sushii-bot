@@ -12,8 +12,7 @@ use tasks::*;
 
 use serde_json::Value;
 
-use database;
-use utils::datadog;
+use utils::config::get_pool;
 
 pub struct Handler;
 
@@ -71,14 +70,20 @@ impl EventHandler for Handler {
     fn guild_ban_addition(&self, ctx: Context, guild: GuildId, user: User) {
         exec_on_guild_ban_addition!([&ctx, &guild, &user], mod_log);
 
-        datadog::incr("users.banned", vec![]);
+        {
+            let pool = get_pool(&ctx);
+            pool.update_stat("users", "banned");
+        }
         update_event(&ctx, "GUILD_BAN_ADD");
     }
 
     fn guild_ban_removal(&self, ctx: Context, guild: GuildId, user: User) {
         exec_on_guild_ban_removal!([&ctx, &guild, &user], mod_log);
 
-        datadog::incr("users.unbanned", vec![]);
+        {
+            let pool = get_pool(&ctx);
+            pool.update_stat("users", "unbanned");
+        }
         update_event(&ctx, "GUILD_BAN_REMOVE");
     }
 
@@ -86,7 +91,11 @@ impl EventHandler for Handler {
         exec_on_guild_create!([&ctx, &guild, is_new_guild], db_cache);
         if is_new_guild {
             info_discord!("Joined new guild: {}", guild.name);
-            datadog::incr("guilds.joined", vec![]);
+            
+            {
+                let pool = get_pool(&ctx);
+                pool.update_stat("guilds", "joined");
+            }
         }
 
         update_event(&ctx, "GUILD_CREATE");
@@ -112,7 +121,10 @@ impl EventHandler for Handler {
             mute_evasion
         );
 
-        datadog::incr("users.added", vec![]);
+        {
+            let pool = get_pool(&ctx);
+            pool.update_stat("users", "added");
+        }
         update_event(&ctx, "GUILD_MEMBER_ADD");
     }
 
@@ -130,7 +142,10 @@ impl EventHandler for Handler {
             mute_evasion
         );
 
-        datadog::incr("users.removed", vec![]);
+        {
+            let pool = get_pool(&ctx);
+            pool.update_stat("users", "removed");
+        }
         update_event(&ctx, "GUILD_MEMBER_REMOVE");
     }
 
@@ -165,11 +180,15 @@ impl EventHandler for Handler {
 
     fn message(&self, ctx: Context, msg: Message) {
         update_event(&ctx, "MESSAGE_CREATE");
+        
+        {
+            let pool = get_pool(&ctx);
 
-        if msg.is_own() {
-            datadog::incr("messages.sent", vec![]);
-        } else {
-            datadog::incr("messages.received", vec![]);
+            if msg.is_own() {
+                pool.update_stat("messages", "sent");
+            } else {
+                pool.update_stat("messages", "recieved");
+            }
         }
 
         exec_on_message!(
@@ -247,8 +266,7 @@ impl EventHandler for Handler {
 
 /// Updates a counter for each event
 fn update_event(ctx: &Context, event_name: &str) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
 
     if let Err(e) = pool.log_event(event_name) {
         warn_discord!("Failed to log event: {}", e);

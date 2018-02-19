@@ -268,6 +268,7 @@ command!(rep(ctx, msg, args) {
     };
 
     pool.rep_user(msg.author.id.0, target);
+    pool.update_stat("rep", "given");
 
     let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag()));
 });
