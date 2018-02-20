@@ -234,9 +234,14 @@ fn main() {
                     .known_as("rank")
                     .cmd(commands::levels::profile)
                 )
-                .command("levels", |c| c
+                .command("toplevels", |c| c
+                    .known_as("levels")
                     .desc("Shows the top users.")
                     .cmd(commands::levels::top_levels)
+                )
+                .command("topreps", |c| c
+                    .desc("Shows the top users.")
+                    .cmd(commands::levels::top_reps)
                 )
                 .command("rep", |c| c
                     .desc("Rep a user.")
