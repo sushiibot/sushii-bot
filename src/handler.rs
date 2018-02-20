@@ -90,7 +90,8 @@ impl EventHandler for Handler {
     fn guild_create(&self, ctx: Context, guild: Guild, is_new_guild: bool) {
         exec_on_guild_create!([&ctx, &guild, is_new_guild], db_cache);
         if is_new_guild {
-            info_discord!("Joined new guild: {}", guild.name);
+            info_discord!("Joined new guild: {} - {} users - Owner: <@{}>", 
+                guild.name, guild.member_count, guild.owner_id);
             
             {
                 let pool = get_pool(&ctx);
