@@ -61,6 +61,7 @@ command!(profile(ctx, msg, args) {
     html = html.replace("{REP}", &user_rep.to_string());
     html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
+    html = html.replace("{LEVEL}", &get_level(level_data.msg_day).to_string());
 
     // check if patron, add a heart
     if is_patron {
