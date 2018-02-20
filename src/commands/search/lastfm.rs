@@ -51,7 +51,7 @@ command!(fm(ctx, msg, args) {
         Ok(val) => val,
         Err(e) => {
             warn_discord!("[CMD:fm] Failed to fetch last.fm data: {}", e);
-            return Err(CommandError::from("error/fm_fetch_error"))
+            return Err(CommandError::from(get_msg!("error/fm_fetch_error")))
         },
     };
 
