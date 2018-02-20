@@ -9,7 +9,7 @@ lazy_static! {
 }
 
 fn vec() -> Vec<String> {
-    vec!["sushii".to_string()]
+    vec![env::var("DD_TAG").unwrap_or("sushii".to_owned())]
 }
 
 #[allow(dead_code)]
