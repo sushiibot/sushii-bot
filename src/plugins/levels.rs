@@ -17,6 +17,4 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         let e = format!("[PLUGIN:levels] Error updating user level: {}", e);
         warn_discord!(&e);
     }
-
-    pool.update_stat("xp", "given");
 }
