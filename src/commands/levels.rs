@@ -278,9 +278,7 @@ fn get_pos_emoji(pos: i64) -> String {
         0 => ":first_place:",
         1 => ":second_place:",
         2 => ":third_place:",
-        3 => ":medal:",
-        4 => ":medal:",
-        _ => ":shrug:",
+        _ => ":medal:",
     }.to_owned()
 }
 
@@ -394,5 +392,27 @@ command!(top_levels(ctx, msg, _args) {
 
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});
+
+
+command!(top_reps(ctx, msg, _args) {
+    let pool = get_pool(&ctx);
+
+    if let Some(reps) = pool.get_top_reps() {
+        let mut s = String::new();
+        for (i, user) in reps.iter().enumerate() {
+            let _ = write!(s, "{} {} rep - <@{}>\n", get_pos_emoji(i as i64), user.rep, user.id);
+        }
+
+        let _ = msg.channel_id.send_message(|m|
+            m.embed(|e| e
+                .author(|a| a
+                    .name("Top Reps")
+                )
+                .color(0x2ecc71)
+                .description(&s)
+            )
+        );
     }
 });

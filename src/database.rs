@@ -527,6 +527,19 @@ impl ConnectionPool {
         }
     }
 
+    pub fn get_top_reps(&self) -> Option<Vec<User>> {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .filter(rep.gt(0))
+            .order(rep.desc())
+            .limit(10)
+            .load::<User>(&conn)
+            .ok()
+    }
+
     /// REMINDERS
 
     pub fn add_reminder(&self, id_user: u64, content: &str, time: &NaiveDateTime) {
