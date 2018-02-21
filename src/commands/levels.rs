@@ -61,7 +61,23 @@ command!(profile(ctx, msg, args) {
     html = html.replace("{REP}", &user_rep.to_string());
     html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
-    html = html.replace("{LEVEL}", &get_level(level_data.msg_all_time).to_string());
+
+    let level = get_level(level_data.msg_all_time);
+    let last_level_total_xp_required = next_level(level);
+    let next_level_total_xp_required = next_level(level + 1);
+    
+    let next_level_xp_required = next_level_total_xp_required - last_level_total_xp_required;
+    let next_level_xp_progress = next_level_total_xp_required - level_data.msg_all_time;
+
+    let xp_percentage = ((next_level_xp_progress as f64 / next_level_xp_required as f64) * 100.0) as u64;
+
+    html = html.replace("{LEVEL}", &level.to_string());
+    html = html.replace("{XP_PROGRESS}", &xp_percentage.to_string());
+    html = html.replace("{CURR_LEVEL_XP}", &next_level_xp_progress.to_string());
+    html = html.replace("{LEVEL_XP_REQ}", &next_level_xp_required.to_string());
+
+    println!("{}", &xp_percentage.to_string());   
+    
 
     // check if patron, add a heart
     if is_patron {
@@ -73,7 +89,7 @@ command!(profile(ctx, msg, args) {
     let mut json = HashMap::new();
     json.insert("html", html);
     json.insert("width", "500".to_owned());
-    json.insert("height", "350".to_owned());
+    json.insert("height", "400".to_owned());
 
     println!("created json");
 

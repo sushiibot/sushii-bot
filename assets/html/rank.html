@@ -10,7 +10,7 @@
     <style type="text/css">
         html, body {
             width: 500px;
-            height: 350px;
+            height: 400px;
             background-color: #25242B;
             color: #fff !important;
             margin: 0;
@@ -46,6 +46,20 @@
             border-radius: 50%;
             height: 70px;
         }
+
+        #xp-bar {
+            margin-top: 10px;
+            margin-bottom: 2px;
+            width: 100%;
+            height: 2px;
+            background-color: #504F57;
+        }
+
+        #xp-progress {
+            height: 100%;
+            background-color: #fff;
+            box-shadow: 0px 0px 5px #fff;
+        }
     </style>
 </head>
 <body>
@@ -61,7 +75,7 @@
                     <h5 class="title is-5 is-pulled-right">
                         <!-- <img class="rep_emoji" src="09.png" src="http://localhost:3000/img/{REP_EMOJI}.png"> {REP} REP -->
                         <img class="rep_emoji" src="http://localhost:3000/img/{REP_EMOJI}.png"> {REP} REP
-                        <br> LEVEL {LEVEL}
+                        <br> 
                     </h5>
                 </div>
             </div>
@@ -70,6 +84,16 @@
             <!-- <img class="rep_emoji" src="heart.png" src="http://localhost:3000/img/heart.png" style="display:none;"> -->
             <img class="rep_emoji" src="http://localhost:3000/img/heart.png" style="display:none;">
         </h1>
+        <div id="xp-bar">
+            <div id="xp-progress" style="width:{XP_PROGRESS}%"></div>
+        </div>
+        <div class="is-pulled-left">
+            LEVEL {LEVEL}
+        </div>
+        <div class="is-pulled-right">
+            {CURR_LEVEL_XP} / {LEVEL_XP_REQ} XP
+        </div>
+        <div style="clear: both; margin-bottom:10px"></div>
         <h6 class="title is-6">
             RANKING
         </h6>
@@ -111,7 +135,7 @@
             </section>
         </div>
         <div class="hero-body" style="padding:0">
-            <div id="chart" style="width:100%;height:90px;"></div>
+            <div id="chart" style="width:100%;height:100px;"></div>
         </div>
     </section>
     
