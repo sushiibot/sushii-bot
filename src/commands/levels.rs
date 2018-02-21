@@ -67,7 +67,8 @@ command!(profile(ctx, msg, args) {
     let next_level_total_xp_required = next_level(level + 1);
     
     let next_level_xp_required = next_level_total_xp_required - last_level_total_xp_required;
-    let next_level_xp_progress = next_level_total_xp_required - level_data.msg_all_time;
+    let next_level_xp_remaining = next_level_total_xp_required - level_data.msg_all_time;
+    let next_level_xp_progress = next_level_xp_required - next_level_xp_remaining;
 
     let xp_percentage = ((next_level_xp_progress as f64 / next_level_xp_required as f64) * 100.0) as u64;
 
