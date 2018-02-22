@@ -176,6 +176,8 @@ table! {
         address -> Nullable<Text>,
         lastfm -> Nullable<Text>,
         is_patron -> Bool,
+        fishies -> Int8,
+        last_fishies -> Nullable<Timestamp>,
     }
 }
 

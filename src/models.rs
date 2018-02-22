@@ -197,6 +197,8 @@ pub struct User {
     pub address: Option<String>,
     pub lastfm: Option<String>,
     pub is_patron: bool,
+    pub fishies: i64,
+    pub last_fishies: Option<NaiveDateTime>,
 }
 
 #[derive(Insertable)]
@@ -212,6 +214,8 @@ pub struct NewUser<'a> {
     pub address: Option<&'a str>,
     pub lastfm: Option<&'a str>,
     pub is_patron: bool,
+    pub fishies: i64,
+    pub last_fishies: Option<&'a NaiveDateTime>,
 }
 
 #[derive(Queryable, AsChangeset, Clone)]

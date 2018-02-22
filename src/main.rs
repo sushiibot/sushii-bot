@@ -247,6 +247,10 @@ fn main() {
                     .desc("Rep a user.")
                     .cmd(commands::levels::rep)
                 )
+                .command("fishy", |c| c
+                    .desc("Daily fishies.")
+                    .cmd(commands::fishy::fishy)
+                )
             )
             .group("Notifications", |g| g
                 .command("notification add", |c| c

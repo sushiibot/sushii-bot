@@ -440,6 +440,8 @@ impl ConnectionPool {
                 address: None,
                 lastfm: None,
                 is_patron: false,
+                fishies: 0,
+                last_fishies: None,
             };
 
             if let Err(e) = diesel::insert_into(users::table)
@@ -474,18 +476,6 @@ impl ConnectionPool {
             .ok()
     }
 
-    pub fn get_last_rep(&self, id_user: u64) -> Option<NaiveDateTime> {
-        use schema::users::dsl::*;
-
-        let conn = self.connection();
-
-        users
-            .filter(id.eq(id_user as i64))
-            .select(last_rep)
-            .first::<Option<NaiveDateTime>>(&conn)
-            .unwrap_or(None)
-    }
-
     pub fn set_patron(&self, id_user: u64, status: bool) -> bool {
         use schema::users::dsl::*;
 
@@ -504,6 +494,18 @@ impl ConnectionPool {
     }
 
     /// REP
+    pub fn get_last_rep(&self, id_user: u64) -> Option<NaiveDateTime> {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .filter(id.eq(id_user as i64))
+            .select(last_rep)
+            .first::<Option<NaiveDateTime>>(&conn)
+            .unwrap_or(None)
+    }
+
     pub fn rep_user(&self, id_user: u64, id_target: u64) {
         use schema::users::dsl::*;
 
@@ -538,6 +540,47 @@ impl ConnectionPool {
             .limit(10)
             .load::<User>(&conn)
             .ok()
+    }
+
+    // DAILY FISHIES
+    pub fn get_last_fishies(&self, id_user: u64) -> Option<NaiveDateTime> {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .filter(id.eq(id_user as i64))
+            .select(last_fishies)
+            .first::<Option<NaiveDateTime>>(&conn)
+            .unwrap_or(None)
+    }
+
+    pub fn get_fishies(&self, id_user: u64) -> i64 {
+        use schema::users::dsl::*;
+        use rand::{thread_rng, Rng};
+
+        let conn = self.connection();
+
+        let now = now_utc();
+        let mut rng = thread_rng();
+        let new_fishies: i64 = rng.gen_range(5, 20);
+
+        // update last_fishies timestamp
+        if let Err(e) = diesel::update(users)
+            .filter(id.eq(id_user as i64))
+            .set(last_fishies.eq(now))
+            .execute(&conn) {
+                warn_discord!("[DB:get_fishies] Error when updating last fishies: {}", e);
+            }
+        
+        if let Err(e) = diesel::update(users)
+                .filter(id.eq(id_user as i64))
+                .set(fishies.eq(fishies + new_fishies))
+                .execute(&conn) {
+            warn_discord!("[DB:get_fishies] Error when updating fishies: {}", e);
+        }
+
+        new_fishies
     }
 
     /// REMINDERS

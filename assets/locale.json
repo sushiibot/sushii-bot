@@ -49,7 +49,9 @@
         "tag_list": ":mailbox_with_mail: Sent you a DM with the tag list.",
 
         "patron_added": "Added a new patron.",
-        "patron_removed": "Removed a patron."
+        "patron_removed": "Removed a patron.",
+
+        "fishies_received": "You caught {} fishies! :tropical_fish:"
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -106,6 +108,8 @@
         "rep_self": "You can't rep yourself.  Sorry.",
         "rep_no_args": "Give me someone to rep.",
         "rep_bot": "You cant rep bots.",
+
+        "fishy_too_soon": "You can get more fishies again {}.",
 
         "reminder_not_given": "Give me something to remind you with.",
 

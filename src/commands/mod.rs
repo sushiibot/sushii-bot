@@ -8,3 +8,4 @@ pub mod notifications;
 pub mod moderation;
 pub mod search;
 pub mod tags;
+pub mod fishy;
