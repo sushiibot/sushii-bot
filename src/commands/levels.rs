@@ -35,9 +35,9 @@ command!(profile(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
     };
 
-    let (user_rep, activity, is_patron) = match pool.get_user(id) {
-        Some(val) => (val.rep, val.msg_activity, val.is_patron),
-        None => (0, vec![0; 24], false),
+    let (user_rep, activity, is_patron, fishies) = match pool.get_user(id) {
+        Some(val) => (val.rep, val.msg_activity, val.is_patron, val.fishies),
+        None => (0, vec![0; 24], false, 0),
     };
 
     let user = match UserId(id).get() {
@@ -51,7 +51,7 @@ command!(profile(ctx, msg, args) {
 
     let mut html = LEVEL_HTML.to_owned();
 
-    html = html.replace("{USERNAME}", &user.tag());
+    html = html.replace("{USERNAME}", &escape_html(&user.tag()));
     html = html.replace("{AVATAR_URL}", &user.face());
     html = html.replace("{DAILY}", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total));
     html = html.replace("{WEEKLY}", &format_rank(&level_data.msg_week_rank, &level_data.msg_week_total));
@@ -59,6 +59,7 @@ command!(profile(ctx, msg, args) {
     html = html.replace("{ALL}", &format_rank(&level_data.msg_all_time_rank, &level_data.msg_all_time_total));
     html = html.replace("{REP_EMOJI}", &get_rep_emoji_level(user_rep));
     html = html.replace("{REP}", &user_rep.to_string());
+    html = html.replace("{FISHIES}", &fishies.to_string());
     html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
 
@@ -77,8 +78,6 @@ command!(profile(ctx, msg, args) {
     html = html.replace("{CURR_LEVEL_XP}", &next_level_xp_progress.to_string());
     html = html.replace("{LEVEL_XP_REQ}", &next_level_xp_required.to_string());
 
-    println!("{}", &xp_percentage.to_string());   
-    
 
     // check if patron, add a heart
     if is_patron {
@@ -158,6 +157,18 @@ command!(profile(ctx, msg, args) {
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
 });
+
+fn escape_html(s: &str) -> String {
+    let mut escaped = s.to_string();
+
+    escaped = escaped.replace("&", "&amp");
+    escaped = escaped.replace("<", "&lt");
+    escaped = escaped.replace(">", "&gt");
+    escaped = escaped.replace("\"", "&quot");
+    escaped = escaped.replace("'", "&#39");
+
+    escaped
+}
 
 fn format_rank<'a>(rank: &'a i64, total: &'a i64) -> String {
     if *rank == 0 {
@@ -426,7 +437,7 @@ command!(top_reps(ctx, msg, _args) {
         let _ = msg.channel_id.send_message(|m|
             m.embed(|e| e
                 .author(|a| a
-                    .name("Top Reps")
+                    .name("Top Reps - Global")
                 )
                 .color(0x2ecc71)
                 .description(&s)
