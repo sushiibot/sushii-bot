@@ -44,7 +44,7 @@ command!(fishy(ctx, msg, args) {
 
 
     let num_fishies = pool.get_fishies(msg.author.id.0, target, fishies_self);
-    pool.update_stat("fishies", "fishies_given");
+    pool.update_stat("fishies", "fishies_given", num_fishies);
 
     let _ = if fishies_self {
         msg.channel_id.say(get_msg!("info/fishies_received", num_fishies))

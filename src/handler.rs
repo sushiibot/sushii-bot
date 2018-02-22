@@ -72,7 +72,7 @@ impl EventHandler for Handler {
 
         {
             let pool = get_pool(&ctx);
-            pool.update_stat("users", "banned");
+            pool.update_stat("users", "banned", 1);
         }
         update_event(&ctx, "GUILD_BAN_ADD");
     }
@@ -82,7 +82,7 @@ impl EventHandler for Handler {
 
         {
             let pool = get_pool(&ctx);
-            pool.update_stat("users", "unbanned");
+            pool.update_stat("users", "unbanned", 1);
         }
         update_event(&ctx, "GUILD_BAN_REMOVE");
     }
@@ -95,7 +95,7 @@ impl EventHandler for Handler {
             
             {
                 let pool = get_pool(&ctx);
-                pool.update_stat("guilds", "joined");
+                pool.update_stat("guilds", "joined", 1);
             }
         }
 
@@ -124,7 +124,7 @@ impl EventHandler for Handler {
 
         {
             let pool = get_pool(&ctx);
-            pool.update_stat("users", "added");
+            pool.update_stat("users", "added", 1);
         }
         update_event(&ctx, "GUILD_MEMBER_ADD");
     }
@@ -145,7 +145,7 @@ impl EventHandler for Handler {
 
         {
             let pool = get_pool(&ctx);
-            pool.update_stat("users", "removed");
+            pool.update_stat("users", "removed", 1);
         }
         update_event(&ctx, "GUILD_MEMBER_REMOVE");
     }
@@ -186,9 +186,9 @@ impl EventHandler for Handler {
             let pool = get_pool(&ctx);
 
             if msg.is_own() {
-                pool.update_stat("messages", "sent");
+                pool.update_stat("messages", "sent", 1);
             } else {
-                pool.update_stat("messages", "recieved");
+                pool.update_stat("messages", "recieved", 1);
             }
         }
 
