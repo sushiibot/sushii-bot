@@ -3,3 +3,6 @@
 .env
 *.sublime-project
 *.sublime-workspace
+/.gtm/
+*.js
+*.png
