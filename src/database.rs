@@ -557,16 +557,20 @@ impl ConnectionPool {
 
     pub fn get_fishies(&self, id_user: u64, target: u64, is_self: bool) -> i64 {
         use schema::users::dsl::*;
-        use rand::{thread_rng, Rng};
+        use rand::thread_rng;
+        use rand::distributions::{IndependentSample, Range};
 
         let conn = self.connection();
 
         let now = now_utc();
         let mut rng = thread_rng();
+
         let new_fishies: i64 = if is_self {
-            rng.gen_range(5, 20)
+            let between = Range::new(5, 20);
+            between.ind_sample(&mut rng)
         } else {
-            rng.gen_range(15, 30)
+            let between = Range::new(15, 30);
+            between.ind_sample(&mut rng)
         };
 
         // update last_fishies timestamp
