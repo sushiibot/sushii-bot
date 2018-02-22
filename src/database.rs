@@ -555,7 +555,7 @@ impl ConnectionPool {
             .unwrap_or(None)
     }
 
-    pub fn get_fishies(&self, id_user: u64) -> i64 {
+    pub fn get_fishies(&self, id_user: u64, target: u64, is_self: bool) -> i64 {
         use schema::users::dsl::*;
         use rand::{thread_rng, Rng};
 
@@ -563,7 +563,11 @@ impl ConnectionPool {
 
         let now = now_utc();
         let mut rng = thread_rng();
-        let new_fishies: i64 = rng.gen_range(5, 20);
+        let new_fishies: i64 = if is_self {
+            rng.gen_range(5, 20)
+        } else {
+            rng.gen_range(15, 30)
+        };
 
         // update last_fishies timestamp
         if let Err(e) = diesel::update(users)
@@ -574,7 +578,7 @@ impl ConnectionPool {
             }
         
         if let Err(e) = diesel::update(users)
-                .filter(id.eq(id_user as i64))
+                .filter(id.eq(target as i64))
                 .set(fishies.eq(fishies + new_fishies))
                 .execute(&conn) {
             warn_discord!("[DB:get_fishies] Error when updating fishies: {}", e);

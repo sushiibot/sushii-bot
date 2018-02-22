@@ -51,7 +51,8 @@
         "patron_added": "Added a new patron.",
         "patron_removed": "Removed a patron.",
 
-        "fishies_received": "You caught {} fishies! :tropical_fish:"
+        "fishies_received": "You caught {} fishies! :tropical_fish:",
+        "fishies_given": "You caught {} fishies for {}! :tropical_fish:"
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",

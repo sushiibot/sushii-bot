@@ -248,7 +248,7 @@ fn main() {
                     .cmd(commands::levels::rep)
                 )
                 .command("fishy", |c| c
-                    .desc("Daily fishies.")
+                    .desc("Go fishing.")
                     .cmd(commands::fishy::fishy)
                 )
             )
