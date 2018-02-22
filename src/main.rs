@@ -199,7 +199,7 @@ fn main() {
             .after(|ctx, msg, _cmd_name, error| {
                 {
                     let pool = get_pool(&ctx);
-                    pool.update_stat("commands", "executed");
+                    pool.update_stat("commands", "executed", 1);
                 }
 
                 //  Print out an error if it happened

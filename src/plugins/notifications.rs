@@ -117,7 +117,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                     })
                 );
 
-                pool.update_stat("notifications", "triggered");
+                pool.update_stat("notifications", "triggered", 1);
             } else {
                 let s = format!(
                     "Failed sending notification message to: {}",

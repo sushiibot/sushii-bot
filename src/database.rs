@@ -1299,7 +1299,7 @@ impl ConnectionPool {
     }
 
     // STATS
-    pub fn update_stat(&self, new_cat: &str, new_stat: &str) {
+    pub fn update_stat(&self, new_cat: &str, new_stat: &str, added: i64) {
         use utils::datadog;
         use schema::stats::dsl::*;
 
@@ -1307,7 +1307,7 @@ impl ConnectionPool {
 
         let new_stat = NewStat {
             stat_name: new_stat,
-            count: 1,
+            count: added,
             category: new_cat,
         };
 
@@ -1315,7 +1315,7 @@ impl ConnectionPool {
             .values(&new_stat)
             .on_conflict(stat_name)
             .do_update()
-            .set(count.eq(count + 1))
+            .set(count.eq(count + added))
             .get_result::<Stat>(&conn) {
 
 
