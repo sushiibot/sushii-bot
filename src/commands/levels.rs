@@ -47,8 +47,6 @@ command!(profile(ctx, msg, args) {
 
     let _ = msg.channel_id.broadcast_typing();
 
-    println!("started typing");
-
     let mut html = LEVEL_HTML.to_owned();
 
     html = html.replace("{USERNAME}", &escape_html(&user.tag()));
@@ -84,18 +82,13 @@ command!(profile(ctx, msg, args) {
         html = html.replace("style=\"display:none;\"", "");
     }
 
-    println!("created html");
-
     let mut json = HashMap::new();
     json.insert("html", html);
     json.insert("width", "500".to_owned());
     json.insert("height", "400".to_owned());
 
-    println!("created json");
-
 
     let client = reqwest::Client::new();
-    println!("created reqwest client");
     let res = match client.post("http://127.0.0.1:3000/html").json(&json).send() {
         Ok(val) => val.error_for_status(),
         Err(_) => {
@@ -117,8 +110,6 @@ command!(profile(ctx, msg, args) {
             return Ok(());
         }
     };
-
-    println!("got response");
 
     let mut img = match res {
         Ok(val) => val,
@@ -144,16 +135,10 @@ command!(profile(ctx, msg, args) {
         },
     };
 
-    println!("got image");
-
     let mut buf: Vec<u8> = vec![];
-    println!("created buffer");
     img.copy_to(&mut buf)?;
 
-    println!("copied to buffer");
-
     let files = vec![(&buf[..], "level.png")];
-    println!("created files");
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
 });
