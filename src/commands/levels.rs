@@ -7,6 +7,7 @@ use utils;
 use utils::config::get_pool;
 use utils::time::now_utc;
 
+use num_traits::cast::ToPrimitive;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
 
@@ -288,7 +289,7 @@ command!(rep(ctx, msg, args) {
     };
 
     pool.rep_user(msg.author.id.0, target);
-    pool.update_stat("rep", "given", 1);
+    pool.update_stat("rep", "rep_given", 1);
 
     let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag()));
 });
@@ -400,7 +401,7 @@ command!(top_levels(ctx, msg, _args) {
         let _ = msg.channel_id.send_message(|m|
                 m.embed(|e| e
                     .author(|a| a
-                        .name("Top Levels")
+                        .name("Top Ranks")
                     )
                     .color(0x2ecc71)
                     .field("Daily", &daily, true)
@@ -412,6 +413,29 @@ command!(top_levels(ctx, msg, _args) {
 
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});
+
+command!(top_levels_global(ctx, msg, _args) {
+    let pool = get_pool(&ctx);
+
+    if let Some(levels) = pool.get_global_levels() {
+        let mut s = String::new();
+
+        for (i, user) in levels.iter().enumerate() {
+            let _ = write!(s, "{} Level {} - <@{}>\n", get_pos_emoji(i as i64),
+                get_level(user.xp.to_i64().unwrap_or(0)), user.user_id);
+        }
+
+        let _ = msg.channel_id.send_message(|m|
+            m.embed(|e| e
+                .author(|a| a
+                    .name("Top Levels (Global)")
+                )
+                .color(0x2ecc71)
+                .description(&s)
+            )
+        );
     }
 });
 
