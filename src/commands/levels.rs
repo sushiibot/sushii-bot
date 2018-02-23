@@ -71,6 +71,12 @@ command!(profile(ctx, msg, args) {
 
     let xp_percentage = ((next_level_xp_progress as f64 / next_level_xp_required as f64) * 100.0) as u64;
 
+    let xp_percentage = if xp_percentage > 100 {
+        0
+    } else {
+        xp_percentage
+    };
+
     html = html.replace("{LEVEL}", &level.to_string());
     html = html.replace("{XP_PROGRESS}", &xp_percentage.to_string());
     html = html.replace("{CURR_LEVEL_XP}", &next_level_xp_progress.to_string());
