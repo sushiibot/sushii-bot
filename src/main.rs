@@ -38,6 +38,8 @@ extern crate sys_info;
 extern crate parking_lot;
 extern crate base64;
 extern crate dogstatsd;
+extern crate bigdecimal;
+extern crate num_traits;
 
 pub use diesel::r2d2;
 
@@ -238,6 +240,10 @@ fn main() {
                     .known_as("levels")
                     .desc("Shows the top users.")
                     .cmd(commands::levels::top_levels)
+                )
+                .command("globallevels", |c| c
+                    .desc("Shows the top global users.")
+                    .cmd(commands::levels::top_levels_global)
                 )
                 .command("topreps", |c| c
                     .desc("Shows the top users.")

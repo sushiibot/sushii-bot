@@ -2,6 +2,7 @@ use schema::*;
 
 use chrono::naive::NaiveDateTime;
 use diesel::sql_types::*;
+use bigdecimal::BigDecimal;
 use serde_json;
 
 #[derive(Queryable, AsChangeset, Clone)]
@@ -82,6 +83,16 @@ pub struct UserLevel {
 
     #[sql_type = "Timestamp"]
     pub last_msg: NaiveDateTime,
+}
+
+// used for global ranks
+#[derive(QueryableByName, Clone, Debug)]
+pub struct UserLevelAllTime {
+    #[sql_type = "BigInt"]
+    pub user_id: i64,
+
+    #[sql_type = "Numeric"]
+    pub xp: BigDecimal,
 }
 
 #[derive(QueryableByName, Clone)]

@@ -324,6 +324,33 @@ impl ConnectionPool {
         }
     }
 
+    pub fn get_global_levels(&self) -> Option<Vec<UserLevelAllTime>> {
+        let conn = self.connection();
+
+        match diesel::sql_query(r#"
+            SELECT
+                t.user_id,
+                t.xp
+            FROM (
+                SELECT user_id, SUM(msg_all_time) AS xp
+                FROM levels
+                GROUP BY user_id
+            ) t
+            JOIN levels l ON l.user_id = t.user_id
+            GROUP BY t.user_id, t.xp
+            ORDER BY t.xp DESC
+            LIMIT 10
+        "#)
+            .load::<UserLevelAllTime>(&conn) {
+
+            Ok(val) => Some(val),
+            Err(e) => {
+                warn_discord!("[DB:get_global_levels] Error while getting global levels: {}", e);
+                None
+            }
+        }
+    }
+
     // fetch top 10 for each category
     pub fn get_top_levels(&self, id_guild: u64) -> TopLevels {
         use schema::levels::dsl::*;
