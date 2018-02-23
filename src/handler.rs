@@ -203,7 +203,8 @@ impl EventHandler for Handler {
             notifications,
             gallery,
             roles,
-            dm
+            dm,
+            pinged
         );
     }
 
