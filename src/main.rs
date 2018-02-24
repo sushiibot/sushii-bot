@@ -185,6 +185,9 @@ fn main() {
                     BlockedUser => {
                         println!("Blocked user {} attemped to use command.", msg.author.tag());
                     }
+                    IgnoredBot => {
+                        return;
+                    }
                     _ => println!("Unhandled dispatch error."),
                 }
 
