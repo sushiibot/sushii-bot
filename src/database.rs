@@ -1188,6 +1188,20 @@ impl ConnectionPool {
             .ok()
     }
 
+    pub fn get_random_tag(&self, guild: u64) -> Option<Tag> {
+        use schema::tags::dsl::*;
+
+        no_arg_sql_function!(RANDOM, (), "Represents the sql RANDOM() function");
+
+        let conn = self.connection();
+
+        tags
+            .order(RANDOM)
+            .filter(guild_id.eq(guild as i64))
+            .first::<Tag>(&conn)
+            .ok()
+    }
+
     pub fn get_tags(&self, guild: u64) -> Option<Vec<Tag>> {
         use schema::tags::dsl::*;
 
