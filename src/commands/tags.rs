@@ -20,7 +20,7 @@ command!(tag(ctx, msg, args) {
             None => return Err(CommandError::from(get_msg!("error/tag_not_found", tag_name))),
         };
 
-        let _ = msg.channel_id.say(&found_tag.content);
+        let _ = msg.channel_id.say(&format!("\u{200b}{}", found_tag.content));
         // update the counter
         pool.increment_tag(guild_id.0, &tag_name);
     } else {
