@@ -133,6 +133,7 @@
         "tag_no_content_given": "Please give tag content.",
         "tag_no_search_given": "Please give a tag search.",
         "tag_already_exists": "This tag already exists.  Try another name.",
+        "tag_none": "There doesn't seem to be any tags in this server.",
         "tag_not_found": "There doesn't seem to be a tag named `{}`.",
         "tags_not_found": "Couldn't find any tags.",
         "tag_not_owner": "This tag doesn't belong to you.",

@@ -23,6 +23,8 @@ command!(tag(ctx, msg, args) {
         let _ = msg.channel_id.say(&found_tag.content);
         // update the counter
         pool.increment_tag(guild_id.0, &tag_name);
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
@@ -68,6 +70,8 @@ command!(tag_info(ctx, msg, args) {
                 .timestamp(found_tag.created.format("%Y-%m-%dT%H:%M:%S").to_string())
             )
         );
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
@@ -99,6 +103,8 @@ command!(tag_add(ctx, msg, args) {
                 return Err(CommandError::from(get_msg!("error/unknown_error")));
             }
         }
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
     }
 });
 
@@ -109,6 +115,10 @@ command!(tag_list(ctx, msg, _args) {
             Some(val) => val,
             None => return Err(CommandError::from(get_msg!("error/tags_not_found"))),
         };
+
+        if tags.is_empty() {
+            return Err(CommandError::from(get_msg!("error/tag_none")))
+        }
 
         let mut contents = String::new();
         for tg in tags {
@@ -146,6 +156,10 @@ command!(tag_top(ctx, msg, _args) {
             Some(val) => val,
             None => return Err(CommandError::from(get_msg!("error/tags_not_found"))),
         };
+
+        if top_tags.is_empty() {
+            return Err(CommandError::from(get_msg!("error/tag_none")))
+        }
 
         let _ = msg.channel_id.send_message(|m| m
             .embed(|e| {
@@ -289,6 +303,23 @@ command!(tag_edit(ctx, msg, args) {
         } else {
             return Err(CommandError::from(get_msg!("error/tag_not_found_or_not_owner")));
         }
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});
+
+command!(tag_random(ctx, msg, _args) {
+    if let Some(guild_id) = msg.guild_id() {
+        let pool = get_pool(&ctx);
+
+        let found_tag = match pool.get_random_tag(guild_id.0) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/tag_none"))),
+        };
+
+        let _ = msg.channel_id.say(&format!("{}: {}", found_tag.tag_name, found_tag.content));
+        // update the counter
+        pool.increment_tag(guild_id.0, &found_tag.tag_name);
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
     }

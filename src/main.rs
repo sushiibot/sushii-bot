@@ -452,6 +452,10 @@ fn main() {
                     .desc("Gets a tag.")
                     .cmd(commands::tags::tag)
                 )
+                .command("tag random", |c| c
+                    .desc("Gets a random tag.")
+                    .cmd(commands::tags::tag_random)
+                )
                 .command("tag info", |c| c
                     .usage("[tag name]")
                     .desc("Gets information about a tag.")
