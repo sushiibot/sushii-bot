@@ -32,8 +32,6 @@ command!(fishy(ctx, msg, args) {
             None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
         }
     } else {
-        // fishies for self
-        fishies_self = true;
         msg.author.id.0
     };
 
