@@ -37,6 +37,10 @@ command!(fishy(ctx, msg, args) {
         msg.author.id.0
     };
 
+    if target == msg.author.id.0 {
+        fishies_self = true
+    }
+
     let target_user = match UserId(target).get() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
