@@ -215,7 +215,7 @@ command!(tag_delete(ctx, msg, args) {
         // get the current tag to check owner
         let current = match pool.get_tag(guild_id.0, &tag_name) {
             Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/tag_not_found"))),
+            None => return Err(CommandError::from(get_msg!("error/tag_not_owner"))),
         };
 
         // check if user owns the tag or has mod perms
