@@ -430,7 +430,7 @@ command!(top_levels_global(ctx, msg, _args) {
         let _ = msg.channel_id.send_message(|m|
             m.embed(|e| e
                 .author(|a| a
-                    .name("Top Levels (Global)")
+                    .name("Top Global Levels")
                 )
                 .color(0x2ecc71)
                 .description(&s)
