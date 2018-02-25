@@ -161,20 +161,22 @@ command!(tag_top(ctx, msg, _args) {
             return Err(CommandError::from(get_msg!("error/tag_none")))
         }
 
+        let mut s = String::new();
+
+        for tg in top_tags {
+            let _ = write!(s, "{} - {}\n", tg.count, tg.tag_name);
+        }
+
         let _ = msg.channel_id.send_message(|m| m
-            .embed(|e| {
-                let mut e = e;
-
-                e = e.author(|a| a
-                    .name("Top Tags")
-                );
-
-                for tg in top_tags {
-                    e = e.field(&tg.tag_name, &tg.count.to_string(), false);
-                }
-
-                e
-            })
+            .embed(|e| e
+                .author(|a| a
+                    .name("Most Used Tags")
+                )
+                .description(&s)
+                .footer(|f| f
+                    .text("Use Count - Tag Name")
+                )
+            )
         );
 
     } else {
