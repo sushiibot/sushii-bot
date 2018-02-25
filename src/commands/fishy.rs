@@ -35,6 +35,7 @@ command!(fishy(ctx, msg, args) {
         msg.author.id.0
     };
 
+    // check if fishy for self
     if target == msg.author.id.0 {
         fishies_self = true
     }
@@ -44,13 +45,24 @@ command!(fishy(ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };
 
+    // disallow bots fishy
+    if target_user.bot {
+        return Err(CommandError::from(get_msg!("error/fishy_bot")));
+    }
 
-    let num_fishies = pool.get_fishies(msg.author.id.0, target, fishies_self);
+
+    let (num_fishies, is_golden) = pool.get_fishies(msg.author.id.0, target, fishies_self);
     pool.update_stat("fishies", "fishies_given", num_fishies);
 
-    let _ = if fishies_self {
-        msg.channel_id.say(get_msg!("info/fishies_received", num_fishies))
+    let s = if fishies_self && !is_golden {
+        get_msg!("info/fishies_received", num_fishies)
+    } else if fishies_self && is_golden {
+        get_msg!("info/fishies_received_golden", num_fishies)        
+    } else if !fishies_self && !is_golden {
+        get_msg!("info/fishies_given", num_fishies, target_user.tag())
     } else {
-        msg.channel_id.say(get_msg!("info/fishies_given", num_fishies, target_user.tag()))
+        get_msg!("info/fishies_given_golden", num_fishies, target_user.tag())
     };
+
+    let _ = msg.channel_id.say(&s);
 });

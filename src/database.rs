@@ -582,7 +582,7 @@ impl ConnectionPool {
             .unwrap_or(None)
     }
 
-    pub fn get_fishies(&self, id_user: u64, target: u64, is_self: bool) -> i64 {
+    pub fn get_fishies(&self, id_user: u64, target: u64, is_self: bool) -> (i64, bool) {
         use schema::users::dsl::*;
         use rand::thread_rng;
         use rand::distributions::{IndependentSample, Range};
@@ -592,7 +592,14 @@ impl ConnectionPool {
         let now = now_utc();
         let mut rng = thread_rng();
 
-        let new_fishies: i64 = if is_self {
+        // 1% chance of getting golden fishy == 80-150 fishies?
+        let golden_range = Range::new(1, 100);
+        let is_golden = golden_range.ind_sample(&mut rng) == 1;
+
+        let new_fishies: i64 = if is_golden {
+            let between = Range::new(80, 150);
+            between.ind_sample(&mut rng)
+        } else if is_self {
             let between = Range::new(5, 20);
             between.ind_sample(&mut rng)
         } else {
@@ -615,7 +622,7 @@ impl ConnectionPool {
             warn_discord!("[DB:get_fishies] Error when updating fishies: {}", e);
         }
 
-        new_fishies
+        (new_fishies, is_golden)
     }
 
     /// REMINDERS

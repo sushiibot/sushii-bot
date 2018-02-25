@@ -52,7 +52,9 @@
         "patron_removed": "Removed a patron.",
 
         "fishies_received": "You caught {} fishies! <:fishy:416336686516273162>",
-        "fishies_given": "You caught {} fishies for {}! <:fishy:416336686516273162>"
+        "fishies_given": "You caught {} fishies for {}! <:fishy:416336686516273162>",
+        "fishies_received_golden": "You caught a **golden fishy** ({} fishies)! <:goldenFishy:417166108085321748>",
+        "fishies_given_golden": "You caught a **golden fishy** ({} fishies) for {}! <:goldenFishy:417166108085321748>"
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -111,6 +113,7 @@
         "rep_bot": "You cant rep bots.",
 
         "fishy_too_soon": "You're too tired to go fishing.  \\:(  Try again {}.",
+        "fishy_bot": "Bots don't need fishies silly.",
 
         "reminder_not_given": "Give me something to remind you with.",
 
