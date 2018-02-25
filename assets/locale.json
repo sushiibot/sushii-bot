@@ -95,6 +95,8 @@
         "failed_dm": "Failed to send DM, maybe you don't have them enabled?",
         "failed_url_request": "Failed to fetch url data.",
 
+        "cases_user_history_not_found": "No past cases for this user were found.",
+
         "already_muted": "This member is already muted.",
 
         "forecast_fetch_failed": "Failed to fetch the forecast.",

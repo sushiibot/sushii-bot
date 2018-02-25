@@ -309,6 +309,11 @@ fn main() {
                     .required_permissions(Permissions::MANAGE_GUILD)
                     .cmd(commands::moderation::cases::reason)
                 )
+                .command("history", |c| c
+                    .desc("Looks up past cases for a user.")
+                    .required_permissions(Permissions::MANAGE_GUILD)
+                    .cmd(commands::moderation::cases::history)
+                )
                 .command("ban", |c| c
                     .usage("[mention or id](,mention or id) [reason]")
                     .desc("Bans a user or ID.")

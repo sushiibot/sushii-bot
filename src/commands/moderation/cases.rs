@@ -1,9 +1,13 @@
 use regex::Regex;
-use utils::config::get_pool;
 use serenity::framework::standard::CommandError;
 use serenity::model::id::ChannelId;
+use serenity::model::id::UserId;
 use serenity::model::channel::EmbedAuthor;
 use serenity::builder::CreateEmbed;
+use serenity::CACHE;
+
+use utils::user::get_id;
+use utils::config::get_pool;
 
 use std::fmt::Write;
 
@@ -130,5 +134,53 @@ command!(reason(ctx, msg, args) {
     } else {
         return Err(CommandError::from("I can't seem to find any cases in this range."));
     }
+});
 
+command!(history(ctx, msg, args) {
+    let guild_id = match msg.guild_id() {
+        Some(id) => id.0,
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
+    };
+
+    let target = match args.single::<String>().ok().and_then(|x| get_id(&x)) {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
+    };
+
+    let target_user = match UserId(target).get() {
+        Ok(val) => val,
+        Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
+    };
+
+    let pool = get_pool(&ctx);
+
+    if let Some(user_history) = pool.get_mod_action_user_history(guild_id, target) {
+        let mut s = String::new();
+        let current_user_id = {
+            CACHE.read().user.id.0
+        };
+
+        if user_history.is_empty() {
+            return Err(CommandError::from(get_msg!("error/cases_user_history_not_found")));
+        }
+
+        for item in user_history.iter() {
+            let _ = write!(s, "`[Case #{}]` {} by <@{}> for {}\n", 
+                item.case_id, item.action,
+                item.executor_id.map_or(current_user_id, |x| x as u64),
+                item.reason.clone().unwrap_or("N/A".to_owned()));
+        }
+
+        let _ = msg.channel_id.send_message(|m| m
+            .embed(|e| e
+                .author(|a| a
+                    .name(&format!("Case History for {}", &target_user.tag()))
+                    .icon_url(&target_user.face())
+                )
+                .description(&s)
+            )
+        );
+    } else {
+        return Err(CommandError::from(get_msg!("error/cases_user_history_not_found")));
+    };
 });

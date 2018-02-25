@@ -910,6 +910,19 @@ impl ConnectionPool {
             .ok()
     }
 
+    pub fn get_mod_action_user_history(&self, guild: u64, target: u64) -> Option<Vec<ModAction>>{
+        use schema::mod_log::dsl::*;
+
+        let conn = self.connection();
+
+        mod_log
+            .filter(guild_id.eq(guild as i64))
+            .filter(user_id.eq(target as i64))
+            .order(case_id.desc())
+            .load::<ModAction>(&conn)
+            .ok()
+    }
+
     pub fn get_pending_mod_actions(&self, mod_action: &str, guild: u64, user: u64) -> Option<ModAction> {
         use schema::mod_log::dsl::*;
 
