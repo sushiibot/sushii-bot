@@ -3,6 +3,7 @@ use serenity::model::id::UserId;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
 
+use std::fmt::Write;
 use utils::config::get_pool;
 use utils::time::now_utc;
 use utils::user::get_id;
@@ -65,4 +66,34 @@ command!(fishy(ctx, msg, args) {
     };
 
     let _ = msg.channel_id.say(&s);
+});
+
+fn get_pos_emoji(pos: i64) -> String {
+    match pos {
+        0 => ":first_place:",
+        1 => ":second_place:",
+        2 => ":third_place:",
+        _ => ":medal:",
+    }.to_owned()
+}
+
+command!(fishies_top(ctx, msg, _args) {
+    let pool = get_pool(&ctx);
+
+    if let Some(users) = pool.get_top_fishies() {
+        let mut s = String::new();
+        for (i, user) in users.iter().enumerate() {
+            let _ = write!(s, "{} {} fishies - <@{}>\n", get_pos_emoji(i as i64), user.fishies, user.id);
+        }
+
+        let _ = msg.channel_id.send_message(|m|
+            m.embed(|e| e
+                .author(|a| a
+                    .name("Top Fishies - Global")
+                )
+                .color(0x2ecc71)
+                .description(&s)
+            )
+        );
+    }
 });
