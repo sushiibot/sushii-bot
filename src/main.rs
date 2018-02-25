@@ -231,7 +231,7 @@ fn main() {
                 .embed_error_colour(Colour(0xe74c3c))
             )
             .simple_bucket("profile_bucket", 15)
-            .group("Profile", |g| g
+            .group("Users", |g| g
                 .guild_only(true)
                 .command("profile", |c| c
                     .desc("Shows your profile.")
@@ -259,6 +259,10 @@ fn main() {
                 .command("fishy", |c| c
                     .desc("Go fishing.")
                     .cmd(commands::fishy::fishy)
+                )
+                .command("topfishies", |c| c
+                    .desc("Top 10 users with most fishies.")
+                    .cmd(commands::fishy::fishies_top)
                 )
             )
             .group("Notifications", |g| g
