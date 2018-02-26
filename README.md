@@ -1,6 +1,7 @@
 # sushii bot
 
 [![Build Status](https://travis-ci.org/drklee3/sushii-bot.svg?branch=master)](https://travis-ci.org/drklee3/sushii-bot)
+
 ![sushii](assets/sushii.png)
 
 A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.org/) with [serenity-rs](https://github.com/zeyla/serenity).  Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
