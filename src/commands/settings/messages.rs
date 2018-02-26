@@ -1,9 +1,9 @@
 use serenity::framework::standard::CommandError;
-use database;
+use serenity::utils::parse_channel;
+use utils::config::get_pool;
 
 command!(joinmsg(ctx, msg, args) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
 
     let message = args.full().to_owned();
 
@@ -41,8 +41,7 @@ command!(joinmsg(ctx, msg, args) {
 });
 
 command!(leavemsg(ctx, msg, args) {
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(&ctx);
 
     let message = args.full().to_owned();
 
@@ -74,6 +73,32 @@ command!(leavemsg(ctx, msg, args) {
 
             pool.save_guild_config(&config);
         }
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});
+
+command!(msg_channel(ctx, msg, args) {
+    let channel = match args.single::<String>() {
+        Ok(val) => parse_channel(&val).unwrap_or(0),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
+    };
+
+    if channel == 0 {
+        return Err(CommandError::from(get_msg!("error/invalid_channel")));
+    }
+
+    if let Some(guild_id) = msg.guild_id() {
+        let pool = get_pool(&ctx);
+
+        let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
+
+        config.msg_channel = Some(channel as i64);
+
+        pool.save_guild_config(&config);
+
+        let s = get_msg!("info/msg_channel_set", channel);
+        let _ = msg.channel_id.say(&s);
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
     }

@@ -6,6 +6,7 @@
         "member_log_set": "The member log channel has been set to: <#{}>",
         "message_log_set": "The message log channel has been set to: <#{}>",
         "mod_log_set": "The moderation log channel has been set to: <#{}>",
+        "msg_channel_set": "Join / leave messages will be sent to: <#{}>",
         "channel_disabled": "The channel <#{}> has been disabled for commands.",
         "channel_enabled": "The channel <#{}> has been enabled for commands.",
 
