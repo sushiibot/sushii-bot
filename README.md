@@ -1,8 +1,7 @@
 # sushii bot
 
-![sushii](assets/sushii.png)
-
 [![Build Status](https://travis-ci.org/drklee3/sushii-bot.svg?branch=master)](https://travis-ci.org/drklee3/sushii-bot)
+![sushii](assets/sushii.png)
 
 A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.org/) with [serenity-rs](https://github.com/zeyla/serenity).  Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
 
@@ -47,8 +46,8 @@ Work in progress.  Features may be either missing, incomplete, or broken.
     * [sushii-image-server](https://github.com/drklee3/sushii-image-server) (Used for rank image generation, etc)
 2. Clone this repository and enter the directory.
     ```bash
-    $ git clone https://github.com/drklee3/discord-sushii.git
-    $ cd discord-sushii
+    $ git clone https://github.com/drklee3/sushii-bot.git
+    $ cd sushii-bot
     ```
 3. Edit [`.env.example`](.env.example) and rename to `.env`.  Removing any key or leaving them blank will result in panics.
 4. Build and run the bot.
