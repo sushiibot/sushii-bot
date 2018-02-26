@@ -6,6 +6,8 @@
         "member_log_set": "The member log channel has been set to: <#{}>",
         "message_log_set": "The message log channel has been set to: <#{}>",
         "mod_log_set": "The moderation log channel has been set to: <#{}>",
+        "channel_disabled": "The channel <#{}> has been disabled for commands.",
+        "channel_enabled": "The channel <#{}> has been enabled for commands.",
 
         "leave_message_current": "The current leave message is: {}",
         "leave_message_none": "There is no leave message set.  You can set one with the placeholders <mention>, <username>, <server>.",
@@ -120,6 +122,10 @@
         "reminder_not_given": "Give me something to remind you with.",
 
         "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
+
+        "channel_already_disabled": "This channel is already disabled.",
+        "channel_not_disabled": "This channel is not disabled.",
+        "channel_none_disabled": "No channels in this guild are disabled.",
 
         "notification_delete_by_keyword": "Please provide a keyword ID instead of the actual keyword, or try this in the respective guild instead.",
         "notification_delete_failed": "You don't have that keyword set, or keyword ID is not valid.",

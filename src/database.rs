@@ -79,6 +79,7 @@ impl ConnectionPool {
             mute_role: None,
             prefix: None,
             max_mention: 10,
+            disabled_channels: None,
         };
 
         let conn = self.connection();

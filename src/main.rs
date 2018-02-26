@@ -196,7 +196,25 @@ fn main() {
                 // react x whenever an error occurs
                 let _ = msg.react("❌");
             })
-            .before(|_ctx, msg, cmd_name| {
+            .before(|ctx, msg, cmd_name| {
+                // check if in disabled channel
+                if let Some(guild_id) = msg.guild_id() {
+                    let pool = get_pool(&ctx);
+
+                    // shouldnt fail but if it does, false negative better than positive?
+                    // though false positive might be a lot less likely
+                    let config = match pool.get_guild_config(guild_id.0) {
+                        Ok(val) => val,
+                        Err(_) => return false,
+                    };
+
+                    if let Some(disabled_channels) = config.disabled_channels {
+                        if disabled_channels.contains(&(msg.channel_id.0 as i64)) {
+                            return false;
+                        }
+                    }
+                }
+
                 let now = now_utc();
                 println!("[{}] {}: {} ", now.format("%Y-%m-%d %H:%M:%S UTC"), msg.author.tag(), cmd_name);
                 true
@@ -390,6 +408,21 @@ fn main() {
                     .desc("Lists the server role ids.")
                     .required_permissions(Permissions::MANAGE_GUILD)
                     .cmd(commands::settings::roles::list_ids)
+                )
+                .command("disablechannel", |c| c
+                    .desc("Disables a channel for commands.")
+                    .required_permissions(Permissions::MANAGE_GUILD)
+                    .cmd(commands::settings::disable_channel::disable_channel)
+                )
+                .command("enablechannel", |c| c
+                    .desc("Enables a channel for commands.")
+                    .required_permissions(Permissions::MANAGE_GUILD)
+                    .cmd(commands::settings::disable_channel::enable_channel)
+                )
+                .command("disabledchannels", |c| c
+                    .desc("Lists the disabled channels.")
+                    .required_permissions(Permissions::MANAGE_GUILD)
+                    .cmd(commands::settings::disable_channel::list_disabled_channels)
                 )
             )
             .group("Gallery", |g| g
