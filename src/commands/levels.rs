@@ -148,6 +148,7 @@ command!(profile(ctx, msg, args) {
     let files = vec![(&buf[..], "level.png")];
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
+    pool.update_stat("profile", "profiles_generated", 1);
 });
 
 fn escape_html(s: &str) -> String {
