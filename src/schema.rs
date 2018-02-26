@@ -22,6 +22,13 @@ table! {
 }
 
 table! {
+    cache_members (user_id, guild_id) {
+        user_id -> Int8,
+        guild_id -> Int8,
+    }
+}
+
+table! {
     cache_users (id) {
         id -> Int8,
         avatar -> Text,
@@ -63,6 +70,7 @@ table! {
         mute_role -> Nullable<Int8>,
         prefix -> Nullable<Text>,
         max_mention -> Int4,
+        disabled_channels -> Nullable<Array<Int8>>,
     }
 }
 
@@ -186,6 +194,7 @@ joinable!(cache_channels -> cache_guilds (guild_id));
 allow_tables_to_appear_in_same_query!(
     cache_channels,
     cache_guilds,
+    cache_members,
     cache_users,
     events,
     galleries,

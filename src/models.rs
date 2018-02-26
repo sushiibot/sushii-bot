@@ -23,6 +23,7 @@ pub struct GuildConfig {
     pub mute_role: Option<i64>,
     pub prefix: Option<String>,
     pub max_mention: i32,
+    pub disabled_channels: Option<Vec<i64>>,
 }
 
 #[derive(Insertable)]
@@ -43,6 +44,7 @@ pub struct NewGuildConfig {
     pub mute_role: Option<i64>,
     pub prefix: Option<String>,
     pub max_mention: i32,
+    pub disabled_channels: Option<Vec<i64>>,
 }
 
 #[derive(Queryable)]
