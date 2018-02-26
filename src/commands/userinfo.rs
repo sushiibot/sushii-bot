@@ -9,24 +9,30 @@ use utils::config::get_pool;
 
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
-    let user = match args.single::<String>() {
-        Ok(val) => val,
-        Err(_) => msg.author.id.0.to_string(),
+    let user = match args.single::<String>().ok().and_then(|x| get_id(&x)) {
+        Some(val) => val,
+        None => msg.author.id.0,
     };
     println!("got args");
     
     if let Some(guild) = msg.guild() {
-        let guild = guild.read();
-        println!("read guild");
+        let (member, presence) = {
+            let guild = guild.read();
+            println!("read guild");
 
-        let member = match get_id(&user) {
-            Some(val) => guild.member(val),
-            None => return Err(CommandError::from("No user found.")),
+            let member = guild.member(user);
+
+            let presence = guild.presences.get(&UserId(user)).cloned();
+
+            (member, presence)
         };
+
         println!("found member");
 
         if let Ok(member) = member {
-            let user = member.user.read();
+            let user = {
+                member.user.read().clone()
+            };
             println!("read user");
 
             let pool = get_pool(&ctx);
@@ -49,7 +55,7 @@ command!(userinfo(ctx, msg, args) {
                         e = e.field("Last Message", last_msg.format("%Y-%m-%d %H:%M:%S UTC"), true);
                     }
 
-                    if let Some(presence) = guild.presences.get(&user.id) {
+                    if let Some(presence) = presence {
                         let mut full_status = presence.status.name().to_owned().to_sentence_case();
 
                         if let Some(ref game) = presence.game {
@@ -105,35 +111,32 @@ command!(userinfo(ctx, msg, args) {
                     println!("thumbnail");
 
                     // roles
-                    let roles = match member.roles() {
-                        Some(roles) => {
-                            println!("found roles");
-                            let mut roles = roles.clone();
-                            println!("clone roles");
-                            
-                            // sort roles by position
-                            roles.sort_by(|a, b| b.position.cmp(&a.position));
-                            println!("sorted roles");
-                
-                            // set the color of embed to highest role color
-                            if roles.len() > 0 {
-                                e = e.color(roles[0].colour);
-                            }
-                            println!("role color");
-                            
+                    let roles = if let Some(mut roles) = member.roles().clone() {
+                        println!("found roles");
+                        
+                        // sort roles by position
+                        roles.sort_by(|a, b| b.position.cmp(&a.position));
+                        println!("sorted roles");
+            
+                        // set the color of embed to highest role color
+                        if roles.len() > 0 {
+                            e = e.color(roles[0].colour);
+                        }
+                        println!("role color");
+                        
 
-                            // convert roles to string
-                            let roles_str = roles.iter().map(|role| {
-                                role.name.clone()
-                            }).collect::<Vec<String>>().join(", ");
+                        // convert roles to string
+                        let roles_str = roles.iter().map(|role| {
+                            role.name.clone()
+                        }).collect::<Vec<String>>().join(", ");
 
-                            if roles_str.is_empty() {
-                                "N/A".to_owned()
-                            } else {
-                                roles_str
-                            }
-                        },
-                        None => "N/A".to_owned(),
+                        if roles_str.is_empty() {
+                            "N/A".to_owned()
+                        } else {
+                            roles_str
+                        }
+                    } else {
+                        "N/A".to_owned()
                     };
 
                     println!("got roles");
