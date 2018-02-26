@@ -209,9 +209,10 @@ command!(stats(ctx, msg) {
     let _ = msg.channel_id.send_message(|m|
         m.embed(|e| e
             .color(0x3498db)
-            .title("Stats")
+            .title(&format!("Sushii v{}", bot_version))
+            .url("https://sushii.xyz")
             .field("Author", &owner_tag, true)
-            .field("Version", &format!("v{}\n[serenity-rs](https://github.com/zeyla/serenity/) v0.5.1", bot_version), true)
+            .field("Library", &format!("[serenity-rs](https://github.com/zeyla/serenity/) v0.5.1", ), true)
             .field("Guilds", &guilds_count.to_string(), true)
             .field("Channels", &channels_count.to_string(), true)
             .field("Users (Cached)", &users_count.to_string(), true)
