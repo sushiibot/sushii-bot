@@ -177,6 +177,7 @@ command!(history(ctx, msg, args) {
                     .name(&format!("Case History for {}", &target_user.tag()))
                     .icon_url(&target_user.face())
                 )
+                .color(0xe67e22)
                 .description(&s)
             )
         );
