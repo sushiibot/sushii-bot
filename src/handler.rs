@@ -119,7 +119,8 @@ impl EventHandler for Handler {
             [&ctx, &guild, &mut member],
             join_leave_message,
             member_log,
-            mute_evasion
+            mute_evasion,
+            db_cache
         );
 
         {
@@ -155,7 +156,9 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_MEMBER_UPDATE");
     }
 
-    fn guild_members_chunk(&self, ctx: Context, _: GuildId, _: HashMap<UserId, Member>) {
+    fn guild_members_chunk(&self, ctx: Context, guild_id: GuildId, members: HashMap<UserId, Member>) {
+        exec_on_guild_members_chunk!([&ctx, &guild_id, &members], db_cache);
+
         update_event(&ctx, "GUILD_MEMBERS_CHUNK")
     }
 
