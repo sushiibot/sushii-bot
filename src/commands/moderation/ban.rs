@@ -93,7 +93,14 @@ command!(ban(ctx, msg, args) {
         };
 
         // ban the user
-        let _ = match guild.ban(u, &7) {
+        let ban_result = if let Some(reason) = reason {
+            guild.ban(u, &(7, reason))
+        } else {
+            guild.ban(u, &7)
+        };
+
+        // check the ban result
+        let _ = match ban_result {
             Err(Error::Model(InvalidPermissions(permissions))) => {
                 let e = format!("I don't have permission to ban this user, requires: `{:?}`.", permissions);
                 let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
