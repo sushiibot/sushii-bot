@@ -425,6 +425,19 @@ pub struct NewCachedGuild<'a> {
 }
 
 #[derive(Queryable, Clone)]
+pub struct CachedMember {
+    pub user_id: i64,
+    pub guild_id: i64,
+}
+
+#[derive(Insertable)]
+#[table_name = "cache_members"]
+pub struct NewCachedMember {
+    pub user_id: i64,
+    pub guild_id: i64,
+}
+
+#[derive(Queryable, Clone)]
 pub struct Stat {
     pub stat_name: String,
     pub count: i64,
