@@ -77,19 +77,39 @@ fn get_pos_emoji(pos: i64) -> String {
     }.to_owned()
 }
 
-command!(fishies_top(ctx, msg, _args) {
+command!(fishies_top(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
-    if let Some(users) = pool.get_top_fishies() {
+    let guild_id = match msg.guild_id() {
+        Some(val) => val.0,
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
+    };
+
+    let mut is_global = false;
+
+    let top_users_fishies = if Some("global".to_owned()) == args.single::<String>().ok() {
+        is_global = true;
+        pool.get_top_fishies_global()
+    } else {
+        pool.get_top_fishies(guild_id)
+    };
+
+    let title = if is_global {
+        "Top Fishies - Global"
+    } else {
+        "Top Fishies"
+    };
+
+    if let Some(users) = top_users_fishies {
         let mut s = String::new();
         for (i, user) in users.iter().enumerate() {
-            let _ = write!(s, "{} {} fishies - <@{}>\n", get_pos_emoji(i as i64), user.fishies, user.id);
+            let _ = write!(s, "{} {} fishies - <@{}>\n", get_pos_emoji(i as i64), user.1, user.0);
         }
 
         let _ = msg.channel_id.send_message(|m|
             m.embed(|e| e
                 .author(|a| a
-                    .name("Top Fishies - Global")
+                    .name(title)
                 )
                 .color(0x2ecc71)
                 .description(&s)

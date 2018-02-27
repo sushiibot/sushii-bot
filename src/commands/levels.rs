@@ -441,19 +441,39 @@ command!(top_levels_global(ctx, msg, _args) {
 });
 
 
-command!(top_reps(ctx, msg, _args) {
+command!(top_reps(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
-    if let Some(reps) = pool.get_top_reps() {
+    let guild_id = match msg.guild_id() {
+        Some(val) => val.0,
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
+    };
+
+    let mut is_global = false;
+
+    let top_users_reps = if Some("global".to_owned()) == args.single::<String>().ok() {
+        is_global = true;
+        pool.get_top_reps_global()
+    } else {
+        pool.get_top_reps(guild_id)
+    };
+
+    let title = if is_global {
+        "Top Reps - Global"
+    } else {
+        "Top Reps"
+    };
+
+    if let Some(reps) = top_users_reps {
         let mut s = String::new();
         for (i, user) in reps.iter().enumerate() {
-            let _ = write!(s, "{} {} rep - <@{}>\n", get_pos_emoji(i as i64), user.rep, user.id);
+            let _ = write!(s, "{} {} rep - <@{}>\n", get_pos_emoji(i as i64), user.1, user.0);
         }
 
         let _ = msg.channel_id.send_message(|m|
             m.embed(|e| e
                 .author(|a| a
-                    .name("Top Reps - Global")
+                    .name(title)
                 )
                 .color(0x2ecc71)
                 .description(&s)

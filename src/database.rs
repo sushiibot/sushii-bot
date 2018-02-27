@@ -1,6 +1,7 @@
 use diesel;
 use diesel::QueryDsl;
 use diesel::dsl::max;
+use diesel::JoinOnDsl;
 use diesel::RunQueryDsl;
 use diesel::result::Error;
 use diesel::pg::PgConnection;
@@ -557,16 +558,34 @@ impl ConnectionPool {
         }
     }
 
-    pub fn get_top_reps(&self) -> Option<Vec<User>> {
+    pub fn get_top_reps(&self, guild: u64) -> Option<Vec<(i64, i32)>> {
+        use schema::users::dsl::*;
+        use schema::cache_members::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .inner_join(cache_members.on(user_id.eq(id)))
+            .select((id, rep))
+            .filter(rep.gt(0))
+            .filter(guild_id.eq(guild as i64))
+            .order(rep.desc())
+            .limit(10)
+            .load(&conn)
+            .ok()
+    }
+
+    pub fn get_top_reps_global(&self) -> Option<Vec<(i64, i32)>> {
         use schema::users::dsl::*;
 
         let conn = self.connection();
 
         users
+            .select((id, rep))
             .filter(rep.gt(0))
             .order(rep.desc())
             .limit(10)
-            .load::<User>(&conn)
+            .load(&conn)
             .ok()
     }
 
@@ -626,16 +645,34 @@ impl ConnectionPool {
         (new_fishies, is_golden)
     }
 
-    pub fn get_top_fishies(&self) -> Option<Vec<User>> {
+    pub fn get_top_fishies(&self, guild: u64) -> Option<Vec<(i64, i64)>> {
+        use schema::users::dsl::*;
+        use schema::cache_members::dsl::*;
+
+        let conn = self.connection();
+
+        users
+            .inner_join(cache_members.on(user_id.eq(id)))
+            .select((id, fishies))
+            .filter(fishies.gt(0))
+            .filter(guild_id.eq(guild as i64))
+            .order(fishies.desc())
+            .limit(10)
+            .load(&conn)
+            .ok()
+    }
+
+    pub fn get_top_fishies_global(&self) -> Option<Vec<(i64, i64)>> {
         use schema::users::dsl::*;
 
         let conn = self.connection();
 
         users
+            .select((id, fishies))
             .filter(fishies.gt(0))
             .order(fishies.desc())
             .limit(10)
-            .load::<User>(&conn)
+            .load(&conn)
             .ok()
     }
 
@@ -1370,6 +1407,37 @@ impl ConnectionPool {
             .on_conflict(id)
             .do_update()
             .set(&new_cache_guild)
+            .execute(&conn)
+    }
+
+    pub fn update_cache_members(&self, guild: u64, users: Vec<u64>) -> Result<(), Error> {
+        use schema::cache_members::dsl::*;
+
+        let conn = self.connection();
+
+        for user in users {
+            let a_member = NewCachedMember {
+                user_id: user as i64,
+                guild_id: guild as i64,
+            };
+
+            diesel::insert_into(cache_members)
+                .values(&a_member)
+                .on_conflict_do_nothing()
+                .execute(&conn)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn remove_cache_member(&self, guild: u64, user: u64) -> Result<usize, Error> {
+        use schema::cache_members::dsl::*;
+
+        let conn = self.connection();
+
+        diesel::delete(cache_members)
+            .filter(user_id.eq(user as i64))
+            .filter(guild_id.eq(guild as i64))
             .execute(&conn)
     }
 
