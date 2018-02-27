@@ -84,3 +84,11 @@ macro_rules! exec_on_guild_create {
         )*
     }
 }
+
+macro_rules! exec_on_guild_members_chunk {
+    ( [$ctx:expr, $guild_id:expr, $members:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_guild_members_chunk($ctx, $guild_id, $members);
+        )*
+    }
+}
