@@ -56,13 +56,10 @@ mod handler;
 mod database;
 
 use serenity::framework::StandardFramework;
-use serenity::framework::standard::help_commands;
-use serenity::framework::standard::HelpBehaviour;
 use serenity::framework::standard::DispatchError::*;
 
 use serenity::model::Permissions;
 use serenity::model::id::UserId;
-use serenity::utils::Colour;
 use serenity::prelude::*;
 use serenity::client::bridge::gateway::ShardManager;
 
@@ -250,13 +247,8 @@ fn main() {
                     .cmd(commands::levels::profile)
                 )
                 .command("toplevels", |c| c
-                    .known_as("levels")
                     .desc("Shows the top users.")
                     .cmd(commands::levels::top_levels)
-                )
-                .command("globallevels", |c| c
-                    .desc("Shows the top global users.")
-                    .cmd(commands::levels::top_levels_global)
                 )
                 .command("topreps", |c| c
                     .desc("Shows the top users.")

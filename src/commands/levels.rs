@@ -318,10 +318,41 @@ fn get_level(xp: i64) -> i64 {
     return level;
 }
 
-command!(top_levels(ctx, msg, _args) {
+command!(top_levels(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
+    let is_global = if Some("global".to_owned()) == args.single::<String>().ok() {
+        true
+    } else {
+        false
+    };
+
+    if is_global {
+        if let Some(levels) = pool.get_global_levels() {
+            let mut s = String::new();
+
+            for (i, user) in levels.iter().enumerate() {
+                let _ = write!(s, "{} Level {} - <@{}>\n", get_pos_emoji(i as i64),
+                    get_level(user.xp.to_i64().unwrap_or(0)), user.user_id);
+            }
+
+            let _ = msg.channel_id.send_message(|m|
+                m.embed(|e| e
+                    .author(|a| a
+                        .name("Top Levels - Global")
+                    )
+                    .color(0x2ecc71)
+                    .description(&s)
+                )
+            );
+
+            // exit
+            return Ok(());
+        }
+    }
+
     if let Some(guild_id) = msg.guild_id() {
+        
         let top = pool.get_top_levels(guild_id.0);
 
         let daily = if let Some(daily) = top.day {
@@ -402,7 +433,7 @@ command!(top_levels(ctx, msg, _args) {
         let _ = msg.channel_id.send_message(|m|
                 m.embed(|e| e
                     .author(|a| a
-                        .name("Top Ranks")
+                        .name("Top Levels")
                     )
                     .color(0x2ecc71)
                     .field("Daily", &daily, true)
@@ -414,29 +445,6 @@ command!(top_levels(ctx, msg, _args) {
 
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
-    }
-});
-
-command!(top_levels_global(ctx, msg, _args) {
-    let pool = get_pool(&ctx);
-
-    if let Some(levels) = pool.get_global_levels() {
-        let mut s = String::new();
-
-        for (i, user) in levels.iter().enumerate() {
-            let _ = write!(s, "{} Level {} - <@{}>\n", get_pos_emoji(i as i64),
-                get_level(user.xp.to_i64().unwrap_or(0)), user.user_id);
-        }
-
-        let _ = msg.channel_id.send_message(|m|
-            m.embed(|e| e
-                .author(|a| a
-                    .name("Top Global Levels")
-                )
-                .color(0x2ecc71)
-                .description(&s)
-            )
-        );
     }
 });
 
