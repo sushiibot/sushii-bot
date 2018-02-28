@@ -319,7 +319,7 @@ command!(tag_random(ctx, msg, _args) {
             None => return Err(CommandError::from(get_msg!("error/tag_none"))),
         };
 
-        let _ = msg.channel_id.say(&format!("{}: {}", found_tag.tag_name, found_tag.content));
+        let _ = msg.channel_id.say(&format!("\u{200b}{}: {}", found_tag.tag_name, found_tag.content));
         // update the counter
         pool.increment_tag(guild_id.0, &found_tag.tag_name);
     } else {
