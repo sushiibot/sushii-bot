@@ -53,6 +53,7 @@
 
         "patron_added": "Added a new patron.",
         "patron_removed": "Removed a patron.",
+        "patron_emoji_set": "Set the emoji to {}.",
 
         "fishies_received": "You caught {} fishies! <:fishy:416336686516273162>",
         "fishies_given": "You caught {} fishies for {}! <:fishy:416336686516273162>",
@@ -70,6 +71,7 @@
         "no_webhook_given": "Please give a webhook url.",
         "no_reminder_given": "Please give a time and reminder.",
         "no_url_or_attachment_given": "Please give a url or attachment.",
+        "no_patron_emoji_given": "Please give a patron emoji.",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
@@ -139,7 +141,6 @@
         "fm_no_username": "No Last.fm username given or saved.  Pass a username as an argument or use `fm set [username]` to save your username.",
         "fm_no_username_mentioned": "No Last.fm username found for this user.",
         "fm_fetch_error": "Something went wrong fetching last.fm data.",
-
 
         "tag_no_name_given": "Please give a tag name.",
         "tag_no_content_given": "Please give tag content.",

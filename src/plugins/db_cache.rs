@@ -2,11 +2,11 @@ use serenity::prelude::Context;
 use serenity::model::id::UserId;
 use serenity::model::id::GuildId;
 use serenity::model::guild::Guild;
-use serenity::model::guild::PartialGuild;
+// use serenity::model::guild::PartialGuild;
 use serenity::model::guild::Member;
-use serenity::prelude::RwLock;
+// use serenity::prelude::RwLock;
 use std::collections::HashMap;
-use std::sync::Arc;
+// use std::sync::Arc;
 
 use utils::config::get_pool;
 use database::ConnectionPool;

@@ -36,10 +36,25 @@ command!(profile(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
     };
 
-    let (user_rep, activity, is_patron, fishies) = match pool.get_user(id) {
-        Some(val) => (val.rep, val.msg_activity, val.is_patron, val.fishies),
-        None => (0, vec![0; 24], false, 0),
-    };
+    let mut user_rep;
+    let mut activity;
+    let mut is_patron;
+    let mut patron_emoji;
+    let mut fishies;
+
+    if let Some(val) = pool.get_user(id) {
+        user_rep = val.rep;
+        activity = val.msg_activity;
+        is_patron = val.is_patron;
+        patron_emoji = val.patron_emoji;
+        fishies = val.fishies;
+    } else {
+        user_rep = 0;
+        activity = vec![0; 24];
+        is_patron = false;
+        patron_emoji = None;
+        fishies = 0;
+    }
 
     let user = match UserId(id).get() {
         Ok(val) => val,
@@ -87,6 +102,14 @@ command!(profile(ctx, msg, args) {
     // check if patron, add a heart
     if is_patron {
         html = html.replace("style=\"display:none;\"", "");
+
+        // check if has custom emoji
+        if let Some(emoji) = patron_emoji {
+            html = html.replace("{PATRON_EMOJI}", &emoji);
+        } else {
+            // default heart
+            html = html.replace("{PATRON_EMOJI}", "heart");
+        }
     }
 
     let mut json = HashMap::new();

@@ -577,6 +577,11 @@ fn main() {
                     .owners_only(true)
                     .cmd(commands::owner::patron)
                 )
+                .command("patronemoji", |c| c
+                    .desc("Sets a custom emoji for a patron.")
+                    .owners_only(true)
+                    .cmd(commands::owner::patron_emoji)
+                )
             ),
     );
 

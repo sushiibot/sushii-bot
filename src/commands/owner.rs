@@ -102,3 +102,22 @@ command!(patron(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/invalid_add_remove")));
     }
 });
+
+command!(patron_emoji(ctx, msg, args) {
+    let id = match args.single::<String>().ok().and_then(|x| utils::user::get_id(&x)) {
+        Some(id) => id,
+        None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
+    };
+
+    if let Ok(emoji) = args.single::<String>() {
+        let pool = get_pool(&ctx);
+        if pool.set_patron_emoji(id, &emoji) {
+            let _ = msg.channel_id.say(get_msg!("info/patron_emoji_set", emoji));
+            return Ok(());
+        } else {
+            return Err(CommandError::from(get_msg!("error/unknown_error")));
+        }
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_patron_emoji_given")));
+    }
+});

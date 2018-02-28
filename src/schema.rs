@@ -186,6 +186,7 @@ table! {
         is_patron -> Bool,
         fishies -> Int8,
         last_fishies -> Nullable<Timestamp>,
+        patron_emoji -> Nullable<Text>,
     }
 }
 
