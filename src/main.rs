@@ -325,12 +325,12 @@ fn main() {
                 )
                 .command("reason", |c| c
                     .desc("Edits the reason for moderation action cases.")
-                    .required_permissions(Permissions::MANAGE_GUILD)
+                    .required_permissions(Permissions::BAN_MEMBERS)
                     .cmd(commands::moderation::cases::reason)
                 )
                 .command("history", |c| c
                     .desc("Looks up past cases for a user.")
-                    .required_permissions(Permissions::MANAGE_GUILD)
+                    .required_permissions(Permissions::BAN_MEMBERS)
                     .cmd(commands::moderation::cases::history)
                 )
                 .command("ban", |c| c
