@@ -235,20 +235,11 @@ fn main() {
                     let _ = msg.react("❌");
                 }
             })
-            .help(help_commands::with_embeds)
-            .customised_help(help_commands::with_embeds, |c| c
-                .individual_command_tip("Hello!\n\
-                If you want more information about a specific command, just pass the command as argument.\n\
-                This bot is currently in active development, there may be feature additions, removals, and changes at any given time.")
-                .command_not_found_text("Could not find {}, I'm sorry :(")
-                .suggestion_text("Did you mean {}?")
-                .lacking_permissions(HelpBehaviour::Hide)
-                .lacking_role(HelpBehaviour::Hide)
-                .wrong_channel(HelpBehaviour::Hide)
-                .striked_commands_tip(None)
-                .embed_success_colour(Colour(0x3498db))
-                .embed_error_colour(Colour(0xe74c3c))
-            )
+            .help(|_, msg, _, _, _| {
+                let _ = msg.channel_id.say("You can find a list of commands here: <https://sushii.xyz/commands>");
+
+                Ok(())
+            })
             .simple_bucket("profile_bucket", 15)
             .group("Users", |g| g
                 .guild_only(true)
