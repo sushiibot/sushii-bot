@@ -471,6 +471,7 @@ impl ConnectionPool {
                 is_patron: false,
                 fishies: 0,
                 last_fishies: None,
+                patron_emoji: None,
             };
 
             if let Err(e) = diesel::insert_into(users::table)
@@ -516,6 +517,23 @@ impl ConnectionPool {
                 .execute(&conn) {
             
             warn_discord!("[DB:set_patron] Error while adding a patron: {}", e);
+            false
+        } else {
+            true
+        }
+    }
+
+    pub fn set_patron_emoji(&self, id_user: u64, emoji: &str) -> bool {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        if let Err(e) = diesel::update(users)
+                .filter(id.eq(id_user as i64))
+                .set(patron_emoji.eq(emoji))
+                .execute(&conn) {
+            
+            warn_discord!("[DB:set_patron_emoji] Error while setting patron emoji: {}", e);
             false
         } else {
             true
