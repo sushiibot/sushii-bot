@@ -196,7 +196,7 @@ fn format_rank<'a>(rank: &'a i64, total: &'a i64) -> String {
 
 fn get_rep_emoji_level(user_rep: i32) -> String {
     let num = match user_rep {
-        n if n >= 150 => 11,
+        n if n >= 200 => 11,
         n if n >= 100 => 10,
         n if n >= 50  => 9,
         n if n >= 10  => 8,
@@ -334,7 +334,7 @@ fn next_level(level: i64) -> i64 {
 
 fn get_level(xp: i64) -> i64 {
     let mut level = 0;
-    while next_level(level + 1) < xp {
+    while next_level(level + 1) <= xp {
         level += 1;
     }
 
