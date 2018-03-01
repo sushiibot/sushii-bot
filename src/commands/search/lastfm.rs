@@ -61,6 +61,11 @@ command!(fm(ctx, msg, args) {
     let last_track_album = data.pointer("/recenttracks/track/0/album/#text").and_then(|x| x.as_str()).unwrap_or("N/A");
     let last_track_url = data.pointer("/recenttracks/track/0/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
 
+    // urlencode parenthesis
+    let last_track_url = last_track_url
+        .replace("(", "%28")
+        .replace(")", "%29");
+
     // check for empty values that break embeds
     let username = if username.is_empty() {
         "N/A"
