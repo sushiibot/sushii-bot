@@ -53,7 +53,6 @@ command!(fishy(ctx, msg, args) {
 
 
     let (num_fishies, is_golden) = pool.get_fishies(msg.author.id.0, target, fishies_self);
-    pool.update_stat("fishies", "fishies_given", num_fishies);
 
     let s = if fishies_self && !is_golden {
         get_msg!("info/fishies_received", num_fishies)
@@ -66,6 +65,11 @@ command!(fishy(ctx, msg, args) {
     };
 
     let _ = msg.channel_id.say(&s);
+    pool.update_stat("fishies", "fishies_given", num_fishies);
+
+    if is_golden {
+        pool.update_stat("fishies", "golden_fishies", 1);
+    }
 });
 
 fn get_pos_emoji(pos: i64) -> String {
