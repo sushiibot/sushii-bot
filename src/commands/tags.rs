@@ -333,7 +333,7 @@ command!(tag_random(ctx, msg, _args) {
 
 
 // splits a string that might be too long
-fn split_message(msg: &str, prepend: Option<&str>, with_code_block: bool) -> Vec<String> {
+pub fn split_message(msg: &str, prepend: Option<&str>, with_code_block: bool) -> Vec<String> {
     let split = msg.split("\n");
     let mut vec = Vec::new();
     let mut single_msg = String::new();
