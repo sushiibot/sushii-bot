@@ -20,7 +20,7 @@ impl EventHandler for Handler {
     fn ready(&self, ctx: Context, ready: Ready) {
         info_discord!(format!("READY: Connected as {}", ready.user.tag()));
 
-        exec_on_ready!([&ctx, &ready], reminders, bot_game);
+        exec_on_ready!([&ctx, &ready], reminders, periodic, bot_game);
 
         update_event(&ctx, "READY");
     }
@@ -95,8 +95,8 @@ impl EventHandler for Handler {
                 Err(_) => format!("<@{}>", guild.owner_id.0),
             };
 
-            info_discord!("Joined new guild: {} - {} users - Owner: {}", 
-                guild.name, guild.member_count, owner_tag);
+            info_discord!("Joined new guild: {} - {} users - Owner: {} ({})", 
+                guild.name, guild.member_count, owner_tag, guild.owner_id.0);
             
             {
                 let pool = get_pool(&ctx);
