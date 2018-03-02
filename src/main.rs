@@ -296,6 +296,7 @@ fn main() {
                     .cmd(commands::meta::events)
                 )
                 .command("stats", |c| c
+                    .batch_known_as(vec!["about", "info"])
                     .desc("Shows bot stats.")
                     .cmd(commands::meta::stats)
                 )
