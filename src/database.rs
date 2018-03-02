@@ -100,10 +100,18 @@ impl ConnectionPool {
             .filter(id.eq(guild_id as i64))
             .first::<GuildConfig>(&conn);
 
-        if let Ok(config) = config {
-            Ok(config)
+        if let Err(e) = config {
+            match e {
+                Error::NotFound => {
+                    return self.new_guild(guild_id)
+                },
+                _ => {
+                    warn_discord!("[DB:get_guild_config] Error while fetching guild_config: {}", e);
+                    return Err(e);
+                }
+            }
         } else {
-            self.new_guild(guild_id)
+            return config;
         }
     }
 
@@ -423,62 +431,72 @@ impl ConnectionPool {
         let now = now_utc();
         let hour = now.hour();
 
-        if let Ok(user) = user {
-            // check if should upate
-            let next_activity_update = user.last_msg + Duration::minutes(1);
+        match user {
+            Ok(user) => {
+                // check if should upate
+                let next_activity_update = user.last_msg + Duration::minutes(1);
 
-            // has not been 1 minute since last "message"
-            // last message will always have inaccuracy
-            // +/- 1 minute because of this check
-            if next_activity_update > now {
-                return;
-            }
+                // has not been 1 minute since last "message"
+                // last message will always have inaccuracy
+                // +/- 1 minute because of this check
+                if next_activity_update > now {
+                    return;
+                }
 
-            // update the useractivity
-            let mut updated_activity = user.msg_activity.clone();
-            if let Some(elem) = updated_activity.get_mut(hour as usize) {
-                *elem = *elem + 1;
-            } else {
-                warn_discord!("[DB:update_user_activity_message] Error incrementing user {} activity", id_user);
-            }
-            // update the user
-            // does not modify last_message, this plugin
-            // executes after the level plugin which updates the
-            // last message timestamp.  If last_message is updated here
-            // the level plugin will never execute (needs 1 min since last msg)
-            if let Err(e) = diesel::update(users)
-                .filter(id.eq(id_user as i64))
-                .set(msg_activity.eq(updated_activity))
-                .execute(&conn) {
+                // update the useractivity
+                let mut updated_activity = user.msg_activity.clone();
+                if let Some(elem) = updated_activity.get_mut(hour as usize) {
+                    *elem = *elem + 1;
+                } else {
+                    warn_discord!("[DB:update_user_activity_message] Error incrementing user {} activity", id_user);
+                }
+                // update the user
+                // does not modify last_message, this plugin
+                // executes after the level plugin which updates the
+                // last message timestamp.  If last_message is updated here
+                // the level plugin will never execute (needs 1 min since last msg)
+                if let Err(e) = diesel::update(users)
+                    .filter(id.eq(id_user as i64))
+                    .set(msg_activity.eq(updated_activity))
+                    .execute(&conn) {
 
-                warn_discord!("[DB:update_user_activity_message] Error while updating user activity: {}", e);
-            }
-                
-        } else {
-            // create vector of 24 0's
-            let init_activity = vec![0; 24];
-            // create new user
-            let new_user = NewUser {
-                id: id_user as i64,
-                last_msg: &now,
-                msg_activity: &init_activity,
-                rep: 0,
-                last_rep: None,
-                latitude: None,
-                longitude: None,
-                address: None,
-                lastfm: None,
-                is_patron: false,
-                fishies: 0,
-                last_fishies: None,
-                patron_emoji: None,
-            };
+                    warn_discord!("[DB:update_user_activity_message] Error while updating user activity: {}", e);
+                }
+            },
+            Err(e) => {
+                match e {
+                    // if it's not found, create new user
+                    Error::NotFound => {
+                        // create vector of 24 0's
+                        let init_activity = vec![0; 24];
+                        // create new user
+                        let new_user = NewUser {
+                            id: id_user as i64,
+                            last_msg: &now,
+                            msg_activity: &init_activity,
+                            rep: 0,
+                            last_rep: None,
+                            latitude: None,
+                            longitude: None,
+                            address: None,
+                            lastfm: None,
+                            is_patron: false,
+                            fishies: 0,
+                            last_fishies: None,
+                            patron_emoji: None,
+                        };
 
-            if let Err(e) = diesel::insert_into(users::table)
-                .values(&new_user)
-                .execute(&conn) {
+                        if let Err(e) = diesel::insert_into(users::table)
+                            .values(&new_user)
+                            .execute(&conn) {
 
-                warn_discord!("[DB:update_user_activity_message] Failed to insert new user row: {}", e);
+                            warn_discord!(format!("[DB:update_user_activity_message] Failed to insert new user row: {}\nData: {:?}", e, &new_user));
+                        }
+                    }
+                    _ => {
+                        warn_discord!(format!("[DB:update_user_activity_message] Error fetching user row: {}", e));
+                    }
+                }
             }
         }
     }
