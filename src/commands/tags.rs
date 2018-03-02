@@ -20,7 +20,11 @@ command!(tag(ctx, msg, args) {
             None => return Err(CommandError::from(get_msg!("error/tag_not_found", tag_name))),
         };
 
-        let _ = msg.channel_id.say(&format!("\u{200b}{}", found_tag.content));
+        let content = found_tag.content
+            .replace("@everyone", "@\u{200b}everyone") // add zws to everyone and here mentions
+            .replace("@here", "@\u{200b}here");
+
+        let _ = msg.channel_id.say(&format!("\u{200b}{}", content));
         // update the counter
         pool.increment_tag(guild_id.0, &tag_name);
     } else {
