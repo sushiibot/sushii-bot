@@ -583,6 +583,11 @@ fn main() {
                     .owners_only(true)
                     .cmd(commands::owner::patron_emoji)
                 )
+                .command("listservers", |c| c
+                    .desc("Lists the servers sushii is in.")
+                    .owners_only(true)
+                    .cmd(commands::owner::listservers)
+                )
             ),
     );
 

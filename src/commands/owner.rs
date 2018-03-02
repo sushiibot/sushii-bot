@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::io::Read;
+use std::fmt::Write;
 use serenity::framework::standard::CommandError;
 use serenity::CACHE;
 use reqwest;
@@ -8,6 +9,8 @@ use base64;
 use SerenityShardManager;
 use utils;
 use utils::config::get_pool;
+
+use commands::tags::split_message;
 
 command!(quit(ctx, msg, _args) {
     let _ = msg.channel_id.say("Shutting down all shards");
@@ -119,5 +122,25 @@ command!(patron_emoji(ctx, msg, args) {
         }
     } else {
         return Err(CommandError::from(get_msg!("error/no_patron_emoji_given")));
+    }
+});
+
+command!(listservers(_ctx, msg, _args) {
+    let guilds = &CACHE.read().guilds;
+
+    let mut s = String::new();
+    for guild in guilds.values() {
+        let guild = guild.read();
+
+        let owner_tag = guild.owner_id.get().map(|x| x.tag()).unwrap_or("N/A".to_owned());
+
+        let _ = write!(s, "{} ({}) - Owner: {} ({}) - Members: {}\n", 
+            guild.name, guild.id.0, owner_tag, guild.owner_id.0, guild.member_count);
+    }
+
+    let messages = split_message(&s, Some("Server List"), true);
+
+    for message in messages {
+        let _ = msg.channel_id.say(&message);
     }
 });
