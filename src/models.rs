@@ -215,7 +215,7 @@ pub struct User {
     pub patron_emoji: Option<String>,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "users"]
 pub struct NewUser<'a> {
     pub id: i64,
