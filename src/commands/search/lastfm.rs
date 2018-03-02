@@ -138,7 +138,7 @@ command!(fm(ctx, msg, args) {
                 .icon_url("https://i.imgur.com/C7u8gqg.jpg")
             )
             .color(0xb90000)
-            .field("Artist - Song", format!("{} - [{}]({})", last_track_artist, last_track_name, last_track_url), true)
+            .field("Artist - Song", format!("{} - [{}]({})", last_track_artist, last_track_name, last_track_url), false)
             .field("Album", last_track_album, true)
             .thumbnail(last_track_image)
             .footer(|f| f
