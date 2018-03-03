@@ -21,7 +21,7 @@ pub fn on_message(_ctx: &Context, _pool: &ConnectionPool, msg: &Message) {
             content == "about" {
 
             let _ = msg.channel_id.say("Hi!  You can find information and a list of commands here: <https://sushii.xyz>\n\
-                The default command prefix is `-` if you want to try any commands here!");
+                The default command prefix is `-` if you want to use any commands here!");
         }
 
         let s = format!("DM from {} ({}):\nMessage: {}\nAttachments: {:?}", msg.author.tag(),
