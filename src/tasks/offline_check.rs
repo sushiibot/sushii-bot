@@ -12,11 +12,11 @@ static INIT: Once = ONCE_INIT;
 pub fn on_ready(ctx: &Context, _: &Ready) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap().clone();
+    
+    let mut count = 0;
     INIT.call_once(|| {
         thread::spawn(move || loop {
             let five_min = time::Duration::from_secs(300);
-
-            let mut count = 0;
 
             if let Ok(events) = pool.get_events() {
                 if let Some(counter) = events.iter().find(|ref x| x.name == "PRESENCE_UPDATE") {
