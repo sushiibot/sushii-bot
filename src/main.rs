@@ -259,6 +259,7 @@ fn main() {
                     .cmd(commands::levels::rep)
                 )
                 .command("fishy", |c| c
+                    .batch_known_as(vec!["foshy", "fwishy"])
                     .desc("Go fishing.")
                     .cmd(commands::fishy::fishy)
                 )
