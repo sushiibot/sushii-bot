@@ -20,7 +20,7 @@ impl EventHandler for Handler {
     fn ready(&self, ctx: Context, ready: Ready) {
         info_discord!(format!("READY: Connected as {}", ready.user.tag()));
 
-        exec_on_ready!([&ctx, &ready], reminders, periodic, bot_game);
+        exec_on_ready!([&ctx, &ready], reminders, bot_game);
 
         update_event(&ctx, "READY");
     }
