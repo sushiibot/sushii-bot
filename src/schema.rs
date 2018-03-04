@@ -75,8 +75,7 @@ table! {
 }
 
 table! {
-    levels (id) {
-        id -> Int4,
+    levels (user_id, guild_id) {
         user_id -> Int8,
         guild_id -> Int8,
         msg_all_time -> Int8,
