@@ -320,7 +320,7 @@ impl ConnectionPool {
                         COUNT(*) OVER() AS msg_all_time_total
                     FROM levels WHERE guild_id = $1 
                 ) t
-            WHERE t.user_id = $2 ORDER BY id ASC
+            WHERE t.user_id = $2
         "#)
             .bind::<BigInt, i64>(id_guild as i64)
             .bind::<BigInt, i64>(id_user as i64)
@@ -1531,7 +1531,6 @@ pub fn level_interval(user_level: &UserLevel) -> UserLevel {
     }
 
     UserLevel {
-        id: user_level.id,
         user_id: user_level.user_id,
         guild_id: user_level.guild_id,
         msg_all_time: user_level.msg_all_time,
@@ -1575,7 +1574,6 @@ pub fn level_interval_ranked(user_level: &UserLevelRanked) -> UserLevelRanked {
     }
 
     UserLevelRanked {
-        id: user_level.id,
         user_id: user_level.user_id,
         guild_id: user_level.guild_id,
         msg_all_time: user_level.msg_all_time,

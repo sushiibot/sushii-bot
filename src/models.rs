@@ -62,9 +62,6 @@ pub struct NewEventCounter<'a> {
 
 #[derive(QueryableByName, Queryable, Clone, Debug)]
 pub struct UserLevel {
-    #[sql_type = "Integer"]
-    pub id: i32,
-
     #[sql_type = "BigInt"]
     pub user_id: i64,
 
@@ -99,9 +96,6 @@ pub struct UserLevelAllTime {
 
 #[derive(QueryableByName, Clone)]
 pub struct UserLevelRanked {
-    #[sql_type = "Integer"]
-    pub id: i32,
-
     #[sql_type = "BigInt"]
     pub user_id: i64,
 
