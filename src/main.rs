@@ -274,6 +274,7 @@ fn main() {
                     .cmd(commands::notifications::add_notification)
                 )
                 .command("notification list", |c| c
+                    .known_as("notifications")
                     .desc("Lists your set notifications")
                     .cmd(commands::notifications::list_notifications)
                 )
