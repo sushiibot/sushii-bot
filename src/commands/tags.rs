@@ -8,7 +8,7 @@ use utils::config::get_pool;
 
 command!(tag(ctx, msg, args) {
     let tag_name = match args.single::<String>() {
-        Ok(val) => val,
+        Ok(val) => val.to_lowercase(),
         Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
     };
 
@@ -34,7 +34,7 @@ command!(tag(ctx, msg, args) {
 
 command!(tag_info(ctx, msg, args) {
     let tag_name = match args.single::<String>() {
-        Ok(val) => val,
+        Ok(val) => val.to_lowercase(),
         Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
     };
 
@@ -83,7 +83,7 @@ command!(tag_add(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
     let tag_name = match args.single::<String>() {
-        Ok(val) => val,
+        Ok(val) => val.to_lowercase(),
         Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
     };
 
@@ -191,7 +191,7 @@ command!(tag_top(ctx, msg, _args) {
 command!(tag_search(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let search = match args.single::<String>() {
-            Ok(val) => val,
+            Ok(val) => val.to_lowercase(),
             Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_search_given"))),
         };
 
@@ -226,7 +226,7 @@ command!(tag_search(ctx, msg, args) {
 command!(tag_delete(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let tag_name = match args.single::<String>() {
-            Ok(val) => val,
+            Ok(val) => val.to_lowercase(),
             Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
 
@@ -259,12 +259,12 @@ command!(tag_edit(ctx, msg, args) {
         let pool = get_pool(&ctx);
 
         let tag_name = match args.single::<String>() {
-            Ok(val) => val,
+            Ok(val) => val.to_lowercase(),
             Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
 
         let tag_new_name = match args.single::<String>() {
-            Ok(val) => val,
+            Ok(val) => val.to_lowercase(),
             Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
 
