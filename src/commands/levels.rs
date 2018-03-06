@@ -354,9 +354,12 @@ command!(top_levels(ctx, msg, args) {
         if let Some(levels) = pool.get_global_levels() {
             let mut s = String::new();
 
+            let width = levels.first().map(|x| get_level(x.xp.to_i64().unwrap_or(0)).to_string().len()).unwrap_or(1);
+
             for (i, user) in levels.iter().enumerate() {
-                let _ = write!(s, "{} Level {} - <@{}>\n", get_pos_emoji(i as i64),
-                    get_level(user.xp.to_i64().unwrap_or(0)), user.user_id);
+                let _ = write!(s, "{} `Level {:0width$}` - <@{}>\n", get_pos_emoji(i as i64),
+                    get_level(user.xp.to_i64().unwrap_or(0)), user.user_id,
+                    width = width);
             }
 
             let _ = msg.channel_id.send_message(|m|
@@ -443,9 +446,12 @@ command!(top_levels(ctx, msg, args) {
 
         let all_time = if let Some(all_time) = top.all_time {
             let mut s = String::new();
+
+            let width = all_time.first().map(|x| get_level(x.msg_all_time).to_string().len()).unwrap_or(1);
+
             for (i, user) in all_time.iter().enumerate() {
-                let _ = write!(s, "{} <@{}> (Level {})\n", get_pos_emoji(i as i64),
-                    user.user_id, get_level(user.msg_all_time));
+                let _ = write!(s, "{} `Level {:0width$}` - <@{}>\n", get_pos_emoji(i as i64),
+                    get_level(user.msg_all_time), user.user_id, width = width);
             }
 
             s
@@ -497,8 +503,12 @@ command!(top_reps(ctx, msg, args) {
 
     if let Some(reps) = top_users_reps {
         let mut s = String::new();
+
+        let width = reps.first().map(|x| x.1.to_string().len()).unwrap_or(1);
+
         for (i, user) in reps.iter().enumerate() {
-            let _ = write!(s, "{} {} rep - <@{}>\n", get_pos_emoji(i as i64), user.1, user.0);
+            let _ = write!(s, "{} `{:0width$} rep` - <@{}>\n",
+                get_pos_emoji(i as i64), user.1, user.0, width = width);
         }
 
         let _ = msg.channel_id.send_message(|m|
