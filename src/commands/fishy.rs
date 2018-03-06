@@ -103,11 +103,15 @@ command!(fishies_top(ctx, msg, args) {
     } else {
         "Top Fishies"
     };
-
+    
     if let Some(users) = top_users_fishies {
         let mut s = String::new();
+
+        let width = users.first().map(|x| x.1.to_string().len()).unwrap_or(1);
+
         for (i, user) in users.iter().enumerate() {
-            let _ = write!(s, "{} {} fishies - <@{}>\n", get_pos_emoji(i as i64), user.1, user.0);
+            let _ = write!(s, "{} `{:0width$} fishies` - <@{}>\n",
+                get_pos_emoji(i as i64), user.1, user.0, width = width);
         }
 
         let _ = msg.channel_id.send_message(|m|
