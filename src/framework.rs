@@ -131,7 +131,7 @@ pub fn get_framework() -> StandardFramework {
 
             Ok(())
         })
-        .simple_bucket("profile_bucket", 15)
+        .simple_bucket("profile_bucket", 10)
         .group("Users", |g| g
             .guild_only(true)
             .command("profile", |c| c
@@ -249,6 +249,11 @@ pub fn get_framework() -> StandardFramework {
                 .desc("Gets the guild's join message or sets one if given.")
                 .required_permissions(Permissions::MANAGE_GUILD)
                 .cmd(commands::settings::messages::joinmsg)
+            )
+            .command("joinreact", |c| c
+                .desc("Gets the guild's join react or sets one if given.")
+                .required_permissions(Permissions::MANAGE_GUILD)
+                .cmd(commands::settings::messages::joinreact)
             )
             .command("leavemsg", |c| c
                 .desc("Gets the guild's leave message or sets one if given.")

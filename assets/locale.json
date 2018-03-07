@@ -20,6 +20,11 @@
         "join_message_disable": "Join messages have been disabled.",
         "join_message_set": "The current join message has been set to: {}",
 
+        "join_react_current": "The current join react is: {}",
+        "join_react_none": "There is no join react set.",
+        "join_react_disable": "Join reacts have been disabled.",
+        "join_react_set": "The current join react has been set to: {}",
+
         "prefix_current": "The prefix in this guild is set to: `{}`",
         "prefix_set": "The prefix for this server has been set to: `{}`",
         "prefix_existing": "The prefix for this server is already: `{}`",
