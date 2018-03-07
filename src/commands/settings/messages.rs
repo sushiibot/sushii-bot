@@ -40,6 +40,44 @@ command!(joinmsg(ctx, msg, args) {
     }
 });
 
+command!(joinreact(ctx, msg, args) {
+    let pool = get_pool(&ctx);
+
+    let react = args.full().to_owned();
+
+    if let Some(guild_id) = msg.guild_id() {
+        let guild_id = guild_id.0;
+        let config = check_res_msg!(pool.get_guild_config(guild_id));
+
+        // no message given, just print out the current message
+        if args.len() == 0 {
+            if let Some(current_react) = config.join_react {
+                let s = get_msg!("info/join_react_current", current_react);
+                let _ = msg.channel_id.say(&s);
+            } else {
+                let _ = msg.channel_id.say(get_msg!("info/join_message_none"));
+            }
+        } else {
+            let mut config = config;
+
+            if react == "off" || react == "none" {
+                config.join_react = None;
+
+                let _ = msg.channel_id.say(get_msg!("info/join_react_disable"));
+            } else {
+                config.join_react = Some(react.to_owned());
+
+                let s = get_msg!("info/join_react_set", react);
+                let _ = msg.channel_id.say(&s);
+            }
+
+            pool.save_guild_config(&config);
+        }
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});
+
 command!(leavemsg(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
