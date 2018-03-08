@@ -445,6 +445,7 @@ pub fn get_framework() -> StandardFramework {
                 .cmd(commands::search::crypto::crypto)
             )
             .command("urban", |c| c
+                .known_as("ud")
                 .usage("[word]")
                 .desc("Looks up a word definition on Urban Dictionary.")
                 .cmd(commands::search::urban::urban)
