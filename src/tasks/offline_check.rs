@@ -16,14 +16,13 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
     let mut count = 0;
     INIT.call_once(|| {
         thread::spawn(move || loop {
-            let five_min = time::Duration::from_secs(300);
+            let thirty_sec = time::Duration::from_secs(30);
 
             if let Ok(events) = pool.get_events() {
                 if let Some(counter) = events.iter().find(|ref x| x.name == "PRESENCE_UPDATE") {
-                    // kill self if presence_updates count haven't changed
-                    // in the past 5 minutes
+                    // kill self if presence_updates count haven't changed in past 30 seconds
                     if count == counter.count {
-                        warn_discord!("PRESENCE_UPDATE has not changed in the past 5 minutes, exiting.");
+                        warn_discord!("PRESENCE_UPDATE has not changed in the past 30 seconds, exiting.");
                         std::process::exit(1);
                     }
 
@@ -31,7 +30,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 }
             }
 
-            thread::sleep(five_min);
+            thread::sleep(thirty_sec);
         });
     });
 }
