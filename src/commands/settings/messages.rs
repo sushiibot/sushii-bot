@@ -55,7 +55,7 @@ command!(joinreact(ctx, msg, args) {
                 let s = get_msg!("info/join_react_current", current_react);
                 let _ = msg.channel_id.say(&s);
             } else {
-                let _ = msg.channel_id.say(get_msg!("info/join_message_none"));
+                let _ = msg.channel_id.say(get_msg!("info/join_react_none"));
             }
         } else {
             let mut config = config;
