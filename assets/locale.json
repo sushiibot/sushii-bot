@@ -77,6 +77,7 @@
         "no_reminder_given": "Please give a time and reminder.",
         "no_url_or_attachment_given": "Please give a url or attachment.",
         "no_patron_emoji_given": "Please give a patron emoji.",
+        "no_urban_word_given": "Please give a word to look up",
 
         "invalid_channel": "Invalid channel.",
         "invalid_role": "Invalid role id, mention, or name.",
@@ -159,6 +160,8 @@
         "tag_not_owner": "This tag doesn't belong to you.",
         "tag_not_found_or_not_owner": "This tag doesn't belong to you or it doesn't exist.",
         "tag_content_unchanged": "New tag response is unchanged.",
-        "tag_name_unchanged": "New tag name is unchanged."
+        "tag_name_unchanged": "New tag name is unchanged.",
+
+        "urban_failed_retrieve": "Failed to retrieve definition."
     }
 }
