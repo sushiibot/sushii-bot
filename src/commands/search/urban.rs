@@ -45,6 +45,7 @@ command!(urban(_ctx, msg, args) {
     }
 
     let _ = msg.edit(|m| m
+        .content("")
         .embed(|e| e
             .author(|a| a
                 .name(&format!("Definition for {}", definition.word))
