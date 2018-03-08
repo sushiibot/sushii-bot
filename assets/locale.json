@@ -51,8 +51,8 @@
         "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
 
         "tag_added": "Added a tag named `{}` with response `{}`.",
-        "tag_edited": "Edited `{}` with new name `{}` and response `{}`.",
         "tag_edited_content": "Edited `{}` with new response `{}`.",
+        "tag_renamed": "Renamed the tag `{}` to `{}`.",
         "tag_deleted": "Deleted the tag `{}`.",
         "tag_list": ":mailbox_with_mail: Sent you a DM with the tag list.",
 
@@ -148,6 +148,7 @@
         "fm_fetch_error": "Something went wrong fetching last.fm data.",
 
         "tag_no_name_given": "Please give a tag name.",
+        "tag_no_new_name_given": "Please give a new tag name.",
         "tag_no_content_given": "Please give tag content.",
         "tag_no_search_given": "Please give a tag search.",
         "tag_already_exists": "This tag already exists.  Try another name.",
@@ -156,6 +157,7 @@
         "tags_not_found": "Couldn't find any tags.",
         "tag_not_owner": "This tag doesn't belong to you.",
         "tag_not_found_or_not_owner": "This tag doesn't belong to you or it doesn't exist.",
-        "tag_content_unchanged": "New tag response is unchanged.  You can either edit the name or content of the tag."
+        "tag_content_unchanged": "New tag response is unchanged.",
+        "tag_name_unchanged": "New tag name is unchanged."
     }
 }
