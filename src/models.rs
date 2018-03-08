@@ -5,7 +5,8 @@ use diesel::sql_types::*;
 use bigdecimal::BigDecimal;
 use serde_json;
 
-#[derive(Queryable, AsChangeset, Clone)]
+#[derive(Queryable, AsChangeset, Clone, Debug)]
+#[changeset_options(treat_none_as_null = "true")]
 #[table_name = "guilds"]
 pub struct GuildConfig {
     pub id: i64,
@@ -26,7 +27,7 @@ pub struct GuildConfig {
     pub disabled_channels: Option<Vec<i64>>,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "guilds"]
 pub struct NewGuildConfig {
     pub id: i64,
@@ -47,13 +48,13 @@ pub struct NewGuildConfig {
     pub disabled_channels: Option<Vec<i64>>,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct EventCounter {
     pub name: String,
     pub count: i64,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "events"]
 pub struct NewEventCounter<'a> {
     pub name: &'a str,
@@ -94,7 +95,7 @@ pub struct UserLevelAllTime {
     pub xp: BigDecimal,
 }
 
-#[derive(QueryableByName, Clone)]
+#[derive(QueryableByName, Clone, Debug)]
 pub struct UserLevelRanked {
     #[sql_type = "BigInt"]
     pub user_id: i64,
@@ -138,7 +139,7 @@ pub struct UserLevelRanked {
     pub msg_all_time_total: i64,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "levels"]
 pub struct NewUserLevel<'a> {
     pub user_id: i64,
@@ -151,6 +152,7 @@ pub struct NewUserLevel<'a> {
 }
 
 // for leaderboards
+#[derive(Debug)]
 pub struct TopLevels {
     pub day: Option<Vec<UserLevel>>,
     pub week: Option<Vec<UserLevel>>,
@@ -158,7 +160,7 @@ pub struct TopLevels {
     pub all_time: Option<Vec<UserLevel>>,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct Reminder {
     pub id: i32,
     pub user_id: i64,
@@ -167,7 +169,7 @@ pub struct Reminder {
     pub time_to_remind: NaiveDateTime,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "reminders"]
 pub struct NewReminder<'a> {
     pub user_id: i64,
@@ -176,7 +178,7 @@ pub struct NewReminder<'a> {
     pub time_to_remind: &'a NaiveDateTime,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct Notification {
     pub id: i32,
     pub user_id: i64,
@@ -184,7 +186,7 @@ pub struct Notification {
     pub keyword: String,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "notifications"]
 pub struct NewNotification<'a> {
     pub user_id: i64,
@@ -192,7 +194,7 @@ pub struct NewNotification<'a> {
     pub keyword: &'a str,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct User {
     pub id: i64,
     pub last_msg: NaiveDateTime,
@@ -227,7 +229,7 @@ pub struct NewUser<'a> {
     pub patron_emoji: Option<String>,
 }
 
-#[derive(Queryable, AsChangeset, Clone)]
+#[derive(Queryable, AsChangeset, Clone, Debug)]
 #[table_name = "mod_log"]
 pub struct ModAction {
     pub id: i32,
@@ -243,7 +245,7 @@ pub struct ModAction {
     pub pending: bool,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "mod_log"]
 pub struct NewModAction<'a> {
     pub case_id: i32,
@@ -258,7 +260,7 @@ pub struct NewModAction<'a> {
     pub pending: bool,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct Message {
     pub id: i64,
     pub author: i64,
@@ -269,7 +271,7 @@ pub struct Message {
     pub content: String,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "messages"]
 pub struct NewMessage<'a> {
     pub id: i64,
@@ -281,21 +283,21 @@ pub struct NewMessage<'a> {
     pub content: &'a str,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct Mute {
     pub id: i32,
     pub user_id: i64,
     pub guild_id: i64,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "mutes"]
 pub struct NewMute {
     pub user_id: i64,
     pub guild_id: i64,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct Gallery {
     pub id: i32,
     pub watch_channel: i64,
@@ -303,7 +305,7 @@ pub struct Gallery {
     pub guild_id: i64,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "galleries"]
 pub struct NewGallery<'a> {
     pub watch_channel: i64,
@@ -311,7 +313,7 @@ pub struct NewGallery<'a> {
     pub guild_id: i64,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct Tag {
     pub id: i32,
     pub owner_id: i64,
@@ -328,7 +330,7 @@ impl Tag {
     }
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "tags"]
 pub struct NewTag<'a> {
     pub owner_id: i64,
@@ -340,7 +342,7 @@ pub struct NewTag<'a> {
 }
 
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct MemberEvent {
     pub id: i32,
     pub guild_id: i64,
@@ -349,7 +351,7 @@ pub struct MemberEvent {
     pub event_time: NaiveDateTime,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "member_events"]
 pub struct NewMemberEvent<'a> {
     pub guild_id: i64,
@@ -359,7 +361,7 @@ pub struct NewMemberEvent<'a> {
 }
 
 // cache
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct CachedUser {
     pub id: i64,
     pub avatar: String,
@@ -367,7 +369,7 @@ pub struct CachedUser {
     pub discriminator: i32,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "cache_users"]
 pub struct NewCachedUser<'a> {
     pub id: i64,
@@ -376,7 +378,7 @@ pub struct NewCachedUser<'a> {
     pub discriminator: i32,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct CachedChannel {
     pub id: i64,
     pub category_id: Option<i64>,
@@ -388,7 +390,7 @@ pub struct CachedChannel {
     pub nsfw: bool,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "cache_channels"]
 pub struct NewCachedChannel<'a> {
     pub id: i64,
@@ -401,7 +403,7 @@ pub struct NewCachedChannel<'a> {
     pub nsfw: bool,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct CachedGuild {
     pub id: i64,
     pub guild_name: String,
@@ -410,7 +412,7 @@ pub struct CachedGuild {
     pub owner_id: i64,
 }
 
-#[derive(Insertable, AsChangeset)]
+#[derive(Insertable, AsChangeset, Debug)]
 #[table_name = "cache_guilds"]
 pub struct NewCachedGuild<'a> {
     pub id: i64,
@@ -420,27 +422,27 @@ pub struct NewCachedGuild<'a> {
     pub owner_id: i64,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct CachedMember {
     pub user_id: i64,
     pub guild_id: i64,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "cache_members"]
 pub struct NewCachedMember {
     pub user_id: i64,
     pub guild_id: i64,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct Stat {
     pub stat_name: String,
     pub count: i64,
     pub category: String,
 }
 
-#[derive(Insertable, AsChangeset)]
+#[derive(Insertable, AsChangeset, Debug)]
 #[table_name = "stats"]
 pub struct NewStat<'a> {
     pub stat_name: &'a str,
