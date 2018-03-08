@@ -22,7 +22,7 @@ command!(joinmsg(ctx, msg, args) {
         } else {
             let mut config = config;
 
-            if message == "off" {
+            if message == "off" || message == "none" {
                 config.join_msg = None;
 
                 let _ = msg.channel_id.say(get_msg!("info/join_message_disable"));
@@ -98,7 +98,7 @@ command!(leavemsg(ctx, msg, args) {
         } else {
             let mut config = config;
 
-            if message == "off" {
+            if message == "off" || message == "none" {
                 config.leave_msg = None;
 
                 let _ = msg.channel_id.say(get_msg!("info/leave_message_disable"));
