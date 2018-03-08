@@ -44,8 +44,6 @@ command!(urban(_ctx, msg, args) {
         definition.example.push_str("...");
     }
 
-    let url = format!("https://www.urbandictionary.com/author.php?author={}", definition.author);
-
     let _ = msg.edit(|m| m
         .embed(|e| e
             .author(|a| a
