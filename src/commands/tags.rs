@@ -6,6 +6,8 @@ use serenity::CACHE;
 use std::fmt::Write;
 use utils::config::get_pool;
 
+use CommandsList;
+
 command!(tag(ctx, msg, args) {
     let tag_name = match args.single::<String>() {
         Ok(val) => val.to_lowercase(),
@@ -80,12 +82,20 @@ command!(tag_info(ctx, msg, args) {
 });
 
 command!(tag_add(ctx, msg, args) {
-    let pool = get_pool(&ctx);
-
     let tag_name = match args.single::<String>() {
         Ok(val) => val.to_lowercase(),
         Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
     };
+
+    // check if conflicts with core commands
+    {
+        let data = ctx.data.lock();
+        let cmds = data.get::<CommandsList>().unwrap();
+
+        if cmds.contains_key(&tag_name) {
+            return Err(CommandError::from(get_msg!("error/tag_command_conflict")));
+        }
+    }
 
     let tag_content = args.full();
 
@@ -93,6 +103,8 @@ command!(tag_add(ctx, msg, args) {
     if tag_content.is_empty() {
         return Err(CommandError::from(get_msg!("error/tag_no_content_given")));
     }
+
+    let pool = get_pool(&ctx);
 
     // if in guild
     if let Some(guild_id) = msg.guild_id() {
