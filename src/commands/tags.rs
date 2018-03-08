@@ -196,7 +196,7 @@ command!(tag_search(ctx, msg, args) {
         };
 
         if search.len() < 3 {
-            return Err(CommandError::from(get_msg!("error/tag_search_query_too_short"))),
+            return Err(CommandError::from(get_msg!("error/tag_search_query_too_short")));
         }
 
         let pool = get_pool(&ctx);
