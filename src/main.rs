@@ -59,6 +59,7 @@ mod framework;
 
 use serenity::prelude::*;
 use serenity::client::bridge::gateway::ShardManager;
+use serenity::framework::standard::CommandOptions;
 
 use parking_lot::Mutex;
 use std::sync::Arc;
@@ -66,6 +67,7 @@ use std::sync::Arc;
 use chrono::DateTime;
 use chrono::Utc;
 
+use std::collections::HashMap;
 use std::env;
 use dotenv::dotenv;
 
@@ -88,16 +90,16 @@ impl Key for Uptime {
     type Value = DateTime<Utc>;
 }
 
+pub struct CommandsList;
+impl Key for CommandsList {
+    type Value = HashMap<String, Arc<CommandOptions>>;
+}
+
 fn main() {
     dotenv().ok();
-
-    // Initialize the logger to use environment variables.
-    //
-    // In this case, a good default is setting the environment variable
-    // `RUST_LOG` to debug`.
     env_logger::init().expect("Failed to initialize env_logger");
 
-    let framework = get_framework();
+    let (framework, commands_list) = get_framework();
 
     let mut client =
         Client::new(
@@ -112,6 +114,7 @@ fn main() {
         data.insert::<ConnectionPool>(pool);
         data.insert::<SerenityShardManager>(Arc::clone(&client.shard_manager));
         data.insert::<Uptime>(Utc::now());
+        data.insert::<CommandsList>(commands_list);
     }
 
     client.with_framework(framework);
