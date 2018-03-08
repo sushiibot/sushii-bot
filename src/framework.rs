@@ -1,5 +1,6 @@
 use serenity::framework::StandardFramework;
 use serenity::framework::standard::DispatchError::*;
+use serenity::framework::standard::{CreateGroup, CommandOrAlias, CommandOptions};
 use serenity::model::Permissions;
 use serenity::model::id::UserId;
 
@@ -8,11 +9,13 @@ use utils::config::get_pool;
 use database;
 
 use std::collections::HashSet;
+use std::collections::HashMap;
 use std::env;
+use std::sync::Arc;
 
 use commands;
 
-pub fn get_framework() -> StandardFramework {
+pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions>>) {
     let owners: HashSet<UserId> = env::var("OWNER")
         .expect("Expected owner IDs in the environment.")
         .split(",")
@@ -26,7 +29,9 @@ pub fn get_framework() -> StandardFramework {
         Err(_) => HashSet::new(),
     };
 
-    StandardFramework::new()
+    let mut commands_list = HashMap::new();
+
+    let framework = StandardFramework::new()
         .configure(|c| c
             .owners(owners)
             .dynamic_prefix(|ctx, msg| {
@@ -132,7 +137,8 @@ pub fn get_framework() -> StandardFramework {
             Ok(())
         })
         .simple_bucket("profile_bucket", 10)
-        .group("Users", |g| g
+        .group("Users", |g| { 
+            let g = g
             .guild_only(true)
             .command("profile", |c| c
                 .desc("Shows your profile.")
@@ -160,9 +166,12 @@ pub fn get_framework() -> StandardFramework {
             .command("topfishies", |c| c
                 .desc("Top 10 users with most fishies.")
                 .cmd(commands::fishy::fishies_top)
-            )
-        )
-        .group("Notifications", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Notifications", |g| {
+            let g = g
             .command("notification add", |c| c
                 .desc("Adds a notification.")
                 .cmd(commands::notifications::add_notification)
@@ -175,10 +184,12 @@ pub fn get_framework() -> StandardFramework {
             .command("notification delete", |c| c
                 .desc("Deletes a notification")
                 .cmd(commands::notifications::delete_notification)
-            )
-        )
-        .group("Meta", |g| g
-            // .command("helpp", |c| c.exec_help(help_commands::plain))
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Meta", |g| {
+            let g = g
             .command("ping", |c| c
                 .desc("Gets the ping.")
                 .cmd(commands::meta::ping)
@@ -195,9 +206,12 @@ pub fn get_framework() -> StandardFramework {
                 .batch_known_as(vec!["about", "info"])
                 .desc("Shows bot stats.")
                 .cmd(commands::meta::stats)
-            )
-        )
-        .group("Moderation", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Moderation", |g| {
+            let g = g
             .guild_only(true)
             .command("modping", |c| c
                 .desc("Pings a moderator for mod action.")
@@ -237,9 +251,12 @@ pub fn get_framework() -> StandardFramework {
                 .desc("Bulk deletes messages. Message count given excludes the message used to invoke this command.")
                 .required_permissions(Permissions::MANAGE_MESSAGES)
                 .cmd(commands::moderation::prune::prune)
-            )
-        )
-        .group("Settings", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Settings", |g| {
+            let g = g
             .guild_only(true)
             .command("prefix", |c| c
                 .desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
@@ -314,9 +331,12 @@ pub fn get_framework() -> StandardFramework {
                 .desc("Lists the disabled channels.")
                 .required_permissions(Permissions::MANAGE_GUILD)
                 .cmd(commands::settings::disable_channel::list_disabled_channels)
-            )
-        )
-        .group("Gallery", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Gallery", |g| {
+            let g = g
             .guild_only(true)
             .required_permissions(Permissions::MANAGE_GUILD)
             .command("gallery list", |c| c
@@ -330,9 +350,12 @@ pub fn get_framework() -> StandardFramework {
             .command("gallery delete", |c| c
                 .desc("Deletes a gallery.")
                 .cmd(commands::settings::gallery::gallery_delete)
-            )
-        )
-        .group("Roles", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Roles", |g| {
+            let g = g
             .guild_only(true)
             .required_permissions(Permissions::MANAGE_GUILD)
             .command("roles set", |c| c
@@ -349,9 +372,12 @@ pub fn get_framework() -> StandardFramework {
                 .desc("Sets the roles channel.")
                 .required_permissions(Permissions::MANAGE_GUILD)
                 .cmd(commands::settings::roles::roles_channel)
-            )
-        )
-        .group("Misc", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Misc", |g| {
+            let g = g
             .command("play", |c| c
                 .usage("[rust code]")
                 .desc("Evaluates Rust code in the playground.")
@@ -364,9 +390,12 @@ pub fn get_framework() -> StandardFramework {
                     let _ = msg.channel_id.say(&format!("You can support me on patreon here: <{}> Thanks! :heart:", url))?;
                     Ok(())
                 })
-            )
-        )
-        .group("Reminders", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Reminders", |g| {
+            let g = g
             .command("remind me", |c| c
                 .usage("(in) [time] (to) [description]")
                 .desc("Reminds you to do something after some time.")
@@ -375,10 +404,12 @@ pub fn get_framework() -> StandardFramework {
             .command("reminder list", |c| c
                 .desc("Shows your pending reminders.")
                 .cmd(commands::misc::reminders)
-            )
-            
-        )
-        .group("Tags", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Tags", |g| {
+            let g = g
             .guild_only(true)
             .command("t", |c| c
                 .usage("[tag name]")
@@ -426,9 +457,12 @@ pub fn get_framework() -> StandardFramework {
                 .usage("[tag name] [new content]")
                 .desc("Edits a tag's content.")
                 .cmd(commands::tags::tag_edit)
-            )
-        )
-        .group("Search", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Search", |g| {
+            let g = g
             .command("weather", |c| c
                 .usage("[location]")
                 .desc("Gets the weather of a location")
@@ -449,9 +483,12 @@ pub fn get_framework() -> StandardFramework {
                 .usage("[word]")
                 .desc("Looks up a word definition on Urban Dictionary.")
                 .cmd(commands::search::urban::urban)
-            )
-        )
-        .group("User Info", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("User Info", |g| {
+            let g = g
             .command("userinfo", |c| c
                 .usage("[user]")
                 .desc("Gets information about a user.")
@@ -461,9 +498,12 @@ pub fn get_framework() -> StandardFramework {
                 .usage("[user]")
                 .desc("Gets the avatar for a user.")
                 .cmd(commands::userinfo::avatar)
-            )
-        )
-        .group("Owner", |g| g
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
+        .group("Owner", |g| {
+            let g = g
             .help_available(false)
             .command("quit", |c| c
                 .desc("Gracefully shuts down the bot.")
@@ -499,6 +539,29 @@ pub fn get_framework() -> StandardFramework {
                 .desc("Lists the servers sushii is in.")
                 .owners_only(true)
                 .cmd(commands::owner::listservers)
-            )
-        )
+            );
+
+            add_command_group(&mut commands_list, g)
+        });
+
+    (framework, commands_list)
+}
+
+// adds commands to a hashmap for later use for reference of other command names or usage
+fn add_command_group(map: &mut HashMap<String, Arc<CommandOptions>>, cmd_group: CreateGroup) -> CreateGroup {
+    for (name, cmd) in cmd_group.0.commands.iter() {
+        if let &CommandOrAlias::Command(ref val) = cmd {
+            let options = val.options();
+
+            // insert command options for each alias
+            for alias in options.aliases.iter() {
+                map.insert(alias.to_owned(), options.clone());
+            }
+
+            // insert command option for base command
+            map.insert(name.to_owned(), val.options().clone());
+        }
+    }
+
+    cmd_group
 }
