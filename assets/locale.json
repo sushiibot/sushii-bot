@@ -148,6 +148,7 @@
         "fm_no_username_mentioned": "No Last.fm username found for this user.",
         "fm_fetch_error": "Something went wrong fetching last.fm data.",
 
+        "tag_command_conflict": "This tag name conflicts with a core bot command, please choose another name.",
         "tag_no_name_given": "Please give a tag name.",
         "tag_no_new_name_given": "Please give a new tag name.",
         "tag_no_content_given": "Please give tag content.",
