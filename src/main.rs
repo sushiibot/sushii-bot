@@ -40,6 +40,7 @@ extern crate base64;
 extern crate dogstatsd;
 extern crate bigdecimal;
 extern crate num_traits;
+extern crate urbandictionary;
 
 pub use diesel::r2d2;
 

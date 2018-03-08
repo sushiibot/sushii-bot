@@ -444,6 +444,11 @@ pub fn get_framework() -> StandardFramework {
                 .desc("Gets current cryptocurrency prices.")
                 .cmd(commands::search::crypto::crypto)
             )
+            .command("urban", |c| c
+                .usage("[word]")
+                .desc("Looks up a word definition on Urban Dictionary.")
+                .cmd(commands::search::urban::urban)
+            )
         )
         .group("User Info", |g| g
             .command("userinfo", |c| c
