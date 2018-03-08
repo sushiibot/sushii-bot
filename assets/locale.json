@@ -51,7 +51,7 @@
         "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
 
         "tag_added": "Added a tag named `{}` with response `{}`.",
-        "tag_edited_content": "Edited `{}` with new response `{}`.",
+        "tag_edited_content": "Edited the tag `{}` with new response `{}`.",
         "tag_renamed": "Renamed the tag `{}` to `{}`.",
         "tag_deleted": "Deleted the tag `{}`.",
         "tag_list": ":mailbox_with_mail: Sent you a DM with the tag list.",
@@ -151,6 +151,7 @@
         "tag_no_new_name_given": "Please give a new tag name.",
         "tag_no_content_given": "Please give tag content.",
         "tag_no_search_given": "Please give a tag search.",
+        "tag_search_query_too_short": "Please give a tag search greater than 3 characters.",
         "tag_already_exists": "This tag already exists.  Try another name.",
         "tag_none": "There doesn't seem to be any tags in this server.",
         "tag_not_found": "There doesn't seem to be a tag named `{}`.",

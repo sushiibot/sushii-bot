@@ -195,6 +195,10 @@ command!(tag_search(ctx, msg, args) {
             Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_search_given"))),
         };
 
+        if search.len() < 3 {
+            return Err(CommandError::from(get_msg!("error/tag_search_query_too_short"))),
+        }
+
         let pool = get_pool(&ctx);
 
         if let Some(results) = pool.search_tag(guild_id.0, &search) {
