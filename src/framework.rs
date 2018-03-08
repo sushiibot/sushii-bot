@@ -417,9 +417,14 @@ pub fn get_framework() -> StandardFramework {
                 .desc("Deletes a tag.")
                 .cmd(commands::tags::tag_delete)
             )
+            .command("tag rename", |c| c
+                .usage("[tag name] [new tag name]")
+                .desc("Renames a tag.")
+                .cmd(commands::tags::tag_rename)
+            )
             .command("tag edit", |c| c
-                .usage("[tag name] [new tag name] [new content]")
-                .desc("Edits an existing tag.")
+                .usage("[tag name] [new content]")
+                .desc("Edits a tag's content.")
                 .cmd(commands::tags::tag_edit)
             )
         )

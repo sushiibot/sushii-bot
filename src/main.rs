@@ -96,6 +96,8 @@ fn main() {
     // `RUST_LOG` to debug`.
     env_logger::init().expect("Failed to initialize env_logger");
 
+    let framework = get_framework();
+
     let mut client =
         Client::new(
             &env::var("DISCORD_TOKEN").expect("Expected a discord token in the environment."),
@@ -111,9 +113,7 @@ fn main() {
         data.insert::<Uptime>(Utc::now());
     }
 
-    client.with_framework(
-        get_framework()
-    );
+    client.with_framework(framework);
 
     client.threadpool.set_num_threads(10);
 

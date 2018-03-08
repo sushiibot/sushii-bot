@@ -254,7 +254,7 @@ command!(tag_delete(ctx, msg, args) {
     }
 });
 
-command!(tag_edit(ctx, msg, args) {
+command!(tag_rename(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(&ctx);
 
@@ -264,6 +264,46 @@ command!(tag_edit(ctx, msg, args) {
         };
 
         let tag_new_name = match args.single::<String>() {
+            Ok(val) => val.to_lowercase(),
+            Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_new_name_given"))),
+        };
+
+        if tag_name == tag_new_name {
+            return Err(CommandError::from(get_msg!("error/tag_name_unchanged")));
+        }
+
+        // get the current tag to check owner
+        let current = match pool.get_tag(guild_id.0, &tag_name) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/tag_not_found"))),
+        };
+
+        // check if new name exists
+        if let Some(_) = pool.get_tag(guild_id.0, &tag_new_name) {
+            return Err(CommandError::from(get_msg!("error/tag_already_exists")));
+        }
+
+        // check if user owns the tag or has mod perms
+        if !current.is_owner(msg.author.id.0) && !has_permission(&msg) {
+            return Err(CommandError::from(get_msg!("error/tag_no_permission")))
+        }
+
+        // edit only name
+        if pool.edit_tag(guild_id.0, &tag_name, &tag_new_name, &current.content) {
+            let _ = msg.channel_id.say(get_msg!("info/tag_renamed", &tag_name, &tag_new_name));
+        } else {
+            return Err(CommandError::from(get_msg!("error/tag_not_found_or_not_owner")));
+        }
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});
+
+command!(tag_edit(ctx, msg, args) {
+    if let Some(guild_id) = msg.guild_id() {
+        let pool = get_pool(&ctx);
+
+        let tag_name = match args.single::<String>() {
             Ok(val) => val.to_lowercase(),
             Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
@@ -281,31 +321,18 @@ command!(tag_edit(ctx, msg, args) {
             None => return Err(CommandError::from(get_msg!("error/tag_not_found"))),
         };
 
-        // check if changing the tag name
-        if tag_name != tag_new_name {
-            // check if new tag name already exists
-            if let Some(_) = pool.get_tag(guild_id.0, &tag_new_name) {
-                return Err(CommandError::from(get_msg!("error/tag_already_exists")));
-            }
-        } else if current.content == tag_content {
-            // if tag is the same, check if content changed
-            // check if content changed
+        // check if content was changed
+        if current.content == tag_content {
             return Err(CommandError::from(get_msg!("error/tag_content_unchanged")));
         }
 
-
         // check if user owns the tag or has mod perms
         if !current.is_owner(msg.author.id.0) && !has_permission(&msg) {
-            return Err(CommandError::from(get_msg!("error/tag_no_permission")))
+            return Err(CommandError::from(get_msg!("error/tag_no_permission")));
         }
 
-        if pool.edit_tag(guild_id.0, &tag_name, &tag_new_name, &tag_content) {
-            if tag_name == tag_new_name {
-                // if only content was modified
-                let _ = msg.channel_id.say(get_msg!("info/tag_edited_content", &tag_name, &tag_content));
-            } else {
-                let _ = msg.channel_id.say(get_msg!("info/tag_edited", &tag_name, &tag_new_name, &tag_content));
-            }
+        if pool.edit_tag(guild_id.0, &tag_name, &tag_name, &tag_content) {
+            let _ = msg.channel_id.say(get_msg!("info/tag_edited_content", &tag_name, &tag_content));
         } else {
             return Err(CommandError::from(get_msg!("error/tag_not_found_or_not_owner")));
         }
