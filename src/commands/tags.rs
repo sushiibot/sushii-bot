@@ -8,32 +8,6 @@ use utils::config::get_pool;
 
 use CommandsList;
 
-command!(tag(ctx, msg, args) {
-    let tag_name = match args.single::<String>() {
-        Ok(val) => val.to_lowercase(),
-        Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
-    };
-
-    if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
-
-        let found_tag = match pool.get_tag(guild_id.0, &tag_name) {
-            Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/tag_not_found", tag_name))),
-        };
-
-        let content = found_tag.content
-            .replace("@everyone", "@\u{200b}everyone") // add zws to everyone and here mentions
-            .replace("@here", "@\u{200b}here");
-
-        let _ = msg.channel_id.say(&format!("\u{200b}{}", content));
-        // update the counter
-        pool.increment_tag(guild_id.0, &tag_name);
-    } else {
-        return Err(CommandError::from(get_msg!("error/no_guild")));
-    }
-});
-
 command!(tag_info(ctx, msg, args) {
     let tag_name = match args.single::<String>() {
         Ok(val) => val.to_lowercase(),
