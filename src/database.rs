@@ -1332,6 +1332,7 @@ impl ConnectionPool {
 
         tags
             .filter(guild_id.eq(guild as i64))
+            .order(tag_name.desc())
             .load::<Tag>(&conn)
             .ok()
     }
