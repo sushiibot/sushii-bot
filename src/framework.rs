@@ -132,8 +132,16 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                     Err(_) => return false,
                 };
 
+                // disabled channels
                 if let Some(disabled_channels) = config.disabled_channels {
                     if disabled_channels.contains(&(msg.channel_id.0 as i64)) {
+                        return false;
+                    }
+                }
+
+                // role channel
+                if let Some(channel) = config.role_channel {
+                    if channel == msg.channel_id.0 as i64 {
                         return false;
                     }
                 }

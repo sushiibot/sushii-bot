@@ -25,6 +25,13 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         }
     }
 
+    // check if in roles channel
+    if let Some(channel) = config.role_channel {
+        if channel == msg.channel_id.0 as i64 {
+            return;
+        }
+    }
+
     let prefix = config.prefix.unwrap_or(env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment."));
 
     // check if starts with prefix
