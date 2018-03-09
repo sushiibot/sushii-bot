@@ -30,6 +30,34 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
     };
 
     let mut commands_list = HashMap::new();
+    
+    // reserved names for cmds not implemented yet
+    let reserved = vec![
+        "help",
+        "info",
+        "about",
+        "simulate",
+        "gifprofile",
+        "upgrades",
+        "kitty",
+        "cat",
+        "guildinfo",
+        "serverinfo",
+        "leaderboard",
+        "emojiinfo",
+        "roleinfo",
+        "youtube",
+        "yt",
+        "vlive",
+        "wolframalpha",
+        "wa",
+        "trivia"
+    ];
+
+    let default_cmd = Arc::new(CommandOptions::default());
+    for name in reserved.iter() {
+        commands_list.insert(name.to_string(), default_cmd.clone());
+    }
 
     let framework = StandardFramework::new()
         .configure(|c| c
@@ -411,11 +439,6 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         .group("Tags", |g| {
             let g = g
             .guild_only(true)
-            .command("t", |c| c
-                .usage("[tag name]")
-                .desc("Gets a tag.")
-                .cmd(commands::tags::tag)
-            )
             .command("tag random", |c| c
                 .desc("Gets a random tag.")
                 .cmd(commands::tags::tag_random)
@@ -490,12 +513,12 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         .group("User Info", |g| {
             let g = g
             .command("userinfo", |c| c
-                .usage("[user]")
+                .usage("(@mention or ID)")
                 .desc("Gets information about a user.")
                 .cmd(commands::userinfo::userinfo)
             )
             .command("avatar", |c| c
-                .usage("[user]")
+                .usage("(@mention or ID)")
                 .desc("Gets the avatar for a user.")
                 .cmd(commands::userinfo::avatar)
             );
