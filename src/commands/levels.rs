@@ -36,6 +36,8 @@ command!(profile(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
     };
 
+    let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
+
     let mut user_rep;
     let mut activity;
     let mut is_patron;
@@ -77,6 +79,7 @@ command!(profile(ctx, msg, args) {
     html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
 
+    let global_level = get_level(global_xp);
     let level = get_level(level_data.msg_all_time);
     let last_level_total_xp_required = next_level(level);
     let next_level_total_xp_required = next_level(level + 1);
@@ -94,6 +97,7 @@ command!(profile(ctx, msg, args) {
     };
 
     html = html.replace("{LEVEL}", &level.to_string());
+    html = html.replace("{GLOBAL_LEVEL}", &global_level.to_string());
     html = html.replace("{XP_PROGRESS}", &xp_percentage.to_string());
     html = html.replace("{CURR_LEVEL_XP}", &next_level_xp_progress.to_string());
     html = html.replace("{LEVEL_XP_REQ}", &next_level_xp_required.to_string());
