@@ -56,6 +56,11 @@ command!(mute(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/failed_mute_member")));
     }
     
-    let s = get_msg!("info/member_muted", user.tag(), user.id.0);
+    let s = if let Some(reason) = reason {
+        get_msg!("info/member_muted_with_reason", user.tag(), user.id.0, reason)
+    } else {
+        get_msg!("info/member_muted", user.tag(), user.id.0)
+    };
+    
     let _ = msg.channel_id.say(&s);
 });
