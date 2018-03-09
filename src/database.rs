@@ -1,6 +1,7 @@
 use diesel;
 use diesel::QueryDsl;
 use diesel::dsl::max;
+use diesel::dsl::sum;
 use diesel::JoinOnDsl;
 use diesel::RunQueryDsl;
 use diesel::result::Error;
@@ -13,6 +14,8 @@ use diesel::TextExpressionMethods;
 use r2d2::Pool;
 use r2d2::PooledConnection;
 use diesel::r2d2::ConnectionManager;
+
+use bigdecimal::BigDecimal;
 
 use serenity;
 use serenity::model::guild::Guild;
@@ -359,6 +362,19 @@ impl ConnectionPool {
                 None
             }
         }
+    }
+
+    pub fn get_global_xp(&self, id_user: u64) -> Option<BigDecimal> {
+        use schema::levels::dsl::*;
+
+        let conn = self.connection();
+
+        levels
+            .filter(user_id.eq(id_user as i64))
+            .select(sum(msg_all_time))
+            .first::<Option<BigDecimal>>(&conn)
+            .ok()
+            .unwrap_or(None)
     }
 
     // fetch top 10 for each category
