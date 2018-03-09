@@ -454,6 +454,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .cmd(commands::tags::tag_add)
             )
             .command("tag list", |c| c
+                .known_as("tags")
                 .desc("Lists available tags.")
                 .cmd(commands::tags::tag_list)
             )
