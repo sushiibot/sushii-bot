@@ -209,6 +209,7 @@ impl EventHandler for Handler {
             anti_spam,
             message_log,
             notifications,
+            tags,
             gallery,
             roles,
             dm,
