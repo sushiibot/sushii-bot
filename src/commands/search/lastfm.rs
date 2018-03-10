@@ -1,4 +1,9 @@
 use serenity::framework::standard::CommandError;
+use serenity::framework::standard::Args;
+use serenity::model::channel::Message;
+use serenity::prelude::Context;
+
+use std::fmt::Write;
 use reqwest;
 use serde_json::Value;
 use chrono::Utc;
@@ -9,52 +14,91 @@ use env;
 
 
 const FM_RECENT_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user={USER}&api_key={KEY}&format=json";
+const FM_TOP_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user={USER}&api_key={KEY}&format=json&limit=10&period={PERIOD}";
 
 
 command!(fm(ctx, msg, args) {
-    let fm_key = env::var("LASTFM_KEY").expect("Expected LASTFM_KEY to be set in environment");
-    let pool = get_pool(&ctx);
-
     let _ = msg.channel_id.broadcast_typing();
 
-    let username_or_set = args.full();
-    let mut saved = false;
-
-    let username = if username_or_set.starts_with("set ") {
-        saved = true;
-        // save to db
-        pool.set_lastfm_username(msg.author.id.0, &username_or_set.replace("set ", ""));
-
-        // remove the set arg
-        username_or_set.replace("set ", "")
-    } else if let Some(user_mention) = get_id(username_or_set) {
-        // check if @mention someone, then look up if they have a saved username
-        // fall back to just use the args as a username
-        match pool.get_lastfm_username(user_mention) {
-            Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/fm_no_username_mentioned"))),
-        }
-    } else if !username_or_set.is_empty() {
-        username_or_set.to_owned()
-    } else {
-        match pool.get_lastfm_username(msg.author.id.0) {
-            Some(val) => val,
-            None => return Err(CommandError::from(get_msg!("error/fm_no_username"))),
-        }
-    };
-
-    let url = FM_RECENT_TRACKS_URL.replace("{USER}", &username)
-        .replace("{KEY}", &fm_key);
-    
-    // fetch data
-    let data: Value = match reqwest::get(&url).and_then(|mut x| x.json()) {
+    let action = match args.single_n::<String>() {
         Ok(val) => val,
-        Err(e) => {
-            warn_discord!("[CMD:fm] Failed to fetch last.fm data: {}", e);
-            return Err(CommandError::from(get_msg!("error/fm_fetch_error")))
-        },
+        Err(_) => "nowplaying".to_owned(),
     };
 
+    match action.as_ref() {
+        "toptracks" => {
+            let _ = args.skip();
+            let period = args.single::<String>().unwrap_or("overall".to_owned());
+            let (username, saved) = get_username(&ctx, msg.author.id.0, &mut args)?;
+
+            if !is_valid_period(&period) {
+                return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
+            }
+
+            let data = get_data(FM_TOP_TRACKS_URL, &username, &period)?;
+
+            top_tracks(&msg, &data, saved, &period);
+        },
+        // no matches would equal just -fm, show now playing / last track
+        "nowplaying" | _ => {
+            let (username, saved) = get_username(&ctx, msg.author.id.0, &mut args)?;
+            let data = get_data(FM_RECENT_TRACKS_URL, &username, "yep lol")?;
+            recent_tracks(&msg, &data, saved);
+        }
+    };
+});
+
+/// Check if a time period is valid for last.fm
+fn is_valid_period(period: &str) -> bool {
+    let valid_periods = vec!["overall", "7day", "1month", "3month", "6month", "12month"];
+    valid_periods.contains(&period)
+}
+
+fn top_tracks(msg: &Message, data: &Value, saved: bool, period: &str) {
+    let username = data.pointer("/toptracks/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
+    let empty_tracks = &vec![];
+    let tracks = data.pointer("/toptracks/track").and_then(|x| x.as_array()).unwrap_or(&empty_tracks);
+
+    let mut s = String::new();
+
+    let first_image = tracks.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
+
+    for (i, track) in tracks.iter().enumerate() {
+        let playcount = track.pointer("/playcount").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let title = track.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let url = track.pointer("/url").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let artist = track.pointer("/artist/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+
+        let play_plural = if playcount > 1 {
+            "plays"
+        } else {
+            "play"
+        };
+
+        let _ = write!(s, "`[{:02}]` - `{}` {} - **[{}]({})** by {}\n", i, playcount, play_plural, title, url, artist);
+    }
+
+    let _ = msg.channel_id.send_message(|m| {
+        let mut m = m;
+
+        if saved {
+            m = m.content(get_msg!("info/fm_saved_username"));
+        }
+
+        m.embed(|e| e
+            .author(|a| a
+                .name(&format!("{}'s Top Tracks - {}", username, period))
+                .url(&format!("https://www.last.fm/user/{}", username))
+                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
+            )
+            .color(0xb90000)
+            .description(&s)
+            .thumbnail(first_image)
+        )
+    });
+}
+
+fn recent_tracks(msg: &Message, data: &Value, saved: bool) {
     let username = data.pointer("/recenttracks/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
     let last_track_artist = data.pointer("/recenttracks/track/0/artist/#text").and_then(|x| x.as_str()).unwrap_or("N/A");
     let last_track_name = data.pointer("/recenttracks/track/0/name").and_then(|x| x.as_str()).unwrap_or("N/A");
@@ -147,4 +191,55 @@ command!(fm(ctx, msg, args) {
             .timestamp(last_track_timestamp.to_string())
         )
     });
-});
+}
+
+
+fn get_username(ctx: &Context, user: u64, args: &mut Args) -> Result<(String, bool), CommandError> {
+    let pool = get_pool(&ctx);
+
+    let username_or_set = args.full();
+    let mut saved = false;
+
+    let username = if username_or_set.starts_with("set ") {
+        saved = true;
+        // save to db
+        pool.set_lastfm_username(user, &username_or_set.replace("set ", ""));
+
+        // remove the set arg
+        username_or_set.replace("set ", "")
+    } else if let Some(user_mention) = get_id(username_or_set) {
+        // check if @mention someone, then look up if they have a saved username
+        // fall back to just use the args as a username
+        match pool.get_lastfm_username(user_mention) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/fm_no_username_mentioned"))),
+        }
+    } else if !username_or_set.is_empty() {
+        username_or_set.to_owned()
+    } else {
+        match pool.get_lastfm_username(user) {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/fm_no_username"))),
+        }
+    };
+
+    Ok((username, saved))
+}
+
+fn get_data(url: &str, username: &str, period: &str) -> Result<Value, CommandError> {
+    let fm_key = env::var("LASTFM_KEY").expect("Expected LASTFM_KEY to be set in environment");
+    let url = url
+        .replace("{USER}", &username)
+        .replace("{KEY}", &fm_key)
+        .replace("{PERIOD}", &period);
+
+    // fetch data
+    match reqwest::get(&url).and_then(|mut x| x.json()) {
+        Ok(val) => Ok(val),
+        Err(e) => {
+            warn_discord!("[CMD:fm] Failed to fetch last.fm data: {}", e);
+        
+            Err(CommandError::from(get_msg!("error/fm_fetch_error")))
+        }
+    }
+}
