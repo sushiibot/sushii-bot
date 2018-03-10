@@ -69,13 +69,13 @@ fn top_tracks(msg: &Message, data: &Value, saved: bool, period: &str) {
         let url = track.pointer("/url").and_then(|x| x.as_str()).unwrap_or("N/A");
         let artist = track.pointer("/artist/name").and_then(|x| x.as_str()).unwrap_or("N/A");
 
-        let play_plural = if playcount > 1 {
-            "plays"
-        } else {
+        let play_plural = if playcount == "1" {
             "play"
+        } else {
+            "plays"
         };
 
-        let _ = write!(s, "`[{:02}]` - `{}` {} - **[{}]({})** by {}\n", i, playcount, play_plural, title, url, artist);
+        let _ = write!(s, "`[{:02}] {}` {} - **[{}]({})** by {}\n", i + 1, playcount, play_plural, title, url, artist);
     }
 
     let _ = msg.channel_id.send_message(|m| {
