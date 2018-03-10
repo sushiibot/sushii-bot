@@ -121,25 +121,41 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             let _ = msg.react("❌");
         })
         .before(|ctx, msg, cmd_name| {
-            // check if in disabled channel
-            if let Some(guild_id) = msg.guild_id() {
+            if let Some(guild) = msg.guild() {
+                let guild = guild.read();
+                
                 let pool = get_pool(&ctx);
 
-                // shouldnt fail but if it does, false negative better than positive?
-                // though false positive might be a lot less likely
-                let config = match pool.get_guild_config(guild_id.0) {
+                // fetch member
+                let member = match guild.members.get(&msg.author.id) {
+                    Some(member) => member,
+                    None => return false
+                };
+                // check if has perm
+                let permissions = match member.permissions() {
                     Ok(val) => val,
                     Err(_) => return false,
                 };
 
-                // disabled channels
-                if let Some(disabled_channels) = config.disabled_channels {
-                    if disabled_channels.contains(&(msg.channel_id.0 as i64)) {
-                        return false;
+                // shouldnt fail but if it does, false negative better than positive?
+                // though false positive might be a lot less likely
+                let config = match pool.get_guild_config(guild.id.0) {
+                    Ok(val) => val,
+                    Err(_) => return false,
+                };
+
+                // only check disabled channel if user doesn't have MANAGE_GUILD perms
+                // those with perms bypass disabled channels
+                if !permissions.manage_guild() {
+                    // disabled channels
+                    if let Some(disabled_channels) = config.disabled_channels {
+                        if disabled_channels.contains(&(msg.channel_id.0 as i64)) {
+                            return false;
+                        }
                     }
                 }
 
-                // role channel
+                // role channel is disabled for all users since may cause conflicts
                 if let Some(channel) = config.role_channel {
                     if channel == msg.channel_id.0 as i64 {
                         return false;
