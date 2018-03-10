@@ -528,6 +528,20 @@ impl ConnectionPool {
             .ok()
     }
 
+    pub fn save_user(&self, new_user_data: &User) {
+        use schema::users::dsl::*;
+
+        let conn = self.connection();
+
+        if let Err(e) = diesel::update(users)
+            .filter(id.eq(new_user_data.id))
+            .set(new_user_data)
+            .execute(&conn) {
+                
+                warn_discord!("[DB:save_user] Error while updating a user: {}", e);
+        }
+    }
+
     pub fn get_user_last_message(&self, id_user: u64) -> Option<NaiveDateTime> {
         use schema::users::dsl::*;
 

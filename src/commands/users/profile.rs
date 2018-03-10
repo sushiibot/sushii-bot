@@ -2,7 +2,10 @@ use serenity::framework::standard::CommandError;
 use serenity::model::id::UserId;
 use serenity::model::channel::Message;
 use reqwest;
+
+use regex::Regex;
 use std::collections::HashMap;
+
 use utils;
 use utils::user::*;
 use utils::config::get_pool;
@@ -27,90 +30,267 @@ command!(profile(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    match action.as_ref() {
-        "background" => {},
-        "bio" => {},
-        "bg_darken" => {
-            let _ = args.skip();
-            let value = match args.single::<String>() {
-                Ok(val) => val,
-                Err(_) => return Err(CommandError::from(get_msg!("error/invalid_bg_darkness"))),
-            };
-        },
-        "content_color" => {},
-        "content_opacity" => {},
-        "text_color" => {},
-        "accent_color" => {},
-        "profile" | _ => {
-            let id = match args.single::<String>() {
-                Ok(val) => {
-                    match utils::user::get_id(&val) {
-                        Some(id) => id,
-                        None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
-                    }
-                },
-                Err(_) => msg.author.id.0,
-            };
-
-            let user_data = pool.get_user(id);
-            let level_data = match pool.get_level(id, guild_id) {
-                Some(level_data) => level_data,
-                None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
-            };
-
-            let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
-
-            generate_profile(&msg, id, &user_data, &level_data, global_xp)?;
-            pool.update_stat("profile", "profiles_generated", 1);
-        }
+    let mut user_data = match pool.get_user(msg.author.id.0) {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("error/profile_user_not_found"))),
     };
+
+    let mut is_modifying = true;
+
+    match action.as_ref() {
+        "background" | "bg" => {
+            return Err(CommandError::from("uhh not yet"));
+
+            let _ = args.skip();
+            let bg = match args.single::<String>() {
+                Ok(val) => val,
+                Err(_) => return Err(CommandError::from(get_msg!("error/profile_background_not_given"))),
+            };
+
+        },
+        "bio" => {
+            let _ = args.skip();
+            let bio = args.full();
+
+            if bio.is_empty() {
+                return Err(CommandError::from(get_msg!("error/profile_bio_not_given")));
+            }
+
+            user_data.profile_bio = Some(bio.to_string());
+
+            pool.save_user(&user_data);
+            let _ = msg.channel_id.say(get_msg!("info/profile_bio_set", bio));
+        },
+        "bgdarkness" => {
+            let _ = args.skip();
+            let darkness = match args.single::<f32>() {
+                Ok(val) => val,
+                Err(_) => return Err(CommandError::from(get_msg!("error/profile_invalid_opacity"))),
+            };
+            
+            // check if in range
+            if darkness < 0.0 || darkness > 1.0 {
+                return Err(CommandError::from(get_msg!("error/profile_invalid_opacity")));
+            }
+
+            user_data.profile_bg_darken = Some(darkness.to_string());
+
+            pool.save_user(&user_data);
+            let _ = msg.channel_id.say(get_msg!("info/profile_bg_darken_set", darkness));
+        },
+        "contentcolor" => {
+            let _ = args.skip();
+            let color = args.full();
+
+            if color.is_empty() {
+                return Err(CommandError::from(get_msg!("error/profile_contentcolor_not_given")));
+            }
+
+            let color = parse_number(&color, "rgb");
+
+            if let Some(color) = color {
+                user_data.profile_content_color = Some(color.clone());
+
+                pool.save_user(&user_data);
+                let _ = msg.channel_id.say(get_msg!("info/profile_content_color_set", color));
+            } else {
+                return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
+            }
+        },
+        "contentopacity" => {
+            let _ = args.skip();
+            let opacity = match args.single::<f32>() {
+                Ok(val) => val,
+                Err(_) => return Err(CommandError::from(get_msg!("error/profile_invalid_opacity"))),
+            };
+            
+            // check if in range
+            if opacity < 0.0 || opacity > 1.0 {
+                return Err(CommandError::from(get_msg!("error/profile_invalid_opacity")));
+            }
+
+            user_data.profile_content_opacity = Some(opacity.to_string());
+
+            pool.save_user(&user_data);
+            let _ = msg.channel_id.say(get_msg!("info/profile_content_opacity_set", opacity));
+        },
+        "textcolor" => {
+            let _ = args.skip();
+            let color = args.full();
+
+            if color.is_empty() {
+                return Err(CommandError::from(get_msg!("error/profile_textcolor_not_given")));
+            }
+
+            let color = parse_number(&color, "hex");
+
+            if let Some(color) = color {
+                user_data.profile_text_color = Some(color.clone());
+
+                pool.save_user(&user_data);
+                let _ = msg.channel_id.say(get_msg!("info/profile_text_color_set", color));
+            } else {
+                return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
+            }
+        },
+        "accentcolor" => {
+            let _ = args.skip();
+
+            let color = args.full();
+            
+            if color.is_empty() {
+                return Err(CommandError::from(get_msg!("error/profile_accentcolor_not_given")));
+            }
+
+            let color = parse_number(&color, "hex");
+
+            if let Some(color) = color {
+                user_data.profile_accent_color = Some(color.clone());
+
+                pool.save_user(&user_data);
+                let _ = msg.channel_id.say(get_msg!("info/profile_accent_color_set", color));
+            } else {
+                return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
+            }
+        },
+        _ => {
+            is_modifying = false;
+        },
+    };
+
+    // doesn't match any subcommands, just look up profile
+    
+    let id = if !is_modifying {
+        match args.single::<String>() {
+            Ok(val) => {
+                match utils::user::get_id(&val) {
+                    Some(id) => id,
+                    None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
+                }
+            },
+            Err(_) => msg.author.id.0,
+        }
+    } else {
+        msg.author.id.0
+    };
+
+    let level_data = match pool.get_level(id, guild_id) {
+        Some(level_data) => level_data,
+        None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
+    };
+
+    let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
+
+    generate_profile(&msg, id, &user_data, &level_data, global_xp)?;
+    pool.update_stat("profile", "profiles_generated", 1);
 });
 
-// fn hex_to_rgba(val: &str) -> String {
-//     
-// }
+fn parse_number(val: &str, format: &str) -> Option<String> {
+    if format == "rgb" {
+        let (r, g, b) = if let Some(rgb) = parse_rgba(&val) {
+            rgb
+        } else if let Some(rgb) = hex_to_rgba(&val) {
+            rgb
+        } else {
+            return None;
+        };
 
-fn generate_profile(msg: &Message, id: u64, user_data: &Option<User>,   
+        return Some(format!("{}, {}, {}", r, g, b));
+    } else if format == "hex" {
+        let hex = if let Some(hex) = parse_rgba(&val).and_then(|x| Some(rgba_to_hex(x))) {
+            hex
+        } else if let Some(hex) = parse_hex(&val) {
+            hex
+        } else {
+            return None;
+        };
+
+        return Some(hex);
+    }
+
+    None
+}
+
+fn parse_rgba(val: &str) -> Option<(u32, u32, u32)> {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(\d{1,3}), ?(\d{1,3}), ?(\d{1,3})").unwrap();
+    }
+
+    if let Some(caps) = RE.captures(&val) {
+        let r = caps.get(1).unwrap().as_str().parse::<u32>().unwrap();
+        let g = caps.get(2).unwrap().as_str().parse::<u32>().unwrap();
+        let b = caps.get(3).unwrap().as_str().parse::<u32>().unwrap();
+
+        // numbers given out of range
+        if !in_range(r) || !in_range(g) || !in_range(b) {
+            return None;
+        }
+
+        Some((r, g, b))
+    } else {
+        None
+    }
+}
+
+fn parse_hex(val: &str) -> Option<String> {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(?:[0-9a-fA-F]{3}){1,2}").unwrap();
+    }
+
+    RE.find(&val).and_then(|x| Some(x.as_str().to_string()))
+}
+
+fn in_range(num: u32) -> bool {
+    num < 256
+}
+
+fn hex_to_rgba(val: &str) -> Option<(u32, u32, u32)> {
+    // skip the first char if #
+    let mut pos = if val.starts_with("#") {
+        1
+    } else {
+        0
+    };
+
+    let r = u32::from_str_radix(&val[pos..pos + 2], 16).ok()?;
+    pos += 2;
+    let g = u32::from_str_radix(&val[pos..pos + 2], 16).ok()?;
+    pos += 2;
+    let b = u32::from_str_radix(&val[pos..pos + 2], 16).ok()?;
+
+    Some((r, g, b))
+}
+
+fn rgba_to_hex(val: (u32, u32, u32)) -> String {
+    format!("{:x}{:x}{:x}", val.0, val.1, val.2)
+}
+
+fn generate_profile(msg: &Message, id: u64, user_data: &User,   
         level_data: &UserLevelRanked, global_xp: i64) -> Result<(), CommandError> {
 
-    let user_rep;
-    let is_patron;
-    let patron_emoji;
-    let fishies;
+    let user_rep = user_data.rep.clone();
+    let is_patron = user_data.is_patron.clone();
+    let patron_emoji = user_data.patron_emoji.clone();
+    let fishies = user_data.fishies.clone();
+    // profiles
+    let background_url = user_data.profile_background_url.clone()
+        .unwrap_or("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg".to_owned());
+    let bio = user_data.profile_bio.clone()
+        .unwrap_or("Hey hey heyy".to_owned());
+    let bg_darken = user_data.profile_bg_darken.clone()
+        .unwrap_or("0".to_owned());
+    
+    // content color has to be rgba for transparency
+    let content_color = user_data.profile_content_color.clone()
+        .unwrap_or("73, 186, 255".to_owned());
+    let content_opacity = user_data.profile_content_opacity.clone()
+        .unwrap_or("0.9".to_owned());
+    let text_color = user_data.profile_text_color.clone()
+        .unwrap_or("ffffff".to_owned());
+    let accent_color = user_data.profile_accent_color.clone()
+        .unwrap_or("ffffff".to_owned());
 
-    let background_url;
-    let bio;
-    let bg_darken;
-    let content_color;
-    let content_opacity;
-    let text_color;
-    let accent_color;
-
-    if let &Some(ref val) = user_data {
-        user_rep = val.rep.clone();
-        is_patron = val.is_patron.clone();
-        patron_emoji = val.patron_emoji.clone();
-        fishies = val.fishies.clone();
-        // profiles
-        background_url = val.profile_background_url.clone()
-            .unwrap_or("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg".to_owned());
-        bio = val.profile_bio.clone()
-            .unwrap_or("Hey hey heyy".to_owned());
-        bg_darken = val.profile_bg_darken.clone()
-            .unwrap_or("0".to_owned());
-        
-        // content color has to be rgba for transparency
-        content_color = val.profile_content_color.clone()
-            .unwrap_or("73, 186, 255".to_owned());
-        content_opacity = val.profile_content_opacity.clone()
-            .unwrap_or("0.9".to_owned());
-        text_color = val.profile_text_color.clone()
-            .unwrap_or("ffffff".to_owned());
-        accent_color = val.profile_accent_color.clone()
-            .unwrap_or("ffffff".to_owned());
-    } else {
-        return Err(CommandError::from(get_msg!("error/profile_user_not_found")))
-    }
+    
 
     let user = match UserId(id).get() {
         Ok(val) => val,

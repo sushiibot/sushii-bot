@@ -64,7 +64,14 @@
         "fishies_received": "You caught {} fishies! <:fishy:416336686516273162>",
         "fishies_given": "You caught {} fishies for {}! <:fishy:416336686516273162>",
         "fishies_received_golden": "You caught a **golden fishy** ({} fishies)! <:goldenFishy:417166108085321748>",
-        "fishies_given_golden": "You caught a **golden fishy** ({} fishies) for {}! <:goldenFishy:417166108085321748>"
+        "fishies_given_golden": "You caught a **golden fishy** ({} fishies) for {}! <:goldenFishy:417166108085321748>",
+
+        "profile_bio_set": "Your profile bio has been set to {}.",
+        "profile_bg_darken_set": "Your profile background darkness has been set to {}.",
+        "profile_content_color_set": "Your profile content color has been set to {}.",
+        "profile_content_opacity_set": "Your profile content opacity has been set to {}.",
+        "profile_text_color_set": "Your profile text color has been set to {}.",
+        "profile_accent_color_set": "Your profile accent color has been set to {}."
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -168,6 +175,15 @@
         "urban_failed_retrieve": "Failed to retrieve definition.",
 
         "profile_image_server_failed": "Failed to generate profile, try again later.",
-        "profile_user_not_found": "No data was found for this user."
+        "profile_user_not_found": "No data was found for this user.",
+        "profile_background_not_given": "Please give a background.",
+        "profile_bio_not_given": "Please give a bio.",
+        "profile_bgdarkness_not_given": "Please give a darkness between `0-1`.  0 is lightest, 1 is darkest.",
+        "profile_contentcolor_not_given": "Please give a color.  You can use a hex or rgb code.",
+        "profile_contentopacity_not_given": "Please give a contentopacity between `0-1`.  0 is transparent, 1 is opaque.",
+        "profile_textcolor_not_given": "Please give a text color.  You can use a hex or rgb code.",
+        "profile_accentcolor_not_given": "Please give a accent color.  You can use a hex or rgb code.",
+        "profile_invalid_color": "Invalid color code, please give a hex or rgba color.  Example: `#74b9ff`, `rgb(116, 185, 255)`",
+        "profile_invalid_opacity": "Invalid opacity.  The value must be between 0 and 1."
     }
 }
