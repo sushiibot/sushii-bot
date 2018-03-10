@@ -194,7 +194,7 @@ pub struct NewNotification<'a> {
     pub keyword: &'a str,
 }
 
-#[derive(Queryable, Clone, Debug)]
+#[derive(Queryable, AsChangeset, Clone, Debug)]
 pub struct User {
     pub id: i64,
     pub last_msg: NaiveDateTime,
