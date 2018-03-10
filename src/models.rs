@@ -209,6 +209,13 @@ pub struct User {
     pub fishies: i64,
     pub last_fishies: Option<NaiveDateTime>,
     pub patron_emoji: Option<String>,
+    pub profile_background_url: Option<String>,
+    pub profile_bio: Option<String>,
+    pub profile_bg_darken: Option<String>,
+    pub profile_content_color: Option<String>,
+    pub profile_content_opacity: Option<String>,
+    pub profile_text_color: Option<String>,
+    pub profile_accent_color: Option<String>,
 }
 
 #[derive(Insertable, Debug)]
@@ -226,7 +233,7 @@ pub struct NewUser<'a> {
     pub is_patron: bool,
     pub fishies: i64,
     pub last_fishies: Option<&'a NaiveDateTime>,
-    pub patron_emoji: Option<String>,
+    pub patron_emoji: Option<&'a str>,
 }
 
 #[derive(Queryable, AsChangeset, Clone, Debug)]

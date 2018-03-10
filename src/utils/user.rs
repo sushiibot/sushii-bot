@@ -72,3 +72,33 @@ pub fn find_member(value: &str, guild: &Guild) -> Option<Member> {
     }
 }
 
+pub fn get_pos_emoji(pos: i64) -> String {
+    match pos {
+        0 => ":first_place:",
+        1 => ":second_place:",
+        2 => ":third_place:",
+        _ => ":medal:",
+    }.to_owned()
+}
+
+
+pub fn next_level(level: i64) -> i64 {
+    50 * (level.pow(2)) - (50 * level)
+}
+
+pub fn get_level(xp: i64) -> i64 {
+    let mut level = 0;
+    while next_level(level + 1) <= xp {
+        level += 1;
+    }
+
+    return level;
+}
+
+pub fn format_rank<'a>(rank: &'a i64, total: &'a i64) -> String {
+    if *rank == 0 {
+        "N/A".to_owned()
+    } else {
+        format!("{}/{}", rank, total)
+    }
+}

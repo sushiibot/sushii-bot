@@ -165,6 +165,9 @@
         "tag_content_unchanged": "New tag response is unchanged.",
         "tag_name_unchanged": "New tag name is unchanged.",
 
-        "urban_failed_retrieve": "Failed to retrieve definition."
+        "urban_failed_retrieve": "Failed to retrieve definition.",
+
+        "profile_image_server_failed": "Failed to generate profile, try again later.",
+        "profile_user_not_found": "No data was found for this user."
     }
 }

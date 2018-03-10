@@ -4,16 +4,18 @@ use reqwest;
 use std::collections::HashMap;
 use std::fmt::Write;
 use utils;
+use utils::user::*;
 use utils::config::get_pool;
 use utils::time::now_utc;
+use utils::html::escape_html;
 
 use num_traits::cast::ToPrimitive;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
 
-const LEVEL_HTML: &'static str = include_str!("../../assets/html/rank.html");
+const LEVEL_HTML: &'static str = include_str!("../../../assets/html/rank.html");
 
-command!(profile(ctx, msg, args) {
+command!(rank(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
     let id = match args.single::<String>() {
@@ -175,28 +177,8 @@ command!(profile(ctx, msg, args) {
     let files = vec![(&buf[..], "level.png")];
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
-    pool.update_stat("profile", "profiles_generated", 1);
+    pool.update_stat("profile", "levels_generated", 1);
 });
-
-fn escape_html(s: &str) -> String {
-    let mut escaped = s.to_string();
-
-    escaped = escaped.replace("&", "&amp");
-    escaped = escaped.replace("<", "&lt");
-    escaped = escaped.replace(">", "&gt");
-    escaped = escaped.replace("\"", "&quot");
-    escaped = escaped.replace("'", "&#39");
-
-    escaped
-}
-
-fn format_rank<'a>(rank: &'a i64, total: &'a i64) -> String {
-    if *rank == 0 {
-        "N/A".to_owned()
-    } else {
-        format!("{}/{}", rank, total)
-    }
-}
 
 fn get_rep_emoji_level(user_rep: i32) -> String {
     let num = match user_rep {
@@ -322,28 +304,6 @@ command!(rep(ctx, msg, args) {
     let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag()));
 });
 
-fn get_pos_emoji(pos: i64) -> String {
-    match pos {
-        0 => ":first_place:",
-        1 => ":second_place:",
-        2 => ":third_place:",
-        _ => ":medal:",
-    }.to_owned()
-}
-
-
-fn next_level(level: i64) -> i64 {
-    50 * (level.pow(2)) - (50 * level)
-}
-
-fn get_level(xp: i64) -> i64 {
-    let mut level = 0;
-    while next_level(level + 1) <= xp {
-        level += 1;
-    }
-
-    return level;
-}
 
 command!(top_levels(ctx, msg, args) {
     let pool = get_pool(&ctx);
