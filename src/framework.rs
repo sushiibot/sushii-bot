@@ -192,23 +192,27 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         .group("Users", |g| { 
             let g = g
             .guild_only(true)
+            .command("rank", |c| c
+                .desc("Shows your rank.")
+                .bucket("profile_bucket")
+                .cmd(commands::users::levels::rank)
+            )
             .command("profile", |c| c
                 .desc("Shows your profile.")
                 .bucket("profile_bucket")
-                .known_as("rank")
-                .cmd(commands::levels::profile)
+                .cmd(commands::users::profile::profile)
             )
             .command("toplevels", |c| c
                 .desc("Shows the top users.")
-                .cmd(commands::levels::top_levels)
+                .cmd(commands::users::levels::top_levels)
             )
             .command("topreps", |c| c
                 .desc("Shows the top users.")
-                .cmd(commands::levels::top_reps)
+                .cmd(commands::users::levels::top_reps)
             )
             .command("rep", |c| c
                 .desc("Rep a user.")
-                .cmd(commands::levels::rep)
+                .cmd(commands::users::levels::rep)
             )
             .command("fishy", |c| c
                 .batch_known_as(vec!["foshy", "fwishy"])
