@@ -21,7 +21,15 @@ command!(profile(ctx, msg, args) {
     let pool = get_pool(&ctx);
 
     let action = match args.single_n::<String>() {
-        Ok(val) => val,
+        Ok(val) => {
+            let subcommands = vec!["background", "bg", "bio", "bgdarkness", "contentcolor", "contentopacity", "textcolor", "accentcolor"];
+
+            if !subcommands.contains(&val.as_ref()) {
+                "profile".to_owned()
+            } else {
+                val
+            }
+        },
         Err(_) => "profile".to_owned(),
     };
 
@@ -30,12 +38,24 @@ command!(profile(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    let mut user_data = match pool.get_user(msg.author.id.0) {
+    let id = if action == "profile" {
+        match args.single::<String>() {
+            Ok(val) => {
+                match utils::user::get_id(&val) {
+                    Some(id) => id,
+                    None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
+                }
+            },
+            Err(_) => msg.author.id.0,
+        }
+    } else {
+        msg.author.id.0
+    };
+
+    let mut user_data = match pool.get_user(id) {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("error/profile_user_not_found"))),
     };
-
-    let mut is_modifying = true;
 
     match action.as_ref() {
         "background" | "bg" => {
@@ -153,27 +173,10 @@ command!(profile(ctx, msg, args) {
                 return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
             }
         },
-        _ => {
-            is_modifying = false;
-        },
+        _ => {},
     };
 
     // doesn't match any subcommands, just look up profile
-    
-    let id = if !is_modifying {
-        match args.single::<String>() {
-            Ok(val) => {
-                match utils::user::get_id(&val) {
-                    Some(id) => id,
-                    None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
-                }
-            },
-            Err(_) => msg.author.id.0,
-        }
-    } else {
-        msg.author.id.0
-    };
-
     let level_data = match pool.get_level(id, guild_id) {
         Some(level_data) => level_data,
         None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
@@ -302,7 +305,7 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
     let mut html = PROFILE_HTML.to_owned();
 
     html = html.replace("{USERNAME}", &escape_html(&user.tag()));
-    html = html.replace("{AVATAR_URL}", &user.face());
+    html = html.replace("{AVATAR_URL}", &user.face().replace("gif", "jpg"));
     html = html.replace("{BACKGROUND_URL}", &escape_html(&background_url));
     html = html.replace("{BIO}", &escape_html(&bio));
     html = html.replace("{DAILY}", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total));
