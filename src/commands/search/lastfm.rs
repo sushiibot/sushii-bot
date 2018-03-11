@@ -10,26 +10,29 @@ use chrono::Utc;
 use chrono::naive::NaiveDateTime;
 use utils::config::get_pool;
 use utils::user::get_id;
+use utils::html::clean_url;
 use env;
 
 
 const FM_RECENT_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user={USER}&api_key={KEY}&format=json";
 const FM_TOP_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user={USER}&api_key={KEY}&format=json&limit=10&period={PERIOD}";
+const FM_TOP_ARTISTS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user={USER}&api_key={KEY}&format=json&limit=10&period={PERIOD}";
+const FM_TOP_ALBUMS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user={USER}&api_key={KEY}&format=json&limit=10&period={PERIOD}";
+const FM_LOVED_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user.getlovedtracks&user={USER}&api_key={KEY}&format=json&limit=10";
 
 
 command!(fm(ctx, msg, args) {
     let _ = msg.channel_id.broadcast_typing();
 
-    let action = match args.single_n::<String>() {
+    let sub_command = match args.single::<String>() {
         Ok(val) => val,
         Err(_) => "nowplaying".to_owned(),
     };
 
-    match action.as_ref() {
+    match sub_command.as_ref() {
         "toptracks" => {
-            let _ = args.skip();
             let period = args.single::<String>().unwrap_or("overall".to_owned());
-            let (username, saved) = get_username(&ctx, msg.author.id.0, &mut args)?;
+            let username = get_username(&ctx, msg.author.id.0)?;
 
             if !is_valid_period(&period) {
                 return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
@@ -37,11 +40,41 @@ command!(fm(ctx, msg, args) {
 
             let data = get_data(FM_TOP_TRACKS_URL, &username, &period)?;
 
-            top_tracks(&msg, &data, saved, &period);
+            top_tracks(&msg, &data, &period);
+        },
+        "topartists" => {
+            let period = args.single::<String>().unwrap_or("overall".to_owned());
+            let username = get_username(&ctx, msg.author.id.0)?;
+
+            if !is_valid_period(&period) {
+                return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
+            }
+
+            let data = get_data(FM_TOP_ARTISTS_URL, &username, &period)?;
+
+            top_artists(&msg, &data, &period);
+        },
+        "topalbums" => {
+            let period = args.single::<String>().unwrap_or("overall".to_owned());
+            let username = get_username(&ctx, msg.author.id.0)?;
+
+            if !is_valid_period(&period) {
+                return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
+            }
+
+            let data = get_data(FM_TOP_ALBUMS_URL, &username, &period)?;
+
+            top_albums(&msg, &data, &period);
+        },
+        "loved" => {
+            let username = get_username(&ctx, msg.author.id.0)?;
+            let data = get_data(FM_LOVED_TRACKS_URL, &username, "ayy lmao")?;
+
+            loved_tracks(&msg, &data);
         },
         // no matches would equal just -fm, show now playing / last track
         "nowplaying" | _ => {
-            let (username, saved) = get_username(&ctx, msg.author.id.0, &mut args)?;
+            let (username, saved) = set_or_get_username(&ctx, msg.author.id.0, &mut args)?;
             let data = get_data(FM_RECENT_TRACKS_URL, &username, "yep lol")?;
             recent_tracks(&msg, &data, saved);
         }
@@ -54,7 +87,7 @@ fn is_valid_period(period: &str) -> bool {
     valid_periods.contains(&period)
 }
 
-fn top_tracks(msg: &Message, data: &Value, saved: bool, period: &str) {
+fn top_tracks(msg: &Message, data: &Value, period: &str) {
     let username = data.pointer("/toptracks/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
     let empty_tracks = &vec![];
     let tracks = data.pointer("/toptracks/track").and_then(|x| x.as_array()).unwrap_or(&empty_tracks);
@@ -68,6 +101,7 @@ fn top_tracks(msg: &Message, data: &Value, saved: bool, period: &str) {
         let title = track.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
         let url = track.pointer("/url").and_then(|x| x.as_str()).unwrap_or("N/A");
         let artist = track.pointer("/artist/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let artist_url = track.pointer("/artist/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
 
         let play_plural = if playcount == "1" {
             "play"
@@ -75,17 +109,12 @@ fn top_tracks(msg: &Message, data: &Value, saved: bool, period: &str) {
             "plays"
         };
 
-        let _ = write!(s, "`[{:02}] {}` {} - **[{}]({})** by {}\n", i + 1, playcount, play_plural, title, url, artist);
+        let _ = write!(s, "`[{:02}] {}` {} - **[{}]({})** by [{}]({})\n",
+            i + 1, playcount, play_plural, title, clean_url(url), artist, clean_url(artist_url));
     }
 
-    let _ = msg.channel_id.send_message(|m| {
-        let mut m = m;
-
-        if saved {
-            m = m.content(get_msg!("info/fm_saved_username"));
-        }
-
-        m.embed(|e| e
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
             .author(|a| a
                 .name(&format!("{}'s Top Tracks - {}", username, period))
                 .url(&format!("https://www.last.fm/user/{}", username))
@@ -95,7 +124,117 @@ fn top_tracks(msg: &Message, data: &Value, saved: bool, period: &str) {
             .description(&s)
             .thumbnail(first_image)
         )
-    });
+    );
+}
+
+fn top_artists(msg: &Message, data: &Value, period: &str) {
+    let username = data.pointer("/topartists/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
+    let empty_artists = &vec![];
+    let artists = data.pointer("/topartists/artist").and_then(|x| x.as_array()).unwrap_or(&empty_artists);
+
+    let mut s = String::new();
+
+    let first_image = artists.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
+
+    for (i, artist) in artists.iter().enumerate() {
+        let name = artist.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let playcount = artist.pointer("/playcount").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let url = artist.pointer("/url").and_then(|x| x.as_str()).unwrap_or("N/A");
+
+        let play_plural = if playcount == "1" {
+            "play"
+        } else {
+            "plays"
+        };
+
+        let _ = write!(s, "`[{:02}] {}` {} - [{}]({})\n", i + 1, playcount, play_plural, name, clean_url(url));
+    }
+
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
+            .author(|a| a
+                .name(&format!("{}'s Top Artists - {}", username, period))
+                .url(&format!("https://www.last.fm/user/{}", username))
+                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
+            )
+            .color(0xb90000)
+            .description(&s)
+            .thumbnail(first_image)
+        )
+    );
+}
+
+fn top_albums(msg: &Message, data: &Value, period: &str) {
+    let username = data.pointer("/topalbums/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
+    let empty_albums = &vec![];
+    let albums = data.pointer("/topalbums/album").and_then(|x| x.as_array()).unwrap_or(&empty_albums);
+
+    let mut s = String::new();
+
+    let first_image = albums.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
+
+    for (i, album) in albums.iter().enumerate() {
+        let name = album.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let playcount = album.pointer("/playcount").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let url = album.pointer("/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
+        let artist = album.pointer("/artist/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let artist_url = album.pointer("/artist/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
+
+        let play_plural = if playcount == "1" {
+            "play"
+        } else {
+            "plays"
+        };
+
+        let _ = write!(s, "`[{:02}] {}` {} - **[{}]({})** by [{}]({})\n", 
+            i + 1, playcount, play_plural, name, clean_url(url), artist, clean_url(artist_url));
+    }
+
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
+            .author(|a| a
+                .name(&format!("{}'s Top Albums - {}", username, period))
+                .url(&format!("https://www.last.fm/user/{}", username))
+                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
+            )
+            .color(0xb90000)
+            .description(&s)
+            .thumbnail(first_image)
+        )
+    );
+}
+
+fn loved_tracks(msg: &Message, data: &Value) {
+    let username = data.pointer("/lovedtracks/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
+    let empty_tracks = &vec![];
+    let tracks = data.pointer("/lovedtracks/track").and_then(|x| x.as_array()).unwrap_or(&empty_tracks);
+
+    let mut s = String::new();
+
+    let first_image = tracks.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
+
+    for (i, track) in tracks.iter().enumerate() {
+        let title = track.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let url = track.pointer("/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
+        let artist = track.pointer("/artist/name").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let artist_url = track.pointer("/artist/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
+
+        let _ = write!(s, "`[{:02}]` **[{}]({})** by [{}]({})\n",
+            i + 1, title, clean_url(url), artist, clean_url(artist_url));
+    }
+
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
+            .author(|a| a
+                .name(&format!("{}'s Recently Loved Tracks", username))
+                .url(&format!("https://www.last.fm/user/{}", username))
+                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
+            )
+            .color(0xb90000)
+            .description(&s)
+            .thumbnail(first_image)
+        )
+    );
 }
 
 fn recent_tracks(msg: &Message, data: &Value, saved: bool) {
@@ -106,9 +245,7 @@ fn recent_tracks(msg: &Message, data: &Value, saved: bool) {
     let last_track_url = data.pointer("/recenttracks/track/0/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
 
     // urlencode parenthesis
-    let last_track_url = last_track_url
-        .replace("(", "%28")
-        .replace(")", "%29");
+    let last_track_url = clean_url(&last_track_url);
 
     // check for empty values that break embeds
     let username = if username.is_empty() {
@@ -193,8 +330,12 @@ fn recent_tracks(msg: &Message, data: &Value, saved: bool) {
     });
 }
 
+fn get_username(ctx: &Context, user: u64) -> Result<String, CommandError> {
+    let pool = get_pool(&ctx);
+    pool.get_lastfm_username(user).ok_or(CommandError::from(get_msg!("error/fm_no_username")))
+}
 
-fn get_username(ctx: &Context, user: u64, args: &mut Args) -> Result<(String, bool), CommandError> {
+fn set_or_get_username(ctx: &Context, user: u64, args: &mut Args) -> Result<(String, bool), CommandError> {
     let pool = get_pool(&ctx);
 
     let username_or_set = args.full();
