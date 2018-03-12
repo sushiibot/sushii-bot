@@ -24,13 +24,14 @@ const FM_LOVED_TRACKS_URL: &str = "http://ws.audioscrobbler.com/2.0/?method=user
 command!(fm(ctx, msg, args) {
     let _ = msg.channel_id.broadcast_typing();
 
-    let sub_command = match args.single::<String>() {
+    let sub_command = match args.single_n::<String>() {
         Ok(val) => val,
         Err(_) => "nowplaying".to_owned(),
     };
 
     match sub_command.as_ref() {
         "toptracks" => {
+            let _ = args.skip();
             let period = args.single::<String>().unwrap_or("overall".to_owned());
             let username = get_username(&ctx, msg.author.id.0)?;
 
@@ -43,6 +44,7 @@ command!(fm(ctx, msg, args) {
             top_tracks(&msg, &data, &period);
         },
         "topartists" => {
+            let _ = args.skip();
             let period = args.single::<String>().unwrap_or("overall".to_owned());
             let username = get_username(&ctx, msg.author.id.0)?;
 
@@ -55,6 +57,7 @@ command!(fm(ctx, msg, args) {
             top_artists(&msg, &data, &period);
         },
         "topalbums" => {
+            let _ = args.skip();
             let period = args.single::<String>().unwrap_or("overall".to_owned());
             let username = get_username(&ctx, msg.author.id.0)?;
 
@@ -67,6 +70,7 @@ command!(fm(ctx, msg, args) {
             top_albums(&msg, &data, &period);
         },
         "loved" => {
+            let _ = args.skip();
             let username = get_username(&ctx, msg.author.id.0)?;
             let data = get_data(FM_LOVED_TRACKS_URL, &username, "ayy lmao")?;
 
