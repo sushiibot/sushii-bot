@@ -167,7 +167,7 @@
         "tag_none": "There doesn't seem to be any tags in this server.",
         "tag_not_found": "Couldn't find a tag named `{}`",
         "tags_not_found": "Couldn't find any tags.",
-        "tag_not_owner": "This tag doesn't belong to you.",
+        "tag_no_permission": "This tag doesn't belong to you.",
         "tag_not_found_or_not_owner": "This tag doesn't belong to you or it doesn't exist.",
         "tag_content_unchanged": "New tag response is unchanged.",
         "tag_name_unchanged": "New tag name is unchanged.",
