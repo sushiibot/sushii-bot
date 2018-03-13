@@ -340,17 +340,17 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
     let next_level_xp_remaining = next_level_total_xp_required - level_data.msg_all_time;
     let next_level_xp_progress = next_level_xp_required - next_level_xp_remaining;
 
-    let xp_percentage = ((next_level_xp_progress as f64 / next_level_xp_required as f64) * 100.0) as u64;
+    let xp_percentage = next_level_xp_progress as f64 / next_level_xp_required as f64;
 
-    let xp_percentage = if xp_percentage > 100 {
-        0
+    let xp_percentage = if xp_percentage > 1.0 {
+        0.0
     } else {
         xp_percentage
     };
 
     html = html.replace("{LEVEL}", &level.to_string());
     html = html.replace("{GLOBAL_LEVEL}", &global_level.to_string());
-    html = html.replace("{XP_PROGRESS}", &xp_percentage.to_string());
+    html = html.replace("{XP_PROGRESS}", &(xp_percentage * 326.72).to_string());
 
 
     // check if patron, add a heart
