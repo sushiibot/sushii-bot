@@ -52,10 +52,10 @@ command!(rank(ctx, msg, args) {
     let patron_emoji = user_data.patron_emoji;
     let fishies = user_data.fishies;
 
-    let profile_options = match user_data.profile_options {
-        Some(val) => val.as_object().cloned().unwrap_or(Map::new()),
-        None => Map::new(),
-    };
+    let profile_options = user_data.profile_options
+        .clone()
+        .and_then(|x| x.as_object().cloned())
+        .unwrap_or(Map::new());
 
     let content_color = profile_options.get("content_color").and_then(|x| x.as_str())
         .unwrap_or("73, 186, 255");
