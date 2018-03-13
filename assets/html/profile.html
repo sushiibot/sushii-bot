@@ -19,7 +19,7 @@
             padding: 0;
             font-family: 'Ubuntu';
             /*background-image: url("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg"); */
-            background-image: url("{BACKGROUND_URL}");
+            background-image: url("{BACKGROUND_URL}"); 
             background-size: cover;
             background-repeat: no-repeat;
         }
@@ -37,7 +37,7 @@
             width: 100%;
             background-color: #000000;
             /*opacity: .1; */
-            opacity: {BG_DARKEN};
+            opacity: {BG_DARKEN}; 
         }
 
         .section {
@@ -88,7 +88,7 @@
             left: 0;
             z-index: 1;
             /*background-color: #fff; */
-            background-color: #{ACCENT_COLOR};
+            background-color: #{ACCENT_COLOR}; 
             height: 110px;
             border-radius: 50%;
             -moz-border-radius: 50%;
@@ -134,27 +134,24 @@
         h5,
         h6 {
             /*color: #fff !important; */
-            color: #{TEXT_COLOR} !important;
+            color: #{TEXT_COLOR} !important; 
         }
 
         .hero-bg-color {
             /*background-color: rgba(96, 107, 209, 0.8); */
-            background-color: rgba({CONTENT_COLOR}, {CONTENT_OPACITY});
+            background-color: rgba({CONTENT_COLOR}, {CONTENT_OPACITY}); 
             /*color: #ffffff; */
-            color: #{TEXT_COLOR};
+            color: #{TEXT_COLOR}; 
         }
 
         #footer-text {
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .footer-text-title {
             opacity: .8;
         }
 
-        #footer-text .column {
-            padding-bottom: 0;
-        }
     </style>
 </head>
 
@@ -168,12 +165,11 @@
                         <img id="avatar" src="{AVATAR_URL}">
                         
                         <svg id="progress" viewbox="0 0 110 110">
-                            <circle cx="55" cy="55" r="52" fill="none" 
+                            <circle cx="55" cy="55" r="52.5" fill="none" 
                                 stroke-linecap="butt"
                                 stroke-width="5"
-                                stroke="#fff"
-                                stroke-dasharray="300,314.15"
-                                stroke-dashoffset="100" />
+                                stroke="#{ACCENT_COLOR}"
+                                stroke-dasharray="{XP_PROGRESS},326.72" />
                             </path>
                         </svg>
                         <div class="circle"></div>
