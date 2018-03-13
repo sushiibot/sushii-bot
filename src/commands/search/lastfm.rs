@@ -30,7 +30,7 @@ command!(fm(ctx, msg, args) {
     };
 
     match sub_command.as_ref() {
-        "toptracks" => {
+        "toptracks" | "topsongs" => {
             let _ = args.skip();
             let period = args.single::<String>().unwrap_or("overall".to_owned());
             let username = get_username(&ctx, msg.author.id.0)?;
