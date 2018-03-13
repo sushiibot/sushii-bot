@@ -9,6 +9,7 @@ use utils::config::get_pool;
 use utils::time::now_utc;
 use utils::html::escape_html;
 
+use serde_json::map::Map;
 use num_traits::cast::ToPrimitive;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
@@ -40,25 +41,28 @@ command!(rank(ctx, msg, args) {
 
     let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
 
-    let mut user_rep;
-    let mut activity;
-    let mut is_patron;
-    let mut patron_emoji;
-    let mut fishies;
+    let user_data = match pool.get_user(id) {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("error/level_no_data"))),
+    };
+    
+    let user_rep = user_data.rep;
+    let activity = user_data.msg_activity;
+    let is_patron = user_data.is_patron;
+    let patron_emoji = user_data.patron_emoji;
+    let fishies = user_data.fishies;
 
-    if let Some(val) = pool.get_user(id) {
-        user_rep = val.rep;
-        activity = val.msg_activity;
-        is_patron = val.is_patron;
-        patron_emoji = val.patron_emoji;
-        fishies = val.fishies;
-    } else {
-        user_rep = 0;
-        activity = vec![0; 24];
-        is_patron = false;
-        patron_emoji = None;
-        fishies = 0;
-    }
+    let profile_options = match user_data.profile_options {
+        Some(val) => val.as_object().cloned().unwrap_or(Map::new()),
+        None => Map::new(),
+    };
+
+    let content_color = profile_options.get("content_color").and_then(|x| x.as_str())
+        .unwrap_or("73, 186, 255");
+    let content_opacity = profile_options.get("content_opacity").and_then(|x| x.as_str())
+        .unwrap_or("1");
+
+    
 
     let user = match UserId(id).get() {
         Ok(val) => val,
@@ -80,6 +84,9 @@ command!(rank(ctx, msg, args) {
     html = html.replace("{FISHIES}", &fishies.to_string());
     html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
+
+    html = html.replace("{CONTENT_COLOR}", &content_color);
+    html = html.replace("{CONTENT_OPACITY}", &content_opacity);
 
     let global_level = get_level(global_xp);
     let level = get_level(level_data.msg_all_time);

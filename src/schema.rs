@@ -186,13 +186,7 @@ table! {
         fishies -> Int8,
         last_fishies -> Nullable<Timestamp>,
         patron_emoji -> Nullable<Text>,
-        profile_background_url -> Nullable<Text>,
-        profile_bio -> Nullable<Text>,
-        profile_bg_darken -> Nullable<Text>,
-        profile_content_color -> Nullable<Text>,
-        profile_content_opacity -> Nullable<Text>,
-        profile_text_color -> Nullable<Text>,
-        profile_accent_color -> Nullable<Text>,
+        profile_options -> Nullable<Jsonb>,
     }
 }
 
