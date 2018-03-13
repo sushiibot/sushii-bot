@@ -18,7 +18,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Ubuntu';
-            /* background-image: url("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg"); */
+            /*background-image: url("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg"); */
             background-image: url("{BACKGROUND_URL}");
             background-size: cover;
             background-repeat: no-repeat;
@@ -36,7 +36,7 @@
             height: 100%;
             width: 100%;
             background-color: #000000;
-            /* opacity: .1; */
+            /*opacity: .1; */
             opacity: {BG_DARKEN};
         }
 
@@ -87,13 +87,22 @@
             top: 0;
             left: 0;
             z-index: 1;
-            /* background-color: #fff; */
+            /*background-color: #fff; */
             background-color: #{ACCENT_COLOR};
             height: 110px;
             border-radius: 50%;
             -moz-border-radius: 50%;
             -webkit-border-radius: 50%;
             width: 110px;
+            opacity: 0.4;
+        }
+
+        #progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            transform: rotate(-90deg);
         }
 
         #user-avatar-text {
@@ -124,14 +133,14 @@
         h4,
         h5,
         h6 {
+            /*color: #fff !important; */
             color: #{TEXT_COLOR} !important;
-            /* color: #fff !important; */
         }
 
         .hero-bg-color {
-            /* background-color: rgba(96, 107, 209, 0.8); */
+            /*background-color: rgba(96, 107, 209, 0.8); */
             background-color: rgba({CONTENT_COLOR}, {CONTENT_OPACITY});
-            /* color: #ffffff; */
+            /*color: #ffffff; */
             color: #{TEXT_COLOR};
         }
 
@@ -157,6 +166,16 @@
                 <div id="user-avatar-text">
                     <div id="avatar-wrap">
                         <img id="avatar" src="{AVATAR_URL}">
+                        
+                        <svg id="progress" viewbox="0 0 110 110">
+                            <circle cx="55" cy="55" r="52" fill="none" 
+                                stroke-linecap="butt"
+                                stroke-width="5"
+                                stroke="#fff"
+                                stroke-dasharray="300,314.15"
+                                stroke-dashoffset="100" />
+                            </path>
+                        </svg>
                         <div class="circle"></div>
                     </div>
                     <div id="user-text">
