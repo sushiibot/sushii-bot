@@ -1,6 +1,9 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::id::UserId;
 use serenity::model::channel::Message;
+
+use serde_json::value::Value;
+use serde_json::map::Map;
 use reqwest;
 
 use regex::Regex;
@@ -57,6 +60,13 @@ command!(profile(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/profile_user_not_found"))),
     };
 
+    let mut profile_options = user_data.profile_options
+        .clone()
+        .and_then(|x| x.as_object().cloned())
+        .unwrap_or(Map::new());
+    
+    let mut s = None;
+
     match action.as_ref() {
         "background" | "bg" => {
             return Err(CommandError::from("uhh not yet"));
@@ -66,7 +76,6 @@ command!(profile(ctx, msg, args) {
                 Ok(val) => val,
                 Err(_) => return Err(CommandError::from(get_msg!("error/profile_background_not_given"))),
             };
-
         },
         "bio" => {
             let _ = args.skip();
@@ -75,11 +84,9 @@ command!(profile(ctx, msg, args) {
             if bio.is_empty() {
                 return Err(CommandError::from(get_msg!("error/profile_bio_not_given")));
             }
-
-            user_data.profile_bio = Some(bio.to_string());
-
-            pool.save_user(&user_data);
-            let _ = msg.channel_id.say(get_msg!("info/profile_bio_set", bio));
+            
+            profile_options.insert("bio".to_owned(), json!(&bio));
+            s = Some(get_msg!("info/profile_bio_set", bio));
         },
         "bgdarkness" => {
             let _ = args.skip();
@@ -93,10 +100,8 @@ command!(profile(ctx, msg, args) {
                 return Err(CommandError::from(get_msg!("error/profile_invalid_opacity")));
             }
 
-            user_data.profile_bg_darken = Some(darkness.to_string());
-
-            pool.save_user(&user_data);
-            let _ = msg.channel_id.say(get_msg!("info/profile_bg_darken_set", darkness));
+            profile_options.insert("bg_darken".to_owned(), json!(darkness.to_string()));
+            s = Some(get_msg!("info/profile_bg_darken_set", darkness));
         },
         "contentcolor" => {
             let _ = args.skip();
@@ -109,10 +114,9 @@ command!(profile(ctx, msg, args) {
             let color = parse_number(&color, "rgb");
 
             if let Some(color) = color {
-                user_data.profile_content_color = Some(color.clone());
+                profile_options.insert("content_color".to_owned(), json!(color.clone()));
 
-                pool.save_user(&user_data);
-                let _ = msg.channel_id.say(get_msg!("info/profile_content_color_set", color));
+                s = Some(get_msg!("info/profile_content_color_set", color));
             } else {
                 return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
             }
@@ -129,10 +133,9 @@ command!(profile(ctx, msg, args) {
                 return Err(CommandError::from(get_msg!("error/profile_invalid_opacity")));
             }
 
-            user_data.profile_content_opacity = Some(opacity.to_string());
+            profile_options.insert("content_opacity".to_owned(), json!(opacity.to_string()));
 
-            pool.save_user(&user_data);
-            let _ = msg.channel_id.say(get_msg!("info/profile_content_opacity_set", opacity));
+            s = Some(get_msg!("info/profile_content_opacity_set", opacity));
         },
         "textcolor" => {
             let _ = args.skip();
@@ -145,10 +148,9 @@ command!(profile(ctx, msg, args) {
             let color = parse_number(&color, "hex");
 
             if let Some(color) = color {
-                user_data.profile_text_color = Some(color.clone());
+                profile_options.insert("text_color".to_owned(), json!(color.clone()));
 
-                pool.save_user(&user_data);
-                let _ = msg.channel_id.say(get_msg!("info/profile_text_color_set", color));
+                s = Some(get_msg!("info/profile_text_color_set", color));
             } else {
                 return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
             }
@@ -165,16 +167,18 @@ command!(profile(ctx, msg, args) {
             let color = parse_number(&color, "hex");
 
             if let Some(color) = color {
-                user_data.profile_accent_color = Some(color.clone());
+                profile_options.insert("accent_color".to_owned(), json!(color.clone()));
 
-                pool.save_user(&user_data);
-                let _ = msg.channel_id.say(get_msg!("info/profile_accent_color_set", color));
+                s = Some(get_msg!("info/profile_accent_color_set", color));
             } else {
                 return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
             }
         },
         _ => {},
     };
+
+    user_data.profile_options = Some(Value::Object(profile_options));
+    pool.save_user(&user_data);
 
     // doesn't match any subcommands, just look up profile
     let level_data = match pool.get_level(id, guild_id) {
@@ -184,7 +188,7 @@ command!(profile(ctx, msg, args) {
 
     let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
 
-    generate_profile(&msg, id, &user_data, &level_data, global_xp)?;
+    generate_profile(&msg, id, &user_data, &level_data, global_xp, s)?;
     pool.update_stat("profile", "profiles_generated", 1);
 });
 
@@ -269,29 +273,35 @@ fn rgba_to_hex(val: (u32, u32, u32)) -> String {
 }
 
 fn generate_profile(msg: &Message, id: u64, user_data: &User,   
-        level_data: &UserLevelRanked, global_xp: i64) -> Result<(), CommandError> {
+        level_data: &UserLevelRanked, global_xp: i64, message: Option<String>) -> Result<(), CommandError> {
 
     let user_rep = user_data.rep.clone();
     let is_patron = user_data.is_patron.clone();
     let patron_emoji = user_data.patron_emoji.clone();
     let fishies = user_data.fishies.clone();
+
     // profiles
-    let background_url = user_data.profile_background_url.clone()
-        .unwrap_or("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg".to_owned());
-    let bio = user_data.profile_bio.clone()
-        .unwrap_or("Hey hey heyy".to_owned());
-    let bg_darken = user_data.profile_bg_darken.clone()
-        .unwrap_or("0".to_owned());
+    let profile_options = match user_data.profile_options {
+        Some(ref val) => val.as_object().cloned().unwrap_or(Map::new()),
+        None => Map::new(),
+    };
+
+    let background_url = profile_options.get("background_url").and_then(|x| x.as_str())
+        .unwrap_or("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg");
+    let bio = profile_options.get("bio").and_then(|x| x.as_str())
+        .unwrap_or("Hey hey heyy");
+    let bg_darken = profile_options.get("bg_darken").and_then(|x| x.as_str())
+        .unwrap_or("0");
     
     // content color has to be rgba for transparency
-    let content_color = user_data.profile_content_color.clone()
-        .unwrap_or("73, 186, 255".to_owned());
-    let content_opacity = user_data.profile_content_opacity.clone()
-        .unwrap_or("0.9".to_owned());
-    let text_color = user_data.profile_text_color.clone()
-        .unwrap_or("ffffff".to_owned());
-    let accent_color = user_data.profile_accent_color.clone()
-        .unwrap_or("ffffff".to_owned());
+    let content_color = profile_options.get("content_color").and_then(|x| x.as_str())
+        .unwrap_or("73, 186, 255");
+    let content_opacity = profile_options.get("content_opacity").and_then(|x| x.as_str())
+        .unwrap_or("0.9");
+    let text_color = profile_options.get("text_color").and_then(|x| x.as_str())
+        .unwrap_or("ffffff");
+    let accent_color = profile_options.get("accent_color").and_then(|x| x.as_str())
+        .unwrap_or("ffffff");
 
     
 
@@ -375,7 +385,7 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
 
     let files = vec![(&buf[..], "profile.png")];
 
-    let _ = msg.channel_id.send_files(files, |m| m.content(""));
+    let _ = msg.channel_id.send_files(files, |m| m.content(message.unwrap_or("".into())));
 
     Ok(())
 }
