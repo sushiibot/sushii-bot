@@ -281,10 +281,10 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
     let fishies = user_data.fishies.clone();
 
     // profiles
-    let profile_options = match user_data.profile_options {
-        Some(ref val) => val.as_object().cloned().unwrap_or(Map::new()),
-        None => Map::new(),
-    };
+    let profile_options = user_data.profile_options
+        .clone()
+        .and_then(|x| x.as_object().cloned())
+        .unwrap_or(Map::new());
 
     let background_url = profile_options.get("background_url").and_then(|x| x.as_str())
         .unwrap_or("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg");
