@@ -58,7 +58,7 @@ command!(rank(ctx, msg, args) {
         .unwrap_or(Map::new());
 
     let content_color = profile_options.get("content_color").and_then(|x| x.as_str())
-        .unwrap_or("73, 186, 255");
+        .unwrap_or("32, 156, 238");
     let content_opacity = profile_options.get("content_opacity").and_then(|x| x.as_str())
         .unwrap_or("1");
 
