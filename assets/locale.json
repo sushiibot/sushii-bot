@@ -50,6 +50,7 @@
         "gallery_deleted": "Gallery has been deleted.",
 
         "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
+        "fm_no_loved_tracks": "You have no loved tracks. :broken_heart:",
 
         "tag_added": "Added a tag named `{}` with response `{}`.",
         "tag_edited_content": "Edited the tag `{}` with new response `{}`.",

@@ -213,6 +213,11 @@ fn loved_tracks(msg: &Message, data: &Value) {
     let empty_tracks = &vec![];
     let tracks = data.pointer("/lovedtracks/track").and_then(|x| x.as_array()).unwrap_or(&empty_tracks);
 
+    if tracks.is_empty() {
+        let _ = msg.channel_id.say(get_msg!("info/fm_no_loved_tracks"));
+        return;
+    }
+
     let mut s = String::new();
 
     let first_image = tracks.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
