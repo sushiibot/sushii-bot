@@ -1,6 +1,7 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::gateway::GameType;
 use serenity::model::id::UserId;
+use serenity::utils::Colour;
 
 use inflector::Inflector;
 
@@ -13,6 +14,9 @@ command!(userinfo(ctx, msg, args) {
         Some(val) => val,
         None => msg.author.id.0,
     };
+
+    let default_color = Colour::default();
+
     println!("got args");
     
     if let Some(guild) = msg.guild() {
@@ -118,10 +122,15 @@ command!(userinfo(ctx, msg, args) {
                         roles.sort_by(|a, b| b.position.cmp(&a.position));
                         println!("sorted roles");
             
-                        // set the color of embed to highest role color
-                        if roles.len() > 0 {
-                            e = e.color(roles[0].colour);
+                        // set the color of embed to highest role non-default color
+                        if let Some(color) = roles
+                            .iter()
+                            .find(|r| r.colour.0 != default_color.0)
+                            .map(|r| r.colour) {
+
+                            e = e.color(color);
                         }
+                            
                         println!("role color");
                         
 
