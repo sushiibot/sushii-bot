@@ -25,7 +25,9 @@ command!(profile(ctx, msg, args) {
 
     let action = match args.single_n::<String>() {
         Ok(val) => {
-            let subcommands = vec!["background", "bg", "bio", "bgdarkness", "contentcolor", "contentopacity", "textcolor", "accentcolor"];
+            let subcommands = vec!["background", "bg", "bio", "bgdarkness",
+                "contentcolor", "contentopacity", "textcolor", "accentcolor",
+                "graphcolor", "graphbgcolor", "leveldarkness"];
 
             if !subcommands.contains(&val.as_ref()) {
                 "profile".to_owned()
@@ -66,116 +68,130 @@ command!(profile(ctx, msg, args) {
         .unwrap_or(Map::new());
     
     let mut s = None;
+    let mut action_type = "";
+    let mut color_type = "";
+    let mut updated_msg = String::new();
+    let mut map_key = "";
 
     match action.as_ref() {
         "background" | "bg" => {
-            return Err(CommandError::from("uhh not yet"));
+            map_key = "background_url";
 
-            let _ = args.skip();
-            let bg = match args.single::<String>() {
-                Ok(val) => val,
-                Err(_) => return Err(CommandError::from(get_msg!("error/profile_background_not_given"))),
-            };
+            action_type = "text";
+            updated_msg = get_msg!("info/profile_set_bg");
         },
         "bio" => {
-            let _ = args.skip();
-            let bio = args.full();
+            map_key = "bio";
 
-            if bio.is_empty() {
-                return Err(CommandError::from(get_msg!("error/profile_bio_not_given")));
-            }
-            
-            profile_options.insert("bio".to_owned(), json!(&bio));
-            s = Some(get_msg!("info/profile_bio_set", bio));
+            action_type = "text";
+            updated_msg = get_msg!("info/profile_set_bio");
         },
         "bgdarkness" => {
-            let _ = args.skip();
-            let darkness = match args.single::<f32>() {
-                Ok(val) => val,
-                Err(_) => return Err(CommandError::from(get_msg!("error/profile_invalid_opacity"))),
-            };
-            
-            // check if in range
-            if darkness < 0.0 || darkness > 1.0 {
-                return Err(CommandError::from(get_msg!("error/profile_invalid_opacity")));
-            }
+            map_key = "bg_darken";
 
-            profile_options.insert("bg_darken".to_owned(), json!(darkness.to_string()));
-            s = Some(get_msg!("info/profile_bg_darken_set", darkness));
+            action_type = "percent";
+            updated_msg = get_msg!("info/profile_set_bgdarkness");
         },
         "contentcolor" => {
-            let _ = args.skip();
-            let color = args.full();
+            map_key = "content_color";
 
-            if color.is_empty() {
-                return Err(CommandError::from(get_msg!("error/profile_contentcolor_not_given")));
-            }
-
-            let color = parse_number(&color, "rgb");
-
-            if let Some(color) = color {
-                profile_options.insert("content_color".to_owned(), json!(color.clone()));
-
-                s = Some(get_msg!("info/profile_content_color_set", color));
-            } else {
-                return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
-            }
+            action_type = "color";
+            updated_msg = get_msg!("info/profile_set_contentcolor");
+            color_type = "rgb";
         },
         "contentopacity" => {
-            let _ = args.skip();
-            let opacity = match args.single::<f32>() {
-                Ok(val) => val,
-                Err(_) => return Err(CommandError::from(get_msg!("error/profile_invalid_opacity"))),
-            };
-            
-            // check if in range
-            if opacity < 0.0 || opacity > 1.0 {
-                return Err(CommandError::from(get_msg!("error/profile_invalid_opacity")));
-            }
+            map_key = "content_opacity";
 
-            profile_options.insert("content_opacity".to_owned(), json!(opacity.to_string()));
-
-            s = Some(get_msg!("info/profile_content_opacity_set", opacity));
+            action_type = "percent";
+            updated_msg = get_msg!("info/profile_set_contentopacity");
         },
         "textcolor" => {
-            let _ = args.skip();
-            let color = args.full();
+            map_key = "text_color";
 
-            if color.is_empty() {
-                return Err(CommandError::from(get_msg!("error/profile_textcolor_not_given")));
-            }
-
-            let color = parse_number(&color, "hex");
-
-            if let Some(color) = color {
-                profile_options.insert("text_color".to_owned(), json!(color.clone()));
-
-                s = Some(get_msg!("info/profile_text_color_set", color));
-            } else {
-                return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
-            }
+            action_type = "color";
+            updated_msg = get_msg!("info/profile_set_textcolor");
+            color_type = "hex";
         },
         "accentcolor" => {
-            let _ = args.skip();
+            map_key = "accent_color";
 
-            let color = args.full();
-            
-            if color.is_empty() {
-                return Err(CommandError::from(get_msg!("error/profile_accentcolor_not_given")));
-            }
-
-            let color = parse_number(&color, "hex");
-
-            if let Some(color) = color {
-                profile_options.insert("accent_color".to_owned(), json!(color.clone()));
-
-                s = Some(get_msg!("info/profile_accent_color_set", color));
-            } else {
-                return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
-            }
+            action_type = "color";
+            updated_msg = get_msg!("info/profile_set_accentcolor");
+            color_type = "hex";
+        },
+        // -rank
+        "graphcolor" => {
+            action_type = "color";
+            updated_msg = get_msg!("info/rank_set_graphcolor");
+            color_type = "hex";
+        },
+        "graphbgcolor" => {
+            action_type = "color";
+            updated_msg = get_msg!("info/rank_set_graphbgcolor");
+            color_type = "rgb";
+        },
+        "leveldarkness" => {
+            action_type = "percent";
+            updated_msg = get_msg!("info/rank_set_leveldarkness");
         },
         _ => {},
+    }
+
+    let value = if action_type == "color" || action_type == "percent" || action_type == "text" {
+        let _ = args.skip();
+        let val = args.full();
+        if val.is_empty() {
+            None
+        } else {
+            Some(val)
+        }
+    } else {
+        None
     };
+
+    if action_type == "color" {
+        let value = match value {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/profile_color_not_given"))),
+        };
+
+        let color = parse_number(&value, color_type);
+
+        if let Some(color) = color {
+            profile_options.insert(map_key.to_owned(), json!(color.clone()));
+
+            s = Some(updated_msg);
+        } else {
+            return Err(CommandError::from(get_msg!("error/profile_invalid_color")));
+        }
+    } else if action_type == "percent" {
+        let value = match value {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/profile_percentage_not_given"))),
+        };
+
+        let percentage = match value.parse::<f32>() {
+            Ok(val) => val,
+            Err(_) => return Err(CommandError::from(get_msg!("error/profile_invalid_percentage"))),
+        };
+        
+        // check if in range
+        if percentage < 0.0 || percentage > 1.0 {
+            return Err(CommandError::from(get_msg!("error/profile_invalid_percentage")));
+        }
+
+        profile_options.insert(map_key.to_owned(), json!(percentage.to_string()));
+        s = Some(updated_msg);
+    } else if action_type == "text" {
+        let text = match value {
+            Some(val) => val,
+            None => return Err(CommandError::from(get_msg!("error/profile_text_not_given"))),
+        };
+
+        profile_options.insert(map_key.to_owned(), json!(text.clone()));
+        s = Some(updated_msg);
+    }
+
 
     user_data.profile_options = Some(Value::Object(profile_options));
     pool.save_user(&user_data);
