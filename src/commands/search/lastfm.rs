@@ -117,18 +117,7 @@ fn top_tracks(msg: &Message, data: &Value, period: &str) {
             i + 1, playcount, play_plural, title, clean_url(url), artist, clean_url(artist_url));
     }
 
-    let _ = msg.channel_id.send_message(|m| m
-        .embed(|e| e
-            .author(|a| a
-                .name(&format!("{}'s Top Tracks - {}", username, period))
-                .url(&format!("https://www.last.fm/user/{}", username))
-                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
-            )
-            .color(0xb90000)
-            .description(&s)
-            .thumbnail(first_image)
-        )
-    );
+    send_embed(msg, None, &format!("{}'s Top Tracks - {}", username, period), &username, &s, &first_image);
 }
 
 fn top_artists(msg: &Message, data: &Value, period: &str) {
@@ -154,18 +143,7 @@ fn top_artists(msg: &Message, data: &Value, period: &str) {
         let _ = write!(s, "`[{:02}] {}` {} - [{}]({})\n", i + 1, playcount, play_plural, name, clean_url(url));
     }
 
-    let _ = msg.channel_id.send_message(|m| m
-        .embed(|e| e
-            .author(|a| a
-                .name(&format!("{}'s Top Artists - {}", username, period))
-                .url(&format!("https://www.last.fm/user/{}", username))
-                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
-            )
-            .color(0xb90000)
-            .description(&s)
-            .thumbnail(first_image)
-        )
-    );
+    send_embed(msg, None, &format!("{}'s Top Artists - {}", username, period), &username, &s, &first_image);
 }
 
 fn top_albums(msg: &Message, data: &Value, period: &str) {
@@ -194,18 +172,7 @@ fn top_albums(msg: &Message, data: &Value, period: &str) {
             i + 1, playcount, play_plural, name, clean_url(url), artist, clean_url(artist_url));
     }
 
-    let _ = msg.channel_id.send_message(|m| m
-        .embed(|e| e
-            .author(|a| a
-                .name(&format!("{}'s Top Albums - {}", username, period))
-                .url(&format!("https://www.last.fm/user/{}", username))
-                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
-            )
-            .color(0xb90000)
-            .description(&s)
-            .thumbnail(first_image)
-        )
-    );
+    send_embed(msg, None, &format!("{}'s Top Albums - {}", username, period), &username, &s, &first_image);
 }
 
 fn loved_tracks(msg: &Message, data: &Value) {
@@ -232,18 +199,7 @@ fn loved_tracks(msg: &Message, data: &Value) {
             i + 1, title, clean_url(url), artist, clean_url(artist_url));
     }
 
-    let _ = msg.channel_id.send_message(|m| m
-        .embed(|e| e
-            .author(|a| a
-                .name(&format!("{}'s Recently Loved Tracks", username))
-                .url(&format!("https://www.last.fm/user/{}", username))
-                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
-            )
-            .color(0xb90000)
-            .description(&s)
-            .thumbnail(first_image)
-        )
-    );
+    send_embed(msg, None, &format!("{}'s Recently Loved Tracks", username), &username, &s, &first_image);
 }
 
 fn recent_tracks(msg: &Message, data: &Value, saved: bool) {
@@ -392,4 +348,25 @@ fn get_data(url: &str, username: &str, period: &str) -> Result<Value, CommandErr
             Err(CommandError::from(get_msg!("error/fm_fetch_error")))
         }
     }
+}
+
+fn send_embed(msg: &Message, content: Option<&str>, title: &str, username: &str, desc: &str, thumbnail: &str) {
+    let _ = msg.channel_id.send_message(|m| {
+        let mut m = m;
+
+        if let Some(content) = content {
+            m = m.content(content);
+        }
+
+        m.embed(|e| e
+            .author(|a| a
+                .name(&title)
+                .url(&format!("https://www.last.fm/user/{}", username))
+                .icon_url("https://i.imgur.com/C7u8gqg.jpg")
+            )
+            .color(0xb90000)
+            .description(&desc)
+            .thumbnail(&thumbnail)
+        )
+    });
 }
