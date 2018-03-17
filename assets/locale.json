@@ -72,7 +72,19 @@
         "profile_content_color_set": "Your profile content color has been set to {}.",
         "profile_content_opacity_set": "Your profile content opacity has been set to {}.",
         "profile_text_color_set": "Your profile text color has been set to {}.",
-        "profile_accent_color_set": "Your profile accent color has been set to {}."
+        "profile_accent_color_set": "Your profile accent color has been set to {}.",
+
+        "profile_set_bg": "Your profile background has been updated.",
+        "profile_set_bio": "Your profile bio has been updated.",
+        "profile_set_bgdarkness": "Your profile background darkness has been updated.",
+        "profile_set_contentcolor": "Your profile content color has been updated.",
+        "profile_set_contentopacity": "Your profile content opacity has been updated.",
+        "profile_set_textcolor": "Your profile text color has been updated.",
+        "profile_set_accentcolor": "Your profile accent color has been updated.",
+
+        "rank_set_graphcolor": "Your level graph color has been updated.",
+        "rank_set_graphbgcolor": "Your level graph background color has been updated.",
+        "rank_set_leveldarkness": "Your level level darkness has been updated."
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -178,13 +190,10 @@
         "profile_image_server_failed": "Failed to generate profile, try again later.",
         "profile_user_not_found": "No data was found for this user.",
         "profile_background_not_given": "Please give a background.",
-        "profile_bio_not_given": "Please give a bio.",
-        "profile_bgdarkness_not_given": "Please give a darkness between `0-1`.  0 is lightest, 1 is darkest.",
-        "profile_contentcolor_not_given": "Please give a color.  You can use a hex or rgb code.",
-        "profile_contentopacity_not_given": "Please give a contentopacity between `0-1`.  0 is transparent, 1 is opaque.",
-        "profile_textcolor_not_given": "Please give a text color.  You can use a hex or rgb code.",
-        "profile_accentcolor_not_given": "Please give a accent color.  You can use a hex or rgb code.",
+        "profile_text_not_given": "Please give some text.",
+        "profile_color_not_given": "Please give a color.  You can use a hex or rgb code.  Example: `#74b9ff`, `rgb(116, 185, 255)`",
+        "profile_percentage_not_given": "Please give a percentage between 0 and 1.  Example: `0.3`",
         "profile_invalid_color": "Invalid color code, please give a hex or rgba color.  Example: `#74b9ff`, `rgb(116, 185, 255)`",
-        "profile_invalid_opacity": "Invalid opacity.  The value must be between 0 and 1."
+        "profile_invalid_percentage": "Invalid percentage.  The value must be between 0 and 1.  Example: `0.3`"
     }
 }
