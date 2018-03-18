@@ -30,6 +30,10 @@ command!(fm(ctx, msg, args) {
     };
 
     match sub_command.as_ref() {
+        "help" => {
+            let _ = msg.channel_id.say(get_msg!("info/fm_help"));
+            return Ok(());
+        },
         "toptracks" | "topsongs" => {
             let _ = args.skip();
             let period = args.single::<String>().unwrap_or("overall".to_owned());
@@ -80,7 +84,7 @@ command!(fm(ctx, msg, args) {
         "nowplaying" | _ => {
             let (username, saved) = set_or_get_username(&ctx, msg.author.id.0, &mut args)?;
             let data = get_data(FM_RECENT_TRACKS_URL, &username, "yep lol")?;
-            recent_tracks(&msg, &data, saved);
+            recent_tracks(&msg, &data, saved)?;
         }
     };
 });
@@ -202,8 +206,13 @@ fn loved_tracks(msg: &Message, data: &Value) {
     send_embed(msg, None, &format!("{}'s Recently Loved Tracks", username), &username, &s, &first_image);
 }
 
-fn recent_tracks(msg: &Message, data: &Value, saved: bool) {
-    let username = data.pointer("/recenttracks/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
+fn recent_tracks(msg: &Message, data: &Value, saved: bool) -> Result<(), CommandError> {
+    let username = if let Some(username) = data.pointer("/recenttracks/@attr/user").and_then(|x| x.as_str()) {
+        username
+    } else {
+        return Err(CommandError::from(get_msg!("error/fm_user_not_found")));
+    };
+
     let last_track_artist = data.pointer("/recenttracks/track/0/artist/#text").and_then(|x| x.as_str()).unwrap_or("N/A");
     let last_track_name = data.pointer("/recenttracks/track/0/name").and_then(|x| x.as_str()).unwrap_or("N/A");
     let last_track_album = data.pointer("/recenttracks/track/0/album/#text").and_then(|x| x.as_str()).unwrap_or("N/A");
@@ -293,6 +302,8 @@ fn recent_tracks(msg: &Message, data: &Value, saved: bool) {
             .timestamp(last_track_timestamp.to_string())
         )
     });
+
+    Ok(())
 }
 
 fn get_username(ctx: &Context, user: u64) -> Result<String, CommandError> {
