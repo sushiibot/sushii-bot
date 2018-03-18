@@ -193,12 +193,13 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             let g = g
             .guild_only(true)
             .command("rank", |c| c
-                .batch_known_as(vec!["rakn", "rnak"])
+                .batch_known_as(vec!["profile", "rakn", "rnak"])
                 .desc("Shows your rank.")
                 .bucket("profile_bucket")
                 .cmd(commands::users::levels::rank)
             )
-            .command("profile", |c| c
+            .command("asdfprofile", |c| c
+                .owners_only(true)
                 .desc("Shows your profile.")
                 .bucket("profile_bucket")
                 .cmd(commands::users::profile::profile)
@@ -315,6 +316,10 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         .group("Settings", |g| {
             let g = g
             .guild_only(true)
+            .command("settings", |c| c
+                .desc("Lists the current server settings.")
+                .cmd(commands::settings::settings::settings)
+            )
             .command("prefix", |c| c
                 .desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
                 .cmd(commands::settings::bot::prefix)
