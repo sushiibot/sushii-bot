@@ -49,6 +49,7 @@
         "galleries_none": "This guild has no gallery channels.",
         "gallery_deleted": "Gallery has been deleted.",
 
+        "fm_help": "Valid subcommands are `toptracks`, `topartists`, `topalbums`, and `loved`. You find more information here: <https://sushii.xyz/commands#cmd_fm>",
         "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
         "fm_no_loved_tracks": "You have no loved tracks. :broken_heart:",
 
@@ -166,6 +167,7 @@
         "roles_invalid_action": "Invalid role action, use `+[role]` or `-[role]`",
         "roles_invalid_target": "Invalid role.",
 
+        "fm_user_not_found": "User not found.",
         "fm_no_username": "No Last.fm username given or saved.  Pass a username as an argument or use `fm set [username]` to save your username.",
         "fm_no_username_mentioned": "No Last.fm username found for this user.",
         "fm_fetch_error": "Something went wrong fetching last.fm data.",
