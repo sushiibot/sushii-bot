@@ -82,6 +82,7 @@
         "profile_set_textcolor": "Your profile text color has been updated.",
         "profile_set_accentcolor": "Your profile accent color has been updated.",
 
+        "rank_set_xpbarcolor": "Your XP bar color has been updated.",
         "rank_set_graphcolor": "Your level graph color has been updated.",
         "rank_set_graphbgcolor": "Your level graph background color has been updated.",
         "rank_set_leveldarkness": "Your level level darkness has been updated."
