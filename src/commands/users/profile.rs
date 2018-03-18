@@ -120,17 +120,30 @@ command!(profile(ctx, msg, args) {
             color_type = "hex";
         },
         // -rank
+        "xpbarcolor" | "xpcolor" => {
+            map_key = "xp_color";
+
+            action_type = "color";
+            updated_msg = get_msg!("info/rank_set_xpbarcolor");
+            color_type = "hex";
+        },
         "graphcolor" => {
+            map_key = "graph_color";
+
             action_type = "color";
             updated_msg = get_msg!("info/rank_set_graphcolor");
             color_type = "hex";
         },
         "graphbgcolor" => {
+            map_key = "graph_bg_color";
+
             action_type = "color";
             updated_msg = get_msg!("info/rank_set_graphbgcolor");
             color_type = "rgb";
         },
         "leveldarkness" => {
+            map_key = "level_darkness";
+
             action_type = "percent";
             updated_msg = get_msg!("info/rank_set_leveldarkness");
         },
