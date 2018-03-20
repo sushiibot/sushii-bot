@@ -22,18 +22,27 @@ command!(fishy(ctx, msg, args) {
         if next_rep > now {
             return Err(CommandError::from(get_msg!("error/fishy_too_soon", ht)))
         }
-    };
+    }
+
+    if args.is_empty() {
+        return Err(CommandError::from(get_msg!("error/fishy_no_args")));
+    }
 
     let mut fishies_self = false;
 
-    let target = if !args.is_empty() {
-        // fishies for someone else
-        match args.single::<String>().ok().and_then(|x| get_id(&x)) {
+    let target_raw = match args.single::<String>().ok() {
+        Some(val) => val,
+        // should never be None as checked if empty previously
+        None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
+    };
+
+    let target = if target_raw == "self" {
+        msg.author.id.0
+    } else {
+        match get_id(&target_raw) {
             Some(val) => val,
             None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
         }
-    } else {
-        msg.author.id.0
     };
 
     // check if fishy for self

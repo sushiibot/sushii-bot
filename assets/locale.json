@@ -148,6 +148,7 @@
         "rep_no_args": "Give me someone to rep.",
         "rep_bot": "You cant rep bots.",
 
+        "fishy_no_args": "Give me someone to fish for!  You can fish for yourself by mentioning yourself or pass `self` as an argument.",
         "fishy_too_soon": "You're too tired to go fishing.  \\:(  Try again {}.",
         "fishy_bot": "Bots don't need fishies silly.",
 
