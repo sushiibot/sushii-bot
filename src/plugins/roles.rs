@@ -71,11 +71,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     }
 
     // check if user wants to reset roles
-    let should_reset = if msg.content.to_lowercase() == "reset" {
-        true
-    } else {
-        false
-    };
+    let should_reset = msg.content.to_lowercase() == "reset";
 
     // none found, exit
     if !found && !should_reset {
