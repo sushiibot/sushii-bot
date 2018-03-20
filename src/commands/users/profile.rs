@@ -222,6 +222,11 @@ command!(profile(ctx, msg, args) {
 });
 
 fn parse_number(val: &str, format: &str) -> Option<String> {
+    // check if user provided a string preset
+    if let Some(preset) = color_preset(val, format) {
+        return Some(preset);
+    }
+
     if format == "rgb" {
         let (r, g, b) = if let Some(rgb) = parse_rgba(&val) {
             rgb
@@ -299,6 +304,39 @@ fn hex_to_rgba(val: &str) -> Option<(u32, u32, u32)> {
 
 fn rgba_to_hex(val: (u32, u32, u32)) -> String {
     format!("{:x}{:x}{:x}", val.0, val.1, val.2)
+}
+
+// preset colors, from https://flatuicolors.com/palette/us
+fn color_preset(val: &str, format: &str) -> Option<String> {
+    let rgb = match val {
+        "green" => (85, 239, 196),
+        "light green" => (0, 184, 148),
+        "teal" => (0, 206, 201),
+        "light teal" => (129, 236, 236),
+        "blue" => (9, 132, 227),
+        "light blue" => (116, 185, 255),
+        "purple" => (108, 92, 231),
+        "light purple" => (162, 155, 254),
+        "yellow" => (253, 203, 110),
+        "light yellow" => (255, 234, 167),
+        "orange" => (225, 112, 85),
+        "light orange" => (250, 177, 160),
+        "red" => (214, 48, 49),
+        "light red" => (255, 118, 117),
+        "pink" => (232, 67, 147),
+        "light pink" => (253, 121, 168),
+        "grey" => (45, 52, 54),
+        "light grey" => (99, 110, 114),
+        _ => return None,
+    };
+
+    if format == "hex" {
+        Some(rgba_to_hex(rgb))
+    } else if format == "rgb" {
+        Some(format!("{}, {}, {}", rgb.0, rgb.1, rgb.2))
+    } else {
+        None
+    }
 }
 
 fn generate_profile(msg: &Message, id: u64, user_data: &User,   
