@@ -9,15 +9,14 @@ use utils::config::get_pool;
 use utils::time::now_utc;
 use utils::html::escape_html;
 
-use serde_json::map::Map;
 use num_traits::cast::ToPrimitive;
 use chrono::Duration;
 use chrono_humanize::HumanTime;
 
-const LEVEL_HTML: &'static str = include_str!("../../../assets/html/rank.html");
+const LEVEL_HTML: &str = include_str!("../../../assets/html/rank.html");
 
 command!(rank(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let id = match args.single::<String>() {
         Ok(val) => {
@@ -55,7 +54,7 @@ command!(rank(ctx, msg, args) {
     let profile_options = user_data.profile_options
         .clone()
         .and_then(|x| x.as_object().cloned())
-        .unwrap_or(Map::new());
+        .unwrap_or_default();
 
     let content_color = profile_options.get("content_color").and_then(|x| x.as_str())
         .unwrap_or("32, 156, 238");
@@ -85,8 +84,8 @@ command!(rank(ctx, msg, args) {
     html = html.replace("{LAST_MESSAGE}", &level_data.last_msg.format("%Y-%m-%d %H:%M:%S UTC").to_string());
     html = html.replace("{ACTIVITY_DATA}", &format!("{:?}", &activity));
 
-    html = html.replace("{CONTENT_COLOR}", &content_color);
-    html = html.replace("{CONTENT_OPACITY}", &content_opacity);
+    html = html.replace("{CONTENT_COLOR}", content_color);
+    html = html.replace("{CONTENT_OPACITY}", content_opacity);
 
     let global_level = get_level(global_xp);
     let level = get_level(level_data.msg_all_time);
@@ -221,7 +220,7 @@ fn get_rep_emoji_plain(user_rep: i32) -> String {
     }.to_owned()
 }
 
-fn get_activity_plain_graph(activity: &Vec<i32>) -> String {
+fn get_activity_plain_graph(activity: &[i32]) -> String {
     let max = activity.iter().max().unwrap_or(&0);
     let min = activity.iter().min().unwrap_or(&0);
     let range = max - min;
@@ -230,15 +229,15 @@ fn get_activity_plain_graph(activity: &Vec<i32>) -> String {
     let mut s = "```0  ".to_owned();
 
     for msgs in activity.iter() {
-        let val = match msgs {
-            x if x > &(chunk * 7) => "█",
-            x if x > &(chunk * 6) => "▇",
-            x if x > &(chunk * 5) => "▆",
-            x if x > &(chunk * 4) => "▅",
-            x if x > &(chunk * 3) => "▄",
-            x if x > &(chunk * 2) => "▃",
-            x if x > &(chunk * 1) => "▂",
-            x if x > &(chunk * 0) => "▁",
+        let val = match *msgs {
+            x if x > (chunk * 7) => "█",
+            x if x > (chunk * 6) => "▇",
+            x if x > (chunk * 5) => "▆",
+            x if x > (chunk * 4) => "▅",
+            x if x > (chunk * 3) => "▄",
+            x if x > (chunk * 2) => "▃",
+            x if x > chunk => "▂",
+            x if x > 0 => "▁",
             _ => "_",
         };
 
@@ -251,7 +250,7 @@ fn get_activity_plain_graph(activity: &Vec<i32>) -> String {
 }
 
 command!(rep(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     // print next rep time 
     if args.is_empty() {
@@ -313,13 +312,9 @@ command!(rep(ctx, msg, args) {
 
 
 command!(top_levels(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
-    let is_global = if Some("global".to_owned()) == args.single::<String>().ok() {
-        true
-    } else {
-        false
-    };
+    let is_global = Some("global".into()) == args.single::<String>().ok();
 
     if is_global {
         if let Some(levels) = pool.get_global_levels() {
@@ -450,7 +445,7 @@ command!(top_levels(ctx, msg, args) {
 
 
 command!(top_reps(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let guild_id = match msg.guild_id() {
         Some(val) => val.0,

@@ -8,7 +8,7 @@ use std::fmt::Write;
 use std::collections::HashMap;
 
 pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
-    if let None = msg.guild_id() {
+    if msg.guild_id().is_none() {
         return;
     }
 
@@ -24,7 +24,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     }
 
     // check attachments for urls
-    for img in msg.attachments.iter() {
+    for img in &msg.attachments {
         let _ = write!(s, "{}", img.url);
     }
 

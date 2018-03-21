@@ -17,7 +17,7 @@ command!(prune(_ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_messages"))),
     };
 
-    if let Err(_) = msg.channel_id.delete_messages(messages) {
+    if msg.channel_id.delete_messages(messages).is_err() {
         return Err(CommandError::from(get_msg!("error/failed_delete_messages")));
     }
 });

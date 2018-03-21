@@ -47,7 +47,7 @@ pub fn find_member(value: &str, guild: &Guild) -> Option<Member> {
         
 
         // fetch user by name containing
-        let members = guild.members_containing(&name, false, false);
+        let members = guild.members_containing(name, false, false);
 
         let member = members.iter().find(|member| {
                 let name_matches = member.user.read().name.to_lowercase() == name;
@@ -92,7 +92,7 @@ pub fn get_level(xp: i64) -> i64 {
         level += 1;
     }
 
-    return level;
+    level
 }
 
 pub fn format_rank<'a>(rank: &'a i64, total: &'a i64) -> String {

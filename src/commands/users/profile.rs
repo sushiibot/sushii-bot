@@ -3,7 +3,6 @@ use serenity::model::id::UserId;
 use serenity::model::channel::Message;
 
 use serde_json::value::Value;
-use serde_json::map::Map;
 use reqwest;
 
 use regex::Regex;
@@ -18,10 +17,10 @@ use models::{User, UserLevelRanked};
 
 use num_traits::cast::ToPrimitive;
 
-const PROFILE_HTML: &'static str = include_str!("../../../assets/html/profile.html");
+const PROFILE_HTML: &str = include_str!("../../../assets/html/profile.html");
 
 command!(profile(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let action = match args.single_n::<String>() {
         Ok(val) => {
@@ -65,7 +64,7 @@ command!(profile(ctx, msg, args) {
     let mut profile_options = user_data.profile_options
         .clone()
         .and_then(|x| x.as_object().cloned())
-        .unwrap_or(Map::new());
+        .unwrap_or_default();
     
     let mut s = None;
     let mut action_type = "";
@@ -168,7 +167,7 @@ command!(profile(ctx, msg, args) {
             None => return Err(CommandError::from(get_msg!("error/profile_color_not_given"))),
         };
 
-        let color = parse_number(&value, color_type);
+        let color = parse_number(value, color_type);
 
         if let Some(color) = color {
             profile_options.insert(map_key.to_owned(), json!(color.clone()));
@@ -201,7 +200,7 @@ command!(profile(ctx, msg, args) {
             None => return Err(CommandError::from(get_msg!("error/profile_text_not_given"))),
         };
 
-        profile_options.insert(map_key.to_owned(), json!(text.clone()));
+        profile_options.insert(map_key.to_owned(), json!(text));
         s = Some(updated_msg);
     }
 
@@ -217,7 +216,7 @@ command!(profile(ctx, msg, args) {
 
     let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
 
-    generate_profile(&msg, id, &user_data, &level_data, global_xp, s)?;
+    generate_profile(msg, id, &user_data, &level_data, global_xp, s)?;
     pool.update_stat("profile", "profiles_generated", 1);
 });
 
@@ -228,9 +227,9 @@ fn parse_number(val: &str, format: &str) -> Option<String> {
     }
 
     if format == "rgb" {
-        let (r, g, b) = if let Some(rgb) = parse_rgba(&val) {
+        let (r, g, b) = if let Some(rgb) = parse_rgba(val) {
             rgb
-        } else if let Some(rgb) = hex_to_rgba(&val) {
+        } else if let Some(rgb) = hex_to_rgba(val) {
             rgb
         } else {
             return None;
@@ -238,9 +237,9 @@ fn parse_number(val: &str, format: &str) -> Option<String> {
 
         return Some(format!("{}, {}, {}", r, g, b));
     } else if format == "hex" {
-        let hex = if let Some(hex) = parse_rgba(&val).and_then(|x| Some(rgba_to_hex(x))) {
+        let hex = if let Some(hex) = parse_rgba(val).and_then(|x| Some(rgba_to_hex(x))) {
             hex
-        } else if let Some(hex) = parse_hex(&val) {
+        } else if let Some(hex) = parse_hex(val) {
             hex
         } else {
             return None;
@@ -257,7 +256,7 @@ fn parse_rgba(val: &str) -> Option<(u32, u32, u32)> {
         static ref RE: Regex = Regex::new(r"(\d{1,3}), ?(\d{1,3}), ?(\d{1,3})").unwrap();
     }
 
-    if let Some(caps) = RE.captures(&val) {
+    if let Some(caps) = RE.captures(val) {
         let r = caps.get(1).unwrap().as_str().parse::<u32>().unwrap();
         let g = caps.get(2).unwrap().as_str().parse::<u32>().unwrap();
         let b = caps.get(3).unwrap().as_str().parse::<u32>().unwrap();
@@ -278,7 +277,7 @@ fn parse_hex(val: &str) -> Option<String> {
         static ref RE: Regex = Regex::new(r"(?:[0-9a-fA-F]{3}){1,2}").unwrap();
     }
 
-    RE.find(&val).and_then(|x| Some(x.as_str().to_string()))
+    RE.find(val).and_then(|x| Some(x.as_str().to_string()))
 }
 
 fn in_range(num: u32) -> bool {
@@ -287,7 +286,7 @@ fn in_range(num: u32) -> bool {
 
 fn hex_to_rgba(val: &str) -> Option<(u32, u32, u32)> {
     // skip the first char if #
-    let mut pos = if val.starts_with("#") {
+    let mut pos = if val.starts_with('#') {
         1
     } else {
         0
@@ -342,16 +341,16 @@ fn color_preset(val: &str, format: &str) -> Option<String> {
 fn generate_profile(msg: &Message, id: u64, user_data: &User,   
         level_data: &UserLevelRanked, global_xp: i64, message: Option<String>) -> Result<(), CommandError> {
 
-    let user_rep = user_data.rep.clone();
-    let is_patron = user_data.is_patron.clone();
+    let user_rep = user_data.rep;
+    let is_patron = user_data.is_patron;
     let patron_emoji = user_data.patron_emoji.clone();
-    let fishies = user_data.fishies.clone();
+    let fishies = user_data.fishies;
 
     // profiles
     let profile_options = user_data.profile_options
         .clone()
         .and_then(|x| x.as_object().cloned())
-        .unwrap_or(Map::new());
+        .unwrap_or_default();
 
     let background_url = profile_options.get("background_url").and_then(|x| x.as_str())
         .unwrap_or("https://cdn.discordapp.com/attachments/166974040798396416/420180917009645597/image.jpg");
@@ -383,19 +382,19 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
 
     html = html.replace("{USERNAME}", &escape_html(&user.tag()));
     html = html.replace("{AVATAR_URL}", &user.face().replace("gif", "jpg"));
-    html = html.replace("{BACKGROUND_URL}", &escape_html(&background_url));
-    html = html.replace("{BIO}", &escape_html(&bio));
+    html = html.replace("{BACKGROUND_URL}", &escape_html(background_url));
+    html = html.replace("{BIO}", &escape_html(bio));
     html = html.replace("{DAILY}", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total));
     html = html.replace("{REP}", &user_rep.to_string());
     html = html.replace("{FISHIES}", &fishies.to_string());
 
-    html = html.replace("{BACKGROUND_URL}", &background_url);
-    html = html.replace("{BIO}", &bio);
-    html = html.replace("{BG_DARKEN}", &bg_darken);
-    html = html.replace("{CONTENT_COLOR}", &content_color);
-    html = html.replace("{CONTENT_OPACITY}", &content_opacity);
-    html = html.replace("{TEXT_COLOR}", &text_color);
-    html = html.replace("{ACCENT_COLOR}", &accent_color);
+    html = html.replace("{BACKGROUND_URL}", background_url);
+    html = html.replace("{BIO}", bio);
+    html = html.replace("{BG_DARKEN}", bg_darken);
+    html = html.replace("{CONTENT_COLOR}", content_color);
+    html = html.replace("{CONTENT_OPACITY}", content_opacity);
+    html = html.replace("{TEXT_COLOR}", text_color);
+    html = html.replace("{ACCENT_COLOR}", accent_color);
 
 
     let global_level = get_level(global_xp);
@@ -452,7 +451,7 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
 
     let files = vec![(&buf[..], "profile.png")];
 
-    let _ = msg.channel_id.send_files(files, |m| m.content(message.unwrap_or("".into())));
+    let _ = msg.channel_id.send_files(files, |m| m.content(message.unwrap_or_else(|| "".into())));
 
     Ok(())
 }

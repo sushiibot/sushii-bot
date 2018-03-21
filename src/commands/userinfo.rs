@@ -39,7 +39,7 @@ command!(userinfo(ctx, msg, args) {
             };
             println!("read user");
 
-            let pool = get_pool(&ctx);
+            let pool = get_pool(ctx);
             let last_message = pool.get_user_last_message(user.id.0);
 
             println!("got lastmsg");

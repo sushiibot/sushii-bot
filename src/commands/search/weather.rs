@@ -18,7 +18,7 @@ command!(weather(ctx, msg, args) {
     let darksky_key = env::var("DARK_SKY_KEY").expect("Expected DARK_SKY_KEY to be set in environment");
     let google_maps_key = env::var("GOOGLE_MAPS_KEY").expect("Expected GOOGLE_MAPS_KEY to be set in environment");
 
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
     let lat;
     let lng;
     let address;
@@ -138,7 +138,7 @@ command!(weather(ctx, msg, args) {
     let icon_weekly = get_icon(&daily.icon);
 
     // timezone info
-    let tz = Timezone::new(&forecast.timezone).unwrap_or(Timezone::utc());
+    let tz = Timezone::new(&forecast.timezone).unwrap_or_else(|_| Timezone::utc());
 
     // temperatures
     let temp = get_temp(&currently.temperature);
@@ -209,8 +209,8 @@ command!(weather(ctx, msg, args) {
 
     let color = get_color(&currently.icon);
 
-    let summary = currently.summary.unwrap_or("Summary unavailable".to_owned());
-    let summary_weekly = daily.summary.unwrap_or("Summary unavailable".to_owned());
+    let summary = currently.summary.unwrap_or_else(|| "Summary unavailable".to_owned());
+    let summary_weekly = daily.summary.unwrap_or_else(|| "Summary unavailable".to_owned());
 
     let precip_probability = currently.precip_probability.map_or(0u8, |v| v as u8);
 
@@ -287,7 +287,7 @@ command!(weather(ctx, msg, args) {
 
 
 fn get_temp(temp: &Option<f64>) -> String {
-    if let &Some(temp) = temp {
+    if let Some(temp) = *temp {
         let temp_f = (((temp * 9f64) / 5f64) + 32f64) as i16;
                 
         format!("{}°C ({}°F)", temp as i16, temp_f)
@@ -297,42 +297,41 @@ fn get_temp(temp: &Option<f64>) -> String {
 }
 
 fn get_time(tz: &Timezone, time: &Option<u64>) -> String {
-    if let &Some(time) = time {
-        tz.unix(time as i64, 0).map(|x| x.format("%H:%M:%S %Z").unwrap_or("N/A".to_owned())).unwrap()
+    if let Some(time) = *time {
+        tz.unix(time as i64, 0).ok().and_then(|x| x.format("%H:%M:%S %Z").ok()).unwrap_or_else(|| "N/A".to_owned())
     } else {
         "N/A".to_owned()
     }
 }
 
 fn get_icon(icon: &Option<Icon>) -> String {
-    match icon {
-        &Some(icon) => match icon {
+    match *icon {
+        Some(icon) => match icon {
             Icon::ClearDay => ":sunny:",
             Icon::ClearNight => ":night_with_stars:",
-            Icon::Cloudy => ":cloud:",
             Icon::Fog => ":foggy:",
             Icon::Hail | Icon::Sleet | Icon::Snow => ":cloud_snow:",
             Icon::PartlyCloudyDay => ":partly_sunny:",
-            Icon::PartlyCloudyNight => ":cloud:",
+            Icon::Cloudy | Icon::PartlyCloudyNight => ":cloud:",
             Icon::Rain => ":cloud_rain:",
             Icon::Thunderstorm => ":thunder_cloud_rain:",
             Icon::Tornado => ":cloud_tornado:",
             Icon::Wind => ":wind_blowing_face:",
         },
-        &None => "N/A",
+        None => "N/A",
     }.to_owned()
 }
 
 fn get_color(icon: &Option<Icon>) -> u32 {
-    match icon {
-        &Some(icon) => match icon {
+    match *icon {
+        Some(icon) => match icon {
             Icon::ClearDay | Icon::PartlyCloudyDay => 0xffac33,
             Icon::ClearNight => 0x226699,
-            Icon::Cloudy | Icon::Fog | Icon::Tornado | Icon::Wind => 0xe1e8ed,
+            Icon::Cloudy | Icon::Fog | Icon::Tornado | Icon::Wind | 
             Icon::Hail | Icon::Sleet | Icon::Snow => 0xe1e8ed,
             Icon::PartlyCloudyNight => 0xb2bcc3,
             Icon::Rain | Icon::Thunderstorm => 0x5dadec,
         },
-        &None => 0xe1e8ed,
+        None => 0xe1e8ed,
     }.to_owned()
 }

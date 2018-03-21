@@ -12,12 +12,12 @@ use std::fmt::Write;
 command!(ban(ctx, msg, args) {
     // get the target
     let raw_users = args.single::<String>()?;
-    let split = raw_users.split(",");
+    let split = raw_users.split(',');
     let mut users = Vec::new();
 
     // loop through each one and parse the user id
     for user in split {
-        match get_id(&user) {
+        match get_id(user) {
             Some(val) => users.push(val),
             None => return Err(CommandError::from("Malformed mention or ID.")),
         };
@@ -34,12 +34,12 @@ command!(ban(ctx, msg, args) {
     let reason;
 
     let re = Regex::new(r"\d{17,18}[a-zA-Z ]+").unwrap();
-    if re.is_match(&reason_raw) && !reason_raw.starts_with("\\") {
+    if re.is_match(reason_raw) && !reason_raw.starts_with('\\') {
         return Err(CommandError::from("There seems to be a user ID in the beginning of your reason. \
                 If you're banning multiple users at once, be sure to not leave spaces between the commas, IDs or mentions.  \
                 If you actually wanted an ID in your reason, prefix your reason with a backslash (\\\\):\n\
                 Example: `-ban 12345678910,456789123 \\10987654321 is his best friend but he's really smelly`"));
-    } else if reason_raw.starts_with("\\") && !reason_raw.is_empty() {
+    } else if reason_raw.starts_with('\\') && !reason_raw.is_empty() {
         reason = Some(&reason_raw[1..]);
     } else if !reason_raw.is_empty() {
         reason = Some(&reason_raw[..]);
@@ -55,7 +55,7 @@ command!(ban(ctx, msg, args) {
     };
 
     // log the ban in the database
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
     let mut s = String::new();
 
     let _ = write!(s, "```ruby\n");
@@ -86,8 +86,8 @@ command!(ban(ctx, msg, args) {
         let case_id = match pool.add_mod_action("ban", guild.id.0, &user, reason, true, Some(msg.author.id.0)) {
             Ok(val) => val.case_id,
             Err(_) => {
-                let e = format!("Something went wrong with the database.  Try this again?");
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                let e = "Something went wrong with the database.  Try this again?";
+                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, e);
                 continue;
             }
         };
@@ -100,7 +100,7 @@ command!(ban(ctx, msg, args) {
         };
 
         // check the ban result
-        let _ = match ban_result {
+        match ban_result {
             Err(Error::Model(InvalidPermissions(permissions))) => {
                 let e = format!("I don't have permission to ban this user, requires: `{:?}`.", permissions);
                 let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
@@ -121,7 +121,7 @@ command!(ban(ctx, msg, args) {
                 // add the ban to the vec to prevent dupe bans
                 bans.push(u);
             },
-        };
+        }
     }
 
     let _ = write!(s, "```");
@@ -133,12 +133,12 @@ command!(ban(ctx, msg, args) {
 command!(unban(ctx, msg, args) {
     // get the target
     let raw_users = args.single::<String>()?;
-    let split = raw_users.split(",");
+    let split = raw_users.split(',');
     let mut users = Vec::new();
 
     // loop through each one and parse the user id
     for user in split {
-        match get_id(&user) {
+        match get_id(user) {
             Some(val) => users.push(val),
             None => return Err(CommandError::from("Malformed mention or ID.")),
         };
@@ -155,12 +155,12 @@ command!(unban(ctx, msg, args) {
     let reason;
 
     let re = Regex::new(r"\d{17,18}[a-zA-Z ]+").unwrap();
-    if re.is_match(&reason_raw) && !reason_raw.starts_with("\\") {
+    if re.is_match(reason_raw) && !reason_raw.starts_with('\\') {
         return Err(CommandError::from("There seems to be a user ID in the beginning of your reason. \
                 If you're unbanning multiple users at once, be sure to not leave spaces between the commas, IDs or mentions.  \
                 If you actually wanted an ID in your reason, prefix your reason with a backslash (\\\\):\n\
                 Example: `-unban 12345678910,456789123 \\10987654321 is his best friend but I guess he's not too smelly`"));
-    } else if reason_raw.starts_with("\\") && !reason_raw.is_empty() {
+    } else if reason_raw.starts_with('\\') && !reason_raw.is_empty() {
         reason = Some(&reason_raw[1..]);
     } else if !reason_raw.is_empty() {
         reason = Some(&reason_raw[..]);
@@ -176,7 +176,7 @@ command!(unban(ctx, msg, args) {
     };
 
     // log the ban in the database
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
     let mut s = String::new();
 
     let _ = write!(s, "```ruby\n");
@@ -207,14 +207,14 @@ command!(unban(ctx, msg, args) {
         let case_id = match pool.add_mod_action("unban", guild.id.0, &user, reason, true, Some(msg.author.id.0)) {
             Ok(val) => val.case_id,
             Err(_) => {
-                let e = format!("Something went wrong with the database.  Try this again?");
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                let e = "Something went wrong with the database.  Try this again?";
+                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, e);
                 continue;
             }
         };
 
         // unban the user
-        let _ = match guild.unban(u) {
+        match guild.unban(u) {
             Err(Error::Model(InvalidPermissions(permissions))) => {
                 let e = format!("I don't have permission to unban this user, requires: `{:?}`.", permissions);
                 let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
@@ -231,7 +231,7 @@ command!(unban(ctx, msg, args) {
                 let index = bans.iter().position(|x| x == &u).unwrap();
                 bans.remove(index);
             },
-        };
+        }
     }
 
     let _ = write!(s, "```");

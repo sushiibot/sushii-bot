@@ -19,7 +19,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
             let thirty_sec = time::Duration::from_secs(30);
 
             if let Ok(events) = pool.get_events() {
-                if let Some(counter) = events.iter().find(|ref x| x.name == "PRESENCE_UPDATE") {
+                if let Some(counter) = events.iter().find(|x| x.name == "PRESENCE_UPDATE") {
                     // kill self if presence_updates count haven't changed in past 30 seconds
                     if count == counter.count {
                         warn_discord!("PRESENCE_UPDATE has not changed in the past 30 seconds, exiting.");
