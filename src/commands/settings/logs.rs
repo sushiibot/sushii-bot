@@ -13,7 +13,7 @@ command!(modlog(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
 
@@ -39,7 +39,7 @@ command!(msglog(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
 
@@ -65,7 +65,7 @@ command!(memberlog(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
 

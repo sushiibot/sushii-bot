@@ -178,7 +178,7 @@ pub struct NewReminder<'a> {
     pub time_to_remind: &'a NaiveDateTime,
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Clone, Debug)]
 pub struct Notification {
     pub id: i32,
     pub user_id: i64,

@@ -13,7 +13,6 @@ use tasks::*;
 use serde_json::Value;
 
 use utils::config::get_pool;
-
 pub struct Handler;
 
 impl EventHandler for Handler {
@@ -277,7 +276,7 @@ impl EventHandler for Handler {
 
 /// Updates a counter for each event
 fn update_event(ctx: &Context, event_name: &str) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     if let Err(e) = pool.log_event(event_name) {
         warn_discord!("Failed to log event: {}", e);

@@ -35,7 +35,7 @@ command!(latency(ctx, msg) {
     };
 
     let runner_latency = match runner.latency {
-        Some(val) => format!("{:.3} ms", val.as_secs() as f64 / 1000.0 + val.subsec_nanos() as f64 * 1e-6),
+        Some(val) => format!("{:.3} ms", val.as_secs() as f64 / 1000.0 + f64::from(val.subsec_nanos()) * 1e-6),
         None => "N/A".to_owned(),
     };
 
@@ -55,8 +55,8 @@ command!(ping(_ctx, msg) {
 
     let end = Utc::now();
     let ms = {
-        let end_ms = end.timestamp_subsec_millis() as i64;
-        let start_ms = start.timestamp_subsec_millis() as i64;
+        let end_ms = i64::from(end.timestamp_subsec_millis());
+        let start_ms = i64::from(start.timestamp_subsec_millis());
 
         end_ms - start_ms
     };
@@ -66,7 +66,7 @@ command!(ping(_ctx, msg) {
 });
 
 command!(events(ctx, msg) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     if let Ok(evts) = pool.get_events() {
         let mut s = "```ruby\n".to_owned();
@@ -74,7 +74,7 @@ command!(events(ctx, msg) {
         // go through each events, add to string and sum total
         for event in evts {
             let _ = write!(s, "{}: {}\n", event.name, event.count);
-            total = total + event.count;
+            total += event.count;
         }
 
         let _ = write!(s, "\nTOTAL: {}\n", total);
@@ -86,7 +86,7 @@ command!(events(ctx, msg) {
 });
 
 command!(reset_events(ctx, msg) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     if let Ok(()) = pool.reset_events() {
         let _ = msg.channel_id.say("Events have been reset.");
@@ -139,7 +139,7 @@ command!(stats(ctx, msg) {
     let start_time = {
         let data = ctx.data.lock();
         match data.get::<Uptime>() {
-            Some(v) => v.clone(),
+            Some(val) => *val,
             None => return Err(CommandError::from("There was a problem getting the shard manager")),
         }
     };
@@ -204,7 +204,7 @@ command!(stats(ctx, msg) {
 
     let bot_version = env!("CARGO_PKG_VERSION");
 
-    let owner_tag = env::var("OWNER_TAG").unwrap_or("N/A".to_owned());
+    let owner_tag = env::var("OWNER_TAG").unwrap_or_else(|_| "N/A".to_owned());
 
     let _ = msg.channel_id.send_message(|m|
         m.embed(|e| e
@@ -212,7 +212,7 @@ command!(stats(ctx, msg) {
             .title(&format!("sushii v{}", bot_version))
             .url("https://sushii.xyz")
             .field("Author", &owner_tag, true)
-            .field("Library", &format!("[serenity-rs](https://github.com/zeyla/serenity/) v0.5.1", ), true)
+            .field("Library", "[serenity-rs](https://github.com/zeyla/serenity/) v0.5.1", true)
             .field("Guilds", &guilds_count.to_string(), true)
             .field("Channels", &channels_count.to_string(), true)
             .field("Users (Cached)", &users_count.to_string(), true)

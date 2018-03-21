@@ -1,5 +1,8 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
+#![allow(unknown_lints)]
+#![allow(unreadable_literal)]
+
 #![recursion_limit="256"]
 
 #[macro_use]

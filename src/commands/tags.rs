@@ -15,7 +15,7 @@ command!(tag_info(ctx, msg, args) {
     };
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let found_tag = match pool.get_tag(guild_id.0, &tag_name) {
             Some(val) => val,
@@ -78,20 +78,18 @@ command!(tag_add(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/tag_no_content_given")));
     }
 
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     // if in guild
     if let Some(guild_id) = msg.guild_id() {
         // check if tag exists
-        if let Some(_) = pool.get_tag(guild_id.0, &tag_name) {
+        if pool.get_tag(guild_id.0, &tag_name).is_some() {
             // theres already a tag with this name found
             return Err(CommandError::from(get_msg!("error/tag_already_exists")));
+        } else if pool.add_tag(msg.author.id.0, guild_id.0, &tag_name, tag_content) {
+            let _ = msg.channel_id.say(get_msg!("info/tag_added", &tag_name, &tag_content));
         } else {
-            if pool.add_tag(msg.author.id.0, guild_id.0, &tag_name, &tag_content) {
-                let _ = msg.channel_id.say(get_msg!("info/tag_added", &tag_name, &tag_content));
-            } else {
-                return Err(CommandError::from(get_msg!("error/unknown_error")));
-            }
+            return Err(CommandError::from(get_msg!("error/unknown_error")));
         }
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
@@ -100,7 +98,7 @@ command!(tag_add(ctx, msg, args) {
 
 command!(tag_list(ctx, msg, _args) {
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
         let tags = match pool.get_tags(guild_id.0) {
             Some(val) => val,
             None => return Err(CommandError::from(get_msg!("error/tags_not_found"))),
@@ -140,7 +138,7 @@ command!(tag_list(ctx, msg, _args) {
 
 command!(tag_top(ctx, msg, _args) {
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let top_tags = match pool.get_tags_top(guild_id.0) {
             Some(val) => val,
@@ -185,7 +183,7 @@ command!(tag_search(ctx, msg, args) {
             return Err(CommandError::from(get_msg!("error/tag_search_query_too_short")));
         }
 
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         if let Some(results) = pool.search_tag(guild_id.0, &search) {
             let _ = msg.channel_id.send_message(|m| m
@@ -196,7 +194,7 @@ command!(tag_search(ctx, msg, args) {
                         .name("Tag Search (Limited to 10)")
                     );
 
-                    for tg in results.iter() {
+                    for tg in &results {
                         e = e.field(&tg.tag_name, &tg.count.to_string(), false);
                     }
 
@@ -220,7 +218,7 @@ command!(tag_delete(ctx, msg, args) {
             Err(_) => return Err(CommandError::from(get_msg!("error/tag_no_name_given"))),
         };
 
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         // get the current tag to check owner
         let current = match pool.get_tag(guild_id.0, &tag_name) {
@@ -229,7 +227,7 @@ command!(tag_delete(ctx, msg, args) {
         };
 
         // check if user owns the tag or has mod perms
-        if !current.is_owner(msg.author.id.0) && !has_permission(&msg) {
+        if !current.is_owner(msg.author.id.0) && !has_permission(msg) {
             return Err(CommandError::from(get_msg!("error/tag_no_permission")))
         }
 
@@ -246,7 +244,7 @@ command!(tag_delete(ctx, msg, args) {
 
 command!(tag_rename(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let tag_name = match args.single::<String>() {
             Ok(val) => val.to_lowercase(),
@@ -269,12 +267,12 @@ command!(tag_rename(ctx, msg, args) {
         };
 
         // check if new name exists
-        if let Some(_) = pool.get_tag(guild_id.0, &tag_new_name) {
+        if pool.get_tag(guild_id.0, &tag_new_name).is_some() {
             return Err(CommandError::from(get_msg!("error/tag_already_exists")));
         }
 
         // check if user owns the tag or has mod perms
-        if !current.is_owner(msg.author.id.0) && !has_permission(&msg) {
+        if !current.is_owner(msg.author.id.0) && !has_permission(msg) {
             return Err(CommandError::from(get_msg!("error/tag_no_permission")))
         }
 
@@ -291,7 +289,7 @@ command!(tag_rename(ctx, msg, args) {
 
 command!(tag_edit(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let tag_name = match args.single::<String>() {
             Ok(val) => val.to_lowercase(),
@@ -317,11 +315,11 @@ command!(tag_edit(ctx, msg, args) {
         }
 
         // check if user owns the tag or has mod perms
-        if !current.is_owner(msg.author.id.0) && !has_permission(&msg) {
+        if !current.is_owner(msg.author.id.0) && !has_permission(msg) {
             return Err(CommandError::from(get_msg!("error/tag_no_permission")));
         }
 
-        if pool.edit_tag(guild_id.0, &tag_name, &tag_name, &tag_content) {
+        if pool.edit_tag(guild_id.0, &tag_name, &tag_name, tag_content) {
             let _ = msg.channel_id.say(get_msg!("info/tag_edited_content", &tag_name, &tag_content));
         } else {
             return Err(CommandError::from(get_msg!("error/tag_not_found_or_not_owner")));
@@ -333,7 +331,7 @@ command!(tag_edit(ctx, msg, args) {
 
 command!(tag_random(ctx, msg, _args) {
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let found_tag = match pool.get_random_tag(guild_id.0) {
             Some(val) => val,
@@ -351,17 +349,14 @@ command!(tag_random(ctx, msg, _args) {
 
 // splits a string that might be too long
 pub fn split_message(msg: &str, prepend: Option<&str>, with_code_block: bool) -> Vec<String> {
-    let split = msg.split("\n");
+    let split = msg.split('\n');
     let mut vec = Vec::new();
     let mut single_msg = String::new();
 
     // add text in beginning before code blocks
-    match prepend {
-        Some(val) => {
-            single_msg.push_str(&val);
-        },
-        None => {},
-    };
+    if let Some(val) = prepend {
+        single_msg.push_str(val);
+    }
 
     if with_code_block {
         single_msg.push_str("\n```"); // add starting code block

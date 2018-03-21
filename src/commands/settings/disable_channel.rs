@@ -14,7 +14,7 @@ command!(disable_channel(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
         
@@ -51,7 +51,7 @@ command!(enable_channel(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
         
@@ -77,7 +77,7 @@ command!(enable_channel(ctx, msg, args) {
 
 command!(list_disabled_channels(ctx, msg, _args) {
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
         
@@ -87,7 +87,7 @@ command!(list_disabled_channels(ctx, msg, _args) {
             }
 
             let mut s = String::new();
-            for chan in channels.iter() {
+            for chan in &channels {
                 let _ = write!(s, "<#{}>\n", chan);
             }
 

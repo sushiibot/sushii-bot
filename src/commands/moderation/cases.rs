@@ -19,7 +19,7 @@ command!(reason(ctx, msg, args) {
         return Err(CommandError::from("Please provide a reason."));
     }
 
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let guild_id = match msg.guild_id() {
         Some(id) => id.0,
@@ -111,7 +111,7 @@ command!(reason(ctx, msg, args) {
                 // edit database entry
                 case.reason = Some(given_reason.to_owned());
                 case.executor_id = Some(msg.author.id.0 as i64);
-                pool.update_mod_action(case);
+                pool.update_mod_action(&case);
             }
         }
         let mut s = "Finished updating case reasons.".to_owned();
@@ -152,7 +152,7 @@ command!(history(ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };
 
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     if let Some(user_history) = pool.get_mod_action_user_history(guild_id, target) {
         let mut s = String::new();
@@ -164,11 +164,11 @@ command!(history(ctx, msg, args) {
             return Err(CommandError::from(get_msg!("error/cases_user_history_not_found")));
         }
 
-        for item in user_history.iter() {
+        for item in &user_history {
             let _ = write!(s, "`[Case #{}]` {} by <@{}> for {}\n", 
                 item.case_id, item.action,
                 item.executor_id.map_or(current_user_id, |x| x as u64),
-                item.reason.clone().unwrap_or("N/A".to_owned()));
+                item.reason.clone().unwrap_or_else(|| "N/A".to_owned()));
         }
 
         let _ = msg.channel_id.send_message(|m| m

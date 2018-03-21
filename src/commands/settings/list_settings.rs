@@ -7,7 +7,7 @@ command!(settings(ctx, msg, _args) {
     if let Some(guild) = msg.guild() {
         let guild = guild.read();
 
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
         
         let config = check_res_msg!(pool.get_guild_config(guild.id.0));
 
@@ -61,20 +61,20 @@ command!(settings(ctx, msg, _args) {
             .embed(|e| e
                 .author(|a| a
                     .name(&format!("{} - Guild Settings", guild.name))
-                    .icon_url(&guild.icon_url().unwrap_or("N/A".to_owned()))
+                    .icon_url(&guild.icon_url().unwrap_or_else(|| "N/A".to_owned()))
                 )
                 .color(0x3498db)
-                .field("join_msg", config.join_msg.unwrap_or("N/A".to_owned()), true)
-                .field("join_react", config.join_react.unwrap_or("N/A".to_owned()), true)
-                .field("leave_msg", config.leave_msg.unwrap_or("N/A".to_owned()), true)
+                .field("join_msg", config.join_msg.unwrap_or_else(|| "N/A".to_owned()), true)
+                .field("join_react", config.join_react.unwrap_or_else(|| "N/A".to_owned()), true)
+                .field("leave_msg", config.leave_msg.unwrap_or_else(|| "N/A".to_owned()), true)
                 .field("msg_channel", msg_channel, true)
                 .field("role_channel", role_channel, true)
-                .field("invite_guard", config.invite_guard.unwrap_or(false), true)
+                .field("invite_guard", config.invite_guard.unwrap_or_else(|| false), true)
                 .field("log_msg", log_msg, true)
                 .field("log_mod", log_mod, true)
                 .field("log_member", log_member, true)
                 .field("mute_role", mute_role, true)
-                .field("prefix", config.prefix.unwrap_or(default_prefix), true)
+                .field("prefix", config.prefix.unwrap_or_else(|| default_prefix), true)
                 .field("max_mention", config.max_mention, true)
                 .field("disabled_channels", disabled_channels, false)
             )

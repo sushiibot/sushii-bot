@@ -32,7 +32,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         }
     }
 
-    let prefix = config.prefix.unwrap_or(env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment."));
+    let prefix = config.prefix.unwrap_or_else(|| env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment."));
 
     // check if starts with prefix
     if !msg.content.starts_with(&prefix) {
@@ -45,14 +45,14 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     let mut tag_name = &msg.content[tag_start..];
 
     // check if space between prefix and tag name
-    tag_name = if tag_name.starts_with(" ") {
+    tag_name = if tag_name.starts_with(' ') {
         &tag_name[1..]
     } else {
         &tag_name[..]
     };
 
     // return silently if not found
-    let found_tag = match pool.get_tag(guild_id, &tag_name) {
+    let found_tag = match pool.get_tag(guild_id, tag_name) {
         Some(val) => val,
         None => return,
     };
@@ -65,5 +65,5 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     // print content with zws space in front to prevent bot triggers
     let _ = msg.channel_id.say(&format!("\u{200b}{}", content));
     // update the counter
-    pool.increment_tag(guild_id, &tag_name);
+    pool.increment_tag(guild_id, tag_name);
 }

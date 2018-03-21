@@ -3,7 +3,7 @@ use serenity::utils::parse_channel;
 use utils::config::get_pool;
 
 command!(joinmsg(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let message = args.full().to_owned();
 
@@ -12,7 +12,7 @@ command!(joinmsg(ctx, msg, args) {
         let config = check_res_msg!(pool.get_guild_config(guild_id));
 
         // no message given, just print out the current message
-        if args.len() == 0 {
+        if args.is_empty() {
             if let Some(current_message) = config.join_msg {
                 let s = get_msg!("info/join_message_current", current_message);
                 let _ = msg.channel_id.say(&s);
@@ -41,7 +41,7 @@ command!(joinmsg(ctx, msg, args) {
 });
 
 command!(joinreact(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let react = args.full().to_owned();
 
@@ -50,7 +50,7 @@ command!(joinreact(ctx, msg, args) {
         let config = check_res_msg!(pool.get_guild_config(guild_id));
 
         // no message given, just print out the current message
-        if args.len() == 0 {
+        if args.is_empty() {
             if let Some(current_react) = config.join_react {
                 let s = get_msg!("info/join_react_current", current_react);
                 let _ = msg.channel_id.say(&s);
@@ -79,7 +79,7 @@ command!(joinreact(ctx, msg, args) {
 });
 
 command!(leavemsg(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let message = args.full().to_owned();
 
@@ -88,7 +88,7 @@ command!(leavemsg(ctx, msg, args) {
         let config = check_res_msg!(pool.get_guild_config(guild_id));
 
         // no message given, just print out the current message
-        if args.len() == 0 {
+        if args.is_empty() {
             if let Some(current_message) = config.leave_msg {
                 let s = get_msg!("info/leave_message_current", current_message);
                 let _ = msg.channel_id.say(&s);
@@ -127,7 +127,7 @@ command!(msg_channel(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
 
