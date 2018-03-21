@@ -18,13 +18,13 @@ use commands;
 pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions>>) {
     let owners: HashSet<UserId> = env::var("OWNER")
         .expect("Expected owner IDs in the environment.")
-        .split(",")
+        .split(',')
         .map(|x| UserId(x.parse::<u64>().unwrap()))
         .collect();
 
     let blocked_users: HashSet<UserId> = match env::var("BLOCKED_USERS") {
         Ok(val) => {
-            val.split(",").map(|x| UserId(x.parse::<u64>().unwrap())).collect()
+            val.split(',').map(|x| UserId(x.parse::<u64>().unwrap())).collect()
         },
         Err(_) => HashSet::new(),
     };
@@ -55,7 +55,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
     ];
 
     let default_cmd = Arc::new(CommandOptions::default());
-    for name in reserved.iter() {
+    for name in &reserved {
         commands_list.insert(name.to_string(), default_cmd.clone());
     }
 
@@ -124,7 +124,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             if let Some(guild) = msg.guild() {
                 let guild = guild.read();
                 
-                let pool = get_pool(&ctx);
+                let pool = get_pool(ctx);
 
                 // fetch member
                 let member = match guild.members.get(&msg.author.id) {
@@ -169,7 +169,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         })
         .after(|ctx, msg, _cmd_name, error| {
             {
-                let pool = get_pool(&ctx);
+                let pool = get_pool(ctx);
                 pool.update_stat("commands", "executed", 1);
             }
 
@@ -318,7 +318,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             .guild_only(true)
             .command("settings", |c| c
                 .desc("Lists the current server settings.")
-                .cmd(commands::settings::settings::settings)
+                .cmd(commands::settings::list_settings::settings)
             )
             .command("prefix", |c| c
                 .desc("Gives you the prefix for this guild, or sets a new prefix (Setting prefix requires MANAGE_GUILD).")
@@ -448,7 +448,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             .command("patreon", |c| c
                 .desc("Gets the patreon url. :]")
                 .exec(|_, msg, _| {
-                    let url = env::var("PATREON_URL").unwrap_or("N/A".to_owned());
+                    let url = env::var("PATREON_URL").unwrap_or_else(|_| "N/A".to_owned());
                     let _ = msg.channel_id.say(&format!("You can support me on patreon here: <{}> Thanks! :heart:", url))?;
                     Ok(())
                 })
@@ -607,12 +607,12 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
 
 // adds commands to a hashmap for later use for reference of other command names or usage
 fn add_command_group(map: &mut HashMap<String, Arc<CommandOptions>>, cmd_group: CreateGroup) -> CreateGroup {
-    for (name, cmd) in cmd_group.0.commands.iter() {
-        if let &CommandOrAlias::Command(ref val) = cmd {
+    for (name, cmd) in &cmd_group.0.commands {
+        if let CommandOrAlias::Command(ref val) = *cmd {
             let options = val.options();
 
             // insert command options for each alias
-            for alias in options.aliases.iter() {
+            for alias in &options.aliases {
                 map.insert(alias.to_owned(), options.clone());
             }
 

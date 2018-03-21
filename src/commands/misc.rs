@@ -155,7 +155,7 @@ command!(reminder(ctx, msg, args) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap();
 
-    pool.add_reminder(msg.author.id.0, &reminder_content, &remind_date);
+    pool.add_reminder(msg.author.id.0, reminder_content, &remind_date);
 
     let now = now.naive_utc();
     let since = remind_date.signed_duration_since(

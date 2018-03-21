@@ -30,7 +30,7 @@ command!(gallery_add(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         pool.add_gallery(channel, guild_id.0, &webhook_url);
 
@@ -43,7 +43,7 @@ command!(gallery_add(ctx, msg, args) {
 
 command!(gallery_list(ctx, msg, _args) {
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let s = if let Some(galleries) = pool.list_galleries(guild_id.0) {
             if galleries.is_empty() {
@@ -82,7 +82,7 @@ command!(gallery_delete(ctx, msg, args) {
     };
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         if pool.delete_gallery(guild_id.0, gallery_id) {
             let _ = msg.channel_id.say(get_msg!("info/gallery_deleted"));

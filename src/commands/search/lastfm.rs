@@ -36,8 +36,8 @@ command!(fm(ctx, msg, args) {
         },
         "toptracks" | "topsongs" => {
             let _ = args.skip();
-            let period = args.single::<String>().unwrap_or("overall".to_owned());
-            let username = get_username(&ctx, msg.author.id.0)?;
+            let period = args.single::<String>().unwrap_or_else(|_| "overall".to_owned());
+            let username = get_username(ctx, msg.author.id.0)?;
 
             if !is_valid_period(&period) {
                 return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
@@ -45,12 +45,12 @@ command!(fm(ctx, msg, args) {
 
             let data = get_data(FM_TOP_TRACKS_URL, &username, &period)?;
 
-            top_tracks(&msg, &data, &period);
+            top_tracks(msg, &data, &period);
         },
         "topartists" => {
             let _ = args.skip();
-            let period = args.single::<String>().unwrap_or("overall".to_owned());
-            let username = get_username(&ctx, msg.author.id.0)?;
+            let period = args.single::<String>().unwrap_or_else(|_| "overall".to_owned());
+            let username = get_username(ctx, msg.author.id.0)?;
 
             if !is_valid_period(&period) {
                 return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
@@ -58,12 +58,12 @@ command!(fm(ctx, msg, args) {
 
             let data = get_data(FM_TOP_ARTISTS_URL, &username, &period)?;
 
-            top_artists(&msg, &data, &period);
+            top_artists(msg, &data, &period);
         },
         "topalbums" => {
             let _ = args.skip();
-            let period = args.single::<String>().unwrap_or("overall".to_owned());
-            let username = get_username(&ctx, msg.author.id.0)?;
+            let period = args.single::<String>().unwrap_or_else(|_| "overall".to_owned());
+            let username = get_username(ctx, msg.author.id.0)?;
 
             if !is_valid_period(&period) {
                 return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
@@ -71,20 +71,20 @@ command!(fm(ctx, msg, args) {
 
             let data = get_data(FM_TOP_ALBUMS_URL, &username, &period)?;
 
-            top_albums(&msg, &data, &period);
+            top_albums(msg, &data, &period);
         },
         "loved" => {
             let _ = args.skip();
-            let username = get_username(&ctx, msg.author.id.0)?;
+            let username = get_username(ctx, msg.author.id.0)?;
             let data = get_data(FM_LOVED_TRACKS_URL, &username, "ayy lmao")?;
 
-            loved_tracks(&msg, &data);
+            loved_tracks(msg, &data);
         },
         // no matches would equal just -fm, show now playing / last track
         "nowplaying" | _ => {
-            let (username, saved) = set_or_get_username(&ctx, msg.author.id.0, &mut args)?;
+            let (username, saved) = set_or_get_username(ctx, msg.author.id.0, &mut args)?;
             let data = get_data(FM_RECENT_TRACKS_URL, &username, "yep lol")?;
-            recent_tracks(&msg, &data, saved)?;
+            recent_tracks(msg, &data, saved)?;
         }
     };
 });
@@ -97,8 +97,8 @@ fn is_valid_period(period: &str) -> bool {
 
 fn top_tracks(msg: &Message, data: &Value, period: &str) {
     let username = data.pointer("/toptracks/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
-    let empty_tracks = &vec![];
-    let tracks = data.pointer("/toptracks/track").and_then(|x| x.as_array()).unwrap_or(&empty_tracks);
+    let default_vec = vec![];
+    let tracks = data.pointer("/toptracks/track").and_then(|x| x.as_array()).unwrap_or(&default_vec);
 
     let mut s = String::new();
 
@@ -121,13 +121,13 @@ fn top_tracks(msg: &Message, data: &Value, period: &str) {
             i + 1, playcount, play_plural, title, clean_url(url), artist, clean_url(artist_url));
     }
 
-    send_embed(msg, None, &format!("{}'s Top Tracks - {}", username, period), &username, &s, &first_image);
+    send_embed(msg, None, &format!("{}'s Top Tracks - {}", username, period), username, &s, first_image);
 }
 
 fn top_artists(msg: &Message, data: &Value, period: &str) {
     let username = data.pointer("/topartists/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
-    let empty_artists = &vec![];
-    let artists = data.pointer("/topartists/artist").and_then(|x| x.as_array()).unwrap_or(&empty_artists);
+    let default_vec = vec![];
+    let artists = data.pointer("/topartists/artist").and_then(|x| x.as_array()).unwrap_or(&default_vec);
 
     let mut s = String::new();
 
@@ -147,13 +147,13 @@ fn top_artists(msg: &Message, data: &Value, period: &str) {
         let _ = write!(s, "`[{:02}] {}` {} - [{}]({})\n", i + 1, playcount, play_plural, name, clean_url(url));
     }
 
-    send_embed(msg, None, &format!("{}'s Top Artists - {}", username, period), &username, &s, &first_image);
+    send_embed(msg, None, &format!("{}'s Top Artists - {}", username, period), username, &s, first_image);
 }
 
 fn top_albums(msg: &Message, data: &Value, period: &str) {
     let username = data.pointer("/topalbums/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
-    let empty_albums = &vec![];
-    let albums = data.pointer("/topalbums/album").and_then(|x| x.as_array()).unwrap_or(&empty_albums);
+    let default_vec = vec![];
+    let albums = data.pointer("/topalbums/album").and_then(|x| x.as_array()).unwrap_or(&default_vec);
 
     let mut s = String::new();
 
@@ -176,13 +176,13 @@ fn top_albums(msg: &Message, data: &Value, period: &str) {
             i + 1, playcount, play_plural, name, clean_url(url), artist, clean_url(artist_url));
     }
 
-    send_embed(msg, None, &format!("{}'s Top Albums - {}", username, period), &username, &s, &first_image);
+    send_embed(msg, None, &format!("{}'s Top Albums - {}", username, period), username, &s, first_image);
 }
 
 fn loved_tracks(msg: &Message, data: &Value) {
     let username = data.pointer("/lovedtracks/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
-    let empty_tracks = &vec![];
-    let tracks = data.pointer("/lovedtracks/track").and_then(|x| x.as_array()).unwrap_or(&empty_tracks);
+    let default_vec = vec![];
+    let tracks = data.pointer("/lovedtracks/track").and_then(|x| x.as_array()).unwrap_or(&default_vec);
 
     if tracks.is_empty() {
         let _ = msg.channel_id.say(get_msg!("info/fm_no_loved_tracks"));
@@ -203,7 +203,7 @@ fn loved_tracks(msg: &Message, data: &Value) {
             i + 1, title, clean_url(url), artist, clean_url(artist_url));
     }
 
-    send_embed(msg, None, &format!("{}'s Recently Loved Tracks", username), &username, &s, &first_image);
+    send_embed(msg, None, &format!("{}'s Recently Loved Tracks", username), username, &s, first_image);
 }
 
 fn recent_tracks(msg: &Message, data: &Value, saved: bool) -> Result<(), CommandError> {
@@ -219,7 +219,7 @@ fn recent_tracks(msg: &Message, data: &Value, saved: bool) -> Result<(), Command
     let last_track_url = data.pointer("/recenttracks/track/0/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
 
     // urlencode parenthesis
-    let last_track_url = clean_url(&last_track_url);
+    let last_track_url = clean_url(last_track_url);
 
     // check for empty values that break embeds
     let username = if username.is_empty() {
@@ -264,7 +264,7 @@ fn recent_tracks(msg: &Message, data: &Value, saved: bool) -> Result<(), Command
         .and_then(|x| x.as_str())
         .and_then(|x| x.parse::<i64>().ok())
         .and_then(|x| Some(NaiveDateTime::from_timestamp(x, 0)))
-        .unwrap_or(Utc::now().naive_utc())
+        .unwrap_or_else(|| Utc::now().naive_utc())
         .format("%Y-%m-%dT%H:%M:%S");
 
     let last_track_status = if let Some(nowplaying) = data.pointer("/recenttracks/track/0/@attr/nowplaying").and_then(|x| x.as_str()) {
@@ -307,12 +307,12 @@ fn recent_tracks(msg: &Message, data: &Value, saved: bool) -> Result<(), Command
 }
 
 fn get_username(ctx: &Context, user: u64) -> Result<String, CommandError> {
-    let pool = get_pool(&ctx);
-    pool.get_lastfm_username(user).ok_or(CommandError::from(get_msg!("error/fm_no_username")))
+    let pool = get_pool(ctx);
+    pool.get_lastfm_username(user).ok_or_else(|| CommandError::from(get_msg!("error/fm_no_username")))
 }
 
 fn set_or_get_username(ctx: &Context, user: u64, args: &mut Args) -> Result<(String, bool), CommandError> {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let username_or_set = args.full();
     let mut saved = false;
@@ -346,9 +346,9 @@ fn set_or_get_username(ctx: &Context, user: u64, args: &mut Args) -> Result<(Str
 fn get_data(url: &str, username: &str, period: &str) -> Result<Value, CommandError> {
     let fm_key = env::var("LASTFM_KEY").expect("Expected LASTFM_KEY to be set in environment");
     let url = url
-        .replace("{USER}", &username)
+        .replace("{USER}", username)
         .replace("{KEY}", &fm_key)
-        .replace("{PERIOD}", &period);
+        .replace("{PERIOD}", period);
 
     // fetch data
     match reqwest::get(&url).and_then(|mut x| x.json()) {
@@ -371,13 +371,13 @@ fn send_embed(msg: &Message, content: Option<&str>, title: &str, username: &str,
 
         m.embed(|e| e
             .author(|a| a
-                .name(&title)
+                .name(title)
                 .url(&format!("https://www.last.fm/user/{}", username))
                 .icon_url("https://i.imgur.com/C7u8gqg.jpg")
             )
             .color(0xb90000)
             .description(&desc)
-            .thumbnail(&thumbnail)
+            .thumbnail(thumbnail)
         )
     });
 }

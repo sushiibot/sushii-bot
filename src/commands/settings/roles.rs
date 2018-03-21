@@ -70,7 +70,7 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
         }
     }
 
-    return s;
+    s
 }
 
 command!(roles_set(ctx, msg, args) {
@@ -83,7 +83,7 @@ command!(roles_set(ctx, msg, args) {
         raw_json = raw_json.replacen("```", "", 2);
     }
 
-    if raw_json.is_empty() && msg.attachments.len() > 0 {
+    if raw_json.is_empty() && !msg.attachments.is_empty() {
         let bytes = match msg.attachments[0].download() {
             Ok(content) => content,
             Err(e) => return Err(CommandError::from(e)),
@@ -115,7 +115,7 @@ command!(roles_set(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
         config.role_config = Some(serde_json::Value::from(role_config));
@@ -139,7 +139,7 @@ command!(roles_channel(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
 
@@ -156,7 +156,7 @@ command!(roles_channel(ctx, msg, args) {
 
 command!(roles_get(ctx, msg, _args) {
     if let Some(guild_id) = msg.guild_id() {
-        let config = check_res_msg!(get_config_from_context(&ctx, guild_id.0));
+        let config = check_res_msg!(get_config_from_context(ctx, guild_id.0));
 
         if let Some(role_config) = config.role_config {
             let roles_pretty = match serde_json::to_string_pretty(&role_config) {
@@ -183,10 +183,10 @@ command!(mute_role(ctx, msg, args) {
         };
 
         let role_id = parse_role(&role)
-            .or(guild.roles.values().find(|&x| x.name == role).map(|x| x.id.0));
+            .or_else(|| guild.roles.values().find(|&x| x.name == role).map(|x| x.id.0));
 
         if let Some(id) = role_id {
-            let pool = get_pool(&ctx);
+            let pool = get_pool(ctx);
 
             let mut config = check_res_msg!(pool.get_guild_config(guild.id.0));
             config.mute_role = Some(id as i64);
@@ -210,7 +210,7 @@ command!(list_ids(_ctx, msg, _args) {
         let mut roles = guild.roles.values().collect::<Vec<&Role>>();
         roles.sort_by(|&a, &b| b.position.cmp(&a.position));
 
-        for role in roles.iter() {
+        for role in &roles {
             let _ = write!(roles_text, "[{:02}] {} - {}\n", role.position, role.id.0, role.name);
         }
 

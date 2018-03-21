@@ -19,7 +19,7 @@ use inflector::Inflector;
 
 
 pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     // check if a ban command was used instead of discord right click ban
     // add the action to the database if not pendings
@@ -34,7 +34,7 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
     let reason = get_reason(&config, &db_entry);
 
     if let Some(channel) = config.log_mod {
-        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, &user, "Ban", &reason, db_entry.case_id, 0xe74c3c) {
+        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, user, "Ban", &reason, db_entry.case_id, 0xe74c3c) {
             // edit the mod entry to have the mod log message id if successfull msg send
             db_entry.msg_id = Some(msg.id.0 as i64);
         }
@@ -43,11 +43,11 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
 
     db_entry.pending = false;
 
-    pool.update_mod_action(db_entry);
+    pool.update_mod_action(&db_entry);
 }
 
 pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, user: &User) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     // check if a unban command was used instead of discord settings unban
     // add the action to the database if not pendings
@@ -62,7 +62,7 @@ pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, user: &User) {
     let reason = get_reason(&config, &db_entry);
 
     if let Some(channel) = config.log_mod {
-        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, &user, "Unban", &reason, db_entry.case_id, 0x2ecc71) {
+        if let Ok(msg) = send_mod_action_msg(channel, &tag, &face, user, "Unban", &reason, db_entry.case_id, 0x2ecc71) {
             // edit the mod entry to have the mod log message id if successfull msg send
             db_entry.msg_id = Some(msg.id.0 as i64);
         }
@@ -71,12 +71,12 @@ pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, user: &User) {
 
     db_entry.pending = false;
 
-    pool.update_mod_action(db_entry);
+    pool.update_mod_action(&db_entry);
 }
 
 // handle mutes
 pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, member: &Member) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let config = check_res!(pool.get_guild_config(member.guild_id.0));
 
@@ -90,30 +90,28 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
     let color;
 
     // check if there is a before member model, otherwise this is kind of useless
-    let member_before = match member_before {
-        &Some(ref val) => val,
-        &None => return,
+    let member_before = match *member_before {
+        Some(ref val) => val,
+        None => return,
     };
 
     // check if a mute was added
-    if let Some(_) = member.roles.iter().find(|&x| x.0 == mute_role as u64) {
+    if member.roles.iter().any(|&x| x.0 == mute_role as u64) {
         // found a mute role, let's check previous to see if the mute role caused the update
-        if let None = (member_before).roles.iter().find(|&x| x.0 == mute_role as u64) {
+        if (member_before).roles.iter().find(|&x| x.0 == mute_role as u64).is_none() {
             // previous member has no mute role, current does, so this is a mute action
             action = "mute";
             color = 0xe67e22;
         } else {
             return;
         }
-    } else {
         // current has no mute role
-        if let Some(_) = member_before.roles.iter().find(|&x| x.0 == mute_role as u64) {
-            // previous member has mute role, this was an unmute action
-            action = "unmute";
-            color = 0x1abc9c;
-        } else {
-            return;
-        }
+    } else if member_before.roles.iter().any(|&x| x.0 == mute_role as u64) {
+        // previous member has mute role, this was an unmute action
+        action = "unmute";
+        color = 0x1abc9c;
+    } else {
+        return;
     }
 
 
@@ -140,7 +138,7 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
 
     db_entry.pending = false;
 
-    pool.update_mod_action(db_entry);
+    pool.update_mod_action(&db_entry);
 }
 
 

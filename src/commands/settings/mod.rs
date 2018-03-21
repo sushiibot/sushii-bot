@@ -5,4 +5,4 @@ pub mod bot;
 pub mod chat;
 pub mod gallery;
 pub mod disable_channel;
-pub mod settings;
+pub mod list_settings;

@@ -84,7 +84,7 @@ command!(patron(ctx, msg, args) {
     };
 
     if let Ok(status) = args.single::<String>() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         if status == "add" {
             if pool.set_patron(id, true) {
@@ -113,7 +113,7 @@ command!(patron_emoji(ctx, msg, args) {
     };
 
     if let Ok(emoji) = args.single::<String>() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
         if pool.set_patron_emoji(id, &emoji) {
             let _ = msg.channel_id.say(get_msg!("info/patron_emoji_set", emoji));
             return Ok(());
@@ -132,7 +132,7 @@ command!(listservers(_ctx, msg, _args) {
     for guild in guilds.values() {
         let guild = guild.read();
 
-        let owner_tag = guild.owner_id.get().map(|x| x.tag()).unwrap_or("N/A".to_owned());
+        let owner_tag = guild.owner_id.get().map(|x| x.tag()).unwrap_or_else(|_| "N/A".to_owned());
 
         let _ = write!(s, "{} ({}) - Owner: {} ({}) - Members: {}\n", 
             guild.name, guild.id.0, owner_tag, guild.owner_id.0, guild.member_count);

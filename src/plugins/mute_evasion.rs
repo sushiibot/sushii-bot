@@ -39,7 +39,7 @@ pub fn on_guild_member_removal(
     user: &User,
     member: &Option<Member>,
 ) {
-    if let &Some(ref memb) = member {
+    if let Some(ref memb) = *member {
         let config = check_res!(pool.get_guild_config(guild_id.0));
 
         // check if mute role set in config

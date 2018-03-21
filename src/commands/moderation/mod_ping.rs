@@ -43,7 +43,7 @@ fn find_by_status(guild: &Guild, status: OnlineStatus) -> Option<&Member> {
             return false;
         }
 
-        if let Some(presence) = guild.presences.get(&user_id) {
+        if let Some(presence) = guild.presences.get(user_id) {
             if presence.status != status {
                 return false;
             }
@@ -53,8 +53,8 @@ fn find_by_status(guild: &Guild, status: OnlineStatus) -> Option<&Member> {
 
         // Check if the member has at least one of the required permissions.
         match member.permissions() {
-            Ok(perms) if perms.contains(required_perms) => return true,
-            _ => return false,
+            Ok(perms) if perms.contains(required_perms) => true,
+            _ => false,
         }
     })
         .map(|x| x.1)

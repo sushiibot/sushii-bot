@@ -23,7 +23,7 @@ command!(add_notification(ctx, msg, args) {
         msg.guild_id().map_or(0, |x| x.0)
     };
 
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     // check if notification already exists
     let notifications = pool.list_notifications(msg.author.id.0);
@@ -34,17 +34,15 @@ command!(add_notification(ctx, msg, args) {
 
         if guild_id == 0 {
             // check if this global noti already exists
-            if let Some(_) = found {
+            if found.is_some() {
                 return Err(CommandError::from(get_msg!("error/notification_global_already_exists")));
             } else {
                 // delete all the local notifications with same keyword
                 pool.delete_notification(msg.author.id.0, None, Some(&keyword), None);
             }
-        } else {
-            // local noti
-            if let Some(_) = found {
-                return Err(CommandError::from(get_msg!("error/notification_already_exists")));
-            }
+        } else if found.is_some() {
+        // local noti
+            return Err(CommandError::from(get_msg!("error/notification_already_exists")));
         }
     }
 
@@ -56,7 +54,7 @@ command!(add_notification(ctx, msg, args) {
         get_msg!("info/notification_added", &keyword)
     };
 
-    if let Err(_) = msg.author.direct_message(|m| m.content(&s)) {
+    if msg.author.direct_message(|m| m.content(&s)).is_err() {
         return Err(CommandError::from(get_msg!("error/failed_dm")));
     } else if !msg.is_private() {
         let _ = msg.channel_id.say(get_msg!("info/notification_added_sent_dm"));
@@ -64,7 +62,7 @@ command!(add_notification(ctx, msg, args) {
 });
 
 command!(list_notifications(ctx, msg, _args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
     let mut notifications = match pool.list_notifications(msg.author.id.0) {
         Some(val) => val,
         None => {
@@ -76,7 +74,7 @@ command!(list_notifications(ctx, msg, _args) {
     notifications.sort_by(|a, b| a.keyword.cmp(&b.keyword));
     let mut s = String::new();
 
-    if notifications.len() == 0 {
+    if notifications.is_empty() {
         let _ = msg.channel_id.say("You have no notifications set.");
         return Ok(());
     } else {
@@ -103,7 +101,7 @@ command!(list_notifications(ctx, msg, _args) {
         let _ = write!(s, "```");
     }
 
-    if let Err(_) = msg.author.direct_message(|m| m.content(&s)) {
+    if msg.author.direct_message(|m| m.content(&s)).is_err() {
         let _ = msg.channel_id.say(get_msg!("error/failed_dm"));
     } else if !msg.is_private() {
         let _ = msg.channel_id.say(get_msg!("info/notification_sent_dm"));
@@ -188,7 +186,7 @@ command!(delete_notification(ctx, msg, args) {
         }
     };
 
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let guild_id = if keyword_or_id.starts_with("global ") {
         keyword_or_id = keyword_or_id.replace("global ", "");
@@ -210,7 +208,7 @@ command!(delete_notification(ctx, msg, args) {
         pool.delete_notification(msg.author.id.0, None, None, Some(notification_id))
     };
 
-    if let Some(_) = result {
+    if result.is_some() {
         let _ = msg.channel_id.say(&get_msg!("info/notification_deleted"));
     } else {
         return Err(CommandError::from(get_msg!("error/notification_delete_failed")));

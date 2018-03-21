@@ -37,6 +37,11 @@ pub struct ConnectionPool {
 
 embed_migrations!("./migrations");
 
+impl Default for ConnectionPool {
+    fn default() -> Self {
+        ConnectionPool::new()
+    }
+}
 
 impl ConnectionPool {
     pub fn new() -> ConnectionPool {
@@ -164,13 +169,11 @@ impl ConnectionPool {
                     return false;
                 }
             }
-        } else {
-            // check if this is a new guild,
-            // make a new config if it is
-            if let Err(_) = self.new_guild(guild_id) {
+        // check if this is a new guild,
+        // make a new config if it is
+        } else if self.new_guild(guild_id).is_err() {
                 return false;
             }
-        }
 
         // update the guild row
         if let Err(e) = diesel::update(guilds)
@@ -195,13 +198,13 @@ impl ConnectionPool {
         let conn = self.connection();
 
         // increment the counter
-        if let Err(_) = diesel::update(events)
+        if diesel::update(events)
             .filter(name.eq(&event_name))
             .set(count.eq(count + 1))
-            .execute(&conn) {
+            .execute(&conn).is_err() {
 
             let new_event = NewEventCounter {
-                name: &event_name,
+                name: event_name,
                 count: 1,
             };
             
@@ -329,7 +332,7 @@ impl ConnectionPool {
             .bind::<BigInt, i64>(id_user as i64)
             .load(&conn) {
 
-            Ok(val) => val.get(0).map(|x| level_interval_ranked(&x)),
+            Ok(val) => val.get(0).map(|x| level_interval_ranked(x)),
             Err(e) => {
                 warn_discord!("[DB:get_level] Error while getting level: {}", e);
                 None
@@ -462,7 +465,7 @@ impl ConnectionPool {
                 // update the useractivity
                 let mut updated_activity = user.msg_activity.clone();
                 if let Some(elem) = updated_activity.get_mut(hour as usize) {
-                    *elem = *elem + 1;
+                    *elem += 1;
                 } else {
                     warn_discord!("[DB:update_user_activity_message] Error incrementing user {} activity", id_user);
                 }
@@ -866,7 +869,7 @@ impl ConnectionPool {
                 v.sort_by(|a, b| a.keyword.cmp(&b.keyword));
 
                 let target = match v.get((notification_id - 1) as usize) {
-                    Some(val) => val.clone(),
+                    Some(val) => val,
                     None => return None,
                 };
 
@@ -897,19 +900,17 @@ impl ConnectionPool {
             } else {
                 None
             }
-        } else {
+        } else if let Some(kw) = kw {
             // delete all of a keyword
-            if let Some(kw) = kw {
-                diesel::delete(
-                    notifications
-                        .filter(user_id.eq(user as i64))
-                        .filter(keyword.eq(kw))
-                    )
-                    .get_result::<Notification>(&conn)
-                    .ok()
-            } else {
-                None
-            }
+            diesel::delete(
+                notifications
+                    .filter(user_id.eq(user as i64))
+                    .filter(keyword.eq(kw))
+                )
+                .get_result::<Notification>(&conn)
+                .ok()
+        } else {
+            None
         }
     }
 
@@ -972,7 +973,7 @@ impl ConnectionPool {
         }
     }
 
-    pub fn update_mod_action(&self, entry: ModAction) {
+    pub fn update_mod_action(&self, entry: &ModAction) {
         use schema::mod_log;
         use schema::mod_log::dsl::*;
 
@@ -981,7 +982,7 @@ impl ConnectionPool {
         // id/entry_id is the unique global serial id, not the case id
         if let Err(e) = diesel::update(mod_log::table)
             .filter(id.eq(entry.id))
-            .set(&entry)
+            .set(entry)
             .execute(&conn) {
 
                 warn_discord!("[DB:update_mod_action] Error while updating mod action: {}", e);
@@ -1096,7 +1097,7 @@ impl ConnectionPool {
 
         let conn = self.connection();
 
-        match diesel::update(users::table)
+        if let Err(e) = diesel::update(users::table)
             .filter(id.eq(id_user as i64))
             .set((
                 latitude.eq(Some(lat)),
@@ -1104,8 +1105,8 @@ impl ConnectionPool {
                 address.eq(Some(loc))
             ))
             .execute(&conn) {
-                Err(e) => warn_discord!("[DB:save_weather_location] Error while updating a user weather location: {}", e),
-                _ => {},
+
+                warn_discord!("[DB:save_weather_location] Error while updating a user weather location: {}", e);
         };
     }
 
@@ -1145,15 +1146,10 @@ impl ConnectionPool {
 
         let conn = self.connection();
 
-        if let Ok(_) = mutes
+        mutes
             .filter(user_id.eq(id_user as i64))
             .filter(guild_id.eq(id_guild as i64))
-            .first::<Mute>(&conn) {
-            
-            true
-        } else {
-            false
-        }
+            .first::<Mute>(&conn).is_ok()
     }
 
     pub fn delete_mute(&self, id_user: u64, id_guild: u64) {
@@ -1394,11 +1390,7 @@ impl ConnectionPool {
                 Ok(rows) => {
                     // returns number of rows affected, this should be 1
                     // if it was successfully deleted
-                    if rows == 1 {
-                        true
-                    } else {
-                        false
-                    }
+                    rows == 1
                 },
                 Err(e) => {
                     warn_discord!("[DB:delete_tag] Error while deleting tag: {}", e);
@@ -1529,7 +1521,7 @@ impl ConnectionPool {
             .get_result::<Stat>(&conn) {
 
 
-            Ok(val) => datadog::set(&format!("sushii.{}.{}", val.category, val.stat_name), val.count, vec![]),
+            Ok(val) => datadog::set(&format!("sushii.{}.{}", val.category, val.stat_name), val.count, &[]),
             Err(e) => warn_discord!("[DB:update_stat] Error while updating statistic: {}", e),
         };
     }
@@ -1565,9 +1557,9 @@ pub fn level_interval(user_level: &UserLevel) -> UserLevel {
         user_id: user_level.user_id,
         guild_id: user_level.guild_id,
         msg_all_time: user_level.msg_all_time,
-        msg_month: msg_month,
-        msg_week: msg_week,
-        msg_day: msg_day,
+        msg_month,
+        msg_week,
+        msg_day,
         last_msg: user_level.last_msg,
     }
 }
@@ -1608,17 +1600,17 @@ pub fn level_interval_ranked(user_level: &UserLevelRanked) -> UserLevelRanked {
         user_id: user_level.user_id,
         guild_id: user_level.guild_id,
         msg_all_time: user_level.msg_all_time,
-        msg_month: msg_month,
-        msg_week: msg_week,
-        msg_day: msg_day,
+        msg_month,
+        msg_week,
+        msg_day,
         last_msg: user_level.last_msg,
-        msg_day_rank: msg_day_rank,
+        msg_day_rank,
         msg_day_total: user_level.msg_day_total,
 
-        msg_week_rank: msg_week_rank,
+        msg_week_rank,
         msg_week_total: user_level.msg_week_total,
 
-        msg_month_rank: msg_month_rank,
+        msg_month_rank,
         msg_month_total: user_level.msg_month_total,
 
         msg_all_time_rank: user_level.msg_all_time_rank,

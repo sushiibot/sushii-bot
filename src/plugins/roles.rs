@@ -62,7 +62,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         // make individual cases for each word in each capture
         // Example: +role1 role2 role3
         // Each gets it's own separate entry as to preserve order
-        let split = target.split(" ");
+        let split = target.split(' ');
 
         for value in split {
             // to add / remove, string to search, position in message
@@ -71,11 +71,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     }
 
     // check if user wants to reset roles
-    let should_reset = if msg.content.to_lowercase() == "reset" {
-        true
-    } else {
-        false
-    };
+    let should_reset = msg.content.to_lowercase() == "reset";
 
     // none found, exit
     if !found && !should_reset {
@@ -134,7 +130,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     // check each role +/- action if we should use this
     // role
-    for modify in to_modify.iter() {
+    for modify in &to_modify {
         // loop through each role
         'category: for (cat_name, cat_data) in role_config.iter() {
             let limit = check_opt!(cat_data.get("limit").and_then(|x| x.as_u64()));
@@ -156,7 +152,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                     }
                 };
 
-                if !re.is_match(&modify.1) {
+                if !re.is_match(modify.1) {
                     continue;
                 }
 
@@ -169,7 +165,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                     }
 
                     // check if already has the role
-                    if let Some(_) = member_roles[cat_name].iter().position(|x| *x == primary || *x == secondary) {
+                    if member_roles[cat_name].iter().any(|x| *x == primary || *x == secondary) {
                         errors.push(format!("You already have the `{}` role.", role_name));
                         continue;
                     }
@@ -188,20 +184,18 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                         current_roles.push(secondary);
                         added_names.push(role_name.clone());
                     }
-                } else {
+                } else if let Some(index) = member_roles[cat_name].iter().position(|x| *x == primary || *x == secondary) {
                     // remove a role if member already has it
-                    if let Some(index) = member_roles[cat_name].iter().position(|x| *x == primary || *x == secondary) {
-                        (*member_roles.get_mut(cat_name).unwrap()).remove(index);
+                    (*member_roles.get_mut(cat_name).unwrap()).remove(index);
 
-                        // remove from actual roles
-                        if let Some(role_index) = current_roles.iter().position(|x| *x == primary || *x == secondary) {
-                            current_roles.remove(role_index);
-                        }
-
-                        removed_names.push(role_name.clone());
-                    } else {
-                        errors.push(format!("You don't have the `{}` role.", role_name));
+                    // remove from actual roles
+                    if let Some(role_index) = current_roles.iter().position(|x| *x == primary || *x == secondary) {
+                        current_roles.remove(role_index);
                     }
+
+                    removed_names.push(role_name.clone());
+                } else {
+                    errors.push(format!("You don't have the `{}` role.", role_name));
                 }
             }
         }

@@ -9,7 +9,7 @@ use utils::time::now_utc;
 use utils::user::get_id;
 
 command!(fishy(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     if let Some(last_fishy) = pool.get_last_fishies(msg.author.id.0) {
         let now = now_utc();
@@ -91,7 +91,7 @@ fn get_pos_emoji(pos: i64) -> String {
 }
 
 command!(fishies_top(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     let guild_id = match msg.guild_id() {
         Some(val) => val.0,

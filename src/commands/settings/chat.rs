@@ -22,7 +22,7 @@ command!(inviteguard(ctx, msg, args) {
     }
 
     if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
 
@@ -46,7 +46,7 @@ command!(max_mentions(ctx, msg, args) {
             Err(_) => return Err(CommandError::from(get_msg!("error/required_number"))),
         };
 
-        let pool = get_pool(&ctx);
+        let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(pool.get_guild_config(guild.id.0));
         config.max_mention = max_mention;
