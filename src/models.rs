@@ -370,7 +370,7 @@ pub struct CachedUser {
     pub discriminator: i32,
 }
 
-#[derive(Insertable, Debug)]
+#[derive(Insertable, AsChangeset, Debug)]
 #[table_name = "cache_users"]
 pub struct NewCachedUser<'a> {
     pub id: i64,

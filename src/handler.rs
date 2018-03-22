@@ -182,7 +182,8 @@ impl EventHandler for Handler {
         update_event(&ctx, "GUILD_UNAVAILABLE")
     }
 
-    fn guild_update(&self, ctx: Context, _: Option<Arc<RwLock<Guild>>>, _: PartialGuild) {
+    fn guild_update(&self, ctx: Context, guild: Option<Arc<RwLock<Guild>>>, partial_guild: PartialGuild) {
+        exec_on_guild_update!([&ctx, &guild, &partial_guild], db_cache);
         update_event(&ctx, "GUILD_UPDATE");
     }
 
@@ -245,7 +246,8 @@ impl EventHandler for Handler {
         update_event(&ctx, "PRESENCE_REPLACE")
     }
 
-    fn presence_update(&self, ctx: Context, _: PresenceUpdateEvent) {
+    fn presence_update(&self, ctx: Context, presence_event: PresenceUpdateEvent) {
+        exec_on_presence_update!([&ctx, &presence_event], db_cache);
         update_event(&ctx, "PRESENCE_UPDATE");
     }
 

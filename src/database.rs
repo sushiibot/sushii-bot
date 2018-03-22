@@ -1500,6 +1500,30 @@ impl ConnectionPool {
             .execute(&conn)
     }
 
+    pub fn update_cache_users(&self, users: Vec<serenity::model::user::User>) -> Result<(), Error> {
+        use schema::cache_users::dsl::*;
+
+        let conn = self.connection();
+
+        for user in users {
+            let a_user = NewCachedUser {
+                id: user.id.0 as i64,
+                avatar: &user.face(),
+                user_name: &user.name,
+                discriminator: user.discriminator as i32,
+            };
+
+            diesel::insert_into(cache_users)
+                .values(&a_user)
+                .on_conflict(id)
+                .do_update()
+                .set(&a_user)
+                .execute(&conn)?;
+        }
+
+        Ok(())
+    }
+
     // STATS
     pub fn update_stat(&self, new_cat: &str, new_stat: &str, added: i64) {
         use utils::datadog;
