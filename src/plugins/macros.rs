@@ -21,11 +21,18 @@ macro_rules! exec_on_message_update {
         }}
 }
 
-
 macro_rules! exec_on_ready {
     ( [$ctx:expr, $ready:expr], $( $plugin:ident ),* ) => {
         $(
             $plugin::on_ready($ctx, $ready);
+        )*
+    }
+}
+
+macro_rules! exec_on_presence_update {
+    ( [$ctx:expr, $presenceupdateevent:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_presence_update($ctx, $presenceupdateevent);
         )*
     }
 }
@@ -89,6 +96,14 @@ macro_rules! exec_on_guild_members_chunk {
     ( [$ctx:expr, $guild_id:expr, $members:expr], $( $plugin:ident ),* ) => {
         $(
             $plugin::on_guild_members_chunk($ctx, $guild_id, $members);
+        )*
+    }
+}
+
+macro_rules! exec_on_guild_update {
+    ( [$ctx:expr, $guild:expr, $partial_guild:expr], $( $plugin:ident ),* ) => {
+        $(
+            $plugin::on_guild_update($ctx, $guild, $partial_guild);
         )*
     }
 }
