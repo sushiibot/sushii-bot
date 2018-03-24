@@ -1525,26 +1525,47 @@ impl ConnectionPool {
     }
 
     // STATS
-    pub fn update_stat(&self, new_cat: &str, new_stat: &str, added: i64) {
+    pub fn update_stat(&self, stat_category: &str, name: &str, added: Option<i64>, set: Option<i64>) {
         use utils::datadog;
         use schema::stats::dsl::*;
 
         let conn = self.connection();
 
-        let new_stat = NewStat {
-            stat_name: new_stat,
-            count: added,
-            category: new_cat,
+        let new_count = if let Some(val) = added {
+            val
+        } else if let Some(val) = set {
+            val
+        } else {
+            warn_discord!("Stat update was not given a value: ", name);
+            return;
         };
 
-        match diesel::insert_into(stats)
-            .values(&new_stat)
-            .on_conflict(stat_name)
-            .do_update()
-            .set(count.eq(count + added))
-            .get_result::<Stat>(&conn) {
+        let new_stat = NewStat {
+            stat_name: name,
+            count: new_count,
+            category: stat_category,
+        };
 
+        let result = if added.is_some() {
+            diesel::insert_into(stats)
+                .values(&new_stat)
+                .on_conflict(stat_name)
+                .do_update()
+                .set(count.eq(count + new_count))
+                .get_result::<Stat>(&conn)
+        } else if set.is_some() {
+            diesel::insert_into(stats)
+                .values(&new_stat)
+                .on_conflict(stat_name)
+                .do_update()
+                .set(count.eq(new_count))
+                .get_result::<Stat>(&conn)
+        } else {
+            warn_discord!("Stat update was not given a value: ", name);
+            return;
+        };
 
+        match result {
             Ok(val) => datadog::set(&format!("sushii.{}.{}", val.category, val.stat_name), val.count, &[]),
             Err(e) => warn_discord!("[DB:update_stat] Error while updating statistic: {}", e),
         };

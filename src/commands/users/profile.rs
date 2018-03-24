@@ -217,7 +217,7 @@ command!(profile(ctx, msg, args) {
     let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
 
     generate_profile(msg, id, &user_data, &level_data, global_xp, s)?;
-    pool.update_stat("profile", "profiles_generated", 1);
+    pool.update_stat("profile", "profiles_generated", Some(1), None);
 });
 
 fn parse_number(val: &str, format: &str) -> Option<String> {
