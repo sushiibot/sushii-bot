@@ -488,3 +488,11 @@ command!(top_reps(ctx, msg, args) {
         );
     }
 });
+
+command!(leaderboard(_ctx, msg, _args) {
+    if let Some(guild_id) = msg.guild_id() {
+        let _ = msg.channel_id.say(&get_msg!("info/leaderboard", guild_id));
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});

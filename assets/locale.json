@@ -86,7 +86,9 @@
         "rank_set_xpbarcolor": "Your XP bar color has been updated.",
         "rank_set_graphcolor": "Your level graph color has been updated.",
         "rank_set_graphbgcolor": "Your level graph background color has been updated.",
-        "rank_set_leveldarkness": "Your level level darkness has been updated."
+        "rank_set_leveldarkness": "Your level level darkness has been updated.",
+
+        "leaderboard": "You can find the leaderboard here: <https://sushii.xyz/leaderboard/{}>"
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",

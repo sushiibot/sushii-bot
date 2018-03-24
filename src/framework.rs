@@ -204,6 +204,10 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .bucket("profile_bucket")
                 .cmd(commands::users::profile::profile)
             )
+            .command("leaderboard", |c| c
+                .desc("Get the leaderboard URL for this guild.")
+                .cmd(commands::users::levels::leaderboard)
+            )
             .command("toplevels", |c| c
                 .desc("Shows the top users.")
                 .cmd(commands::users::levels::top_levels)
