@@ -74,10 +74,10 @@ command!(fishy(ctx, msg, args) {
     };
 
     let _ = msg.channel_id.say(&s);
-    pool.update_stat("fishies", "fishies_given", num_fishies);
+    pool.update_stat("fishies", "fishies_caught", Some(num_fishies), None);
 
     if is_golden {
-        pool.update_stat("fishies", "golden_fishies", 1);
+        pool.update_stat("fishies", "golden_fishies_caught", Some(1), None);
     }
 });
 

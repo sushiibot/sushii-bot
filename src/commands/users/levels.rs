@@ -183,7 +183,7 @@ command!(rank(ctx, msg, args) {
     let files = vec![(&buf[..], "level.png")];
 
     let _ = msg.channel_id.send_files(files, |m| m.content(""));
-    pool.update_stat("profile", "levels_generated", 1);
+    pool.update_stat("profile", "levels_generated", Some(1), None);
 });
 
 fn get_rep_emoji_level(user_rep: i32) -> String {
@@ -305,7 +305,7 @@ command!(rep(ctx, msg, args) {
     };
 
     pool.rep_user(msg.author.id.0, target);
-    pool.update_stat("rep", "rep_given", 1);
+    pool.update_stat("rep", "rep_given", Some(1), None);
 
     let _ = msg.channel_id.say(get_msg!("info/rep_given", &target_user.tag()));
 });

@@ -170,7 +170,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         .after(|ctx, msg, _cmd_name, error| {
             {
                 let pool = get_pool(ctx);
-                pool.update_stat("commands", "executed", 1);
+                pool.update_stat("commands", "commands_executed", Some(1), None);
             }
 
             //  Print out an error if it happened
