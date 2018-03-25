@@ -197,23 +197,17 @@ impl ConnectionPool {
 
         let conn = self.connection();
 
-        // increment the counter
-        if diesel::update(events)
-            .filter(name.eq(&event_name))
-            .set(count.eq(count + 1))
-            .execute(&conn).is_err() {
+        let new_event = NewEventCounter {
+            name: event_name,
+            count: 1,
+        };
 
-            let new_event = NewEventCounter {
-                name: event_name,
-                count: 1,
-            };
-            
-            // error when incremeneting, maybe the row doesn't exist
-            // so create a row
-            diesel::insert_into(events::table)
-                .values(&new_event)
-                .execute(&conn)?;
-        }
+        diesel::insert_into(events::table)
+            .values(&new_event)
+            .on_conflict(name)
+            .do_update()
+            .set(count.eq(count + 1))
+            .execute(&conn)?;
 
         Ok(())
     }
@@ -284,22 +278,27 @@ impl ConnectionPool {
                     last_msg.eq(now),
                 ))
                 .execute(&conn)?;
-        } else {
+        } else if let Err(e) = user {
+            match e {
+                Error::NotFound => {
+                    // create a new level row for the user + guild
+                    let new_level_obj = NewUserLevel {
+                        user_id: id_user as i64,
+                        guild_id: id_guild as i64,
+                        msg_all_time: 1,
+                        msg_month: 1,
+                        msg_week: 1,
+                        msg_day: 1,
+                        last_msg: &now,
+                    };
 
-            // create a new level row for the user + guild
-            let new_level_obj = NewUserLevel {
-                user_id: id_user as i64,
-                guild_id: id_guild as i64,
-                msg_all_time: 1,
-                msg_month: 1,
-                msg_week: 1,
-                msg_day: 1,
-                last_msg: &now,
-            };
-
-            diesel::insert_into(levels::table)
-                .values(&new_level_obj)
-                .execute(&conn)?;
+                    diesel::insert_into(levels::table)
+                        .values(&new_level_obj)
+                        .execute(&conn)?;
+                },
+                // return the error if isn't a NotFound error
+                _ => return Err(e),
+            }
         }
 
         Ok(())
