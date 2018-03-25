@@ -4,10 +4,11 @@ use serenity::model::user::User;
 use serenity::model::channel::ReactionType;
 use serenity::prelude::*;
 
+use utils::config::get_config;
 use database::ConnectionPool;
 
-pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, member: &Member) {
-    let config = check_res!(pool.get_guild_config(guild_id.0));
+pub fn on_guild_member_addition(ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, member: &Member) {
+    let config = check_res!(get_config(ctx, pool, guild_id.0));
 
     if let Some(joinmsg) = config.join_msg.clone() {
         if let Some(msgchannel) = config.msg_channel {
@@ -30,8 +31,8 @@ pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id:
     }
 }
 
-pub fn on_guild_member_removal(_ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, user: &User, _: &Option<Member>) {
-    let config = check_res!(pool.get_guild_config(guild_id.0));
+pub fn on_guild_member_removal(ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, user: &User, _: &Option<Member>) {
+    let config = check_res!(get_config(ctx, pool, guild_id.0));
 
     if let Some(leavemsg) = config.leave_msg.clone() {
         if let Some(msgchannel) = config.msg_channel {

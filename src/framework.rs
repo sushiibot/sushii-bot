@@ -6,7 +6,7 @@ use serenity::model::id::UserId;
 
 use utils::time::now_utc;
 use utils::config::get_pool;
-use database;
+use utils::config::get_config;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
@@ -59,24 +59,24 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         commands_list.insert(name.to_string(), default_cmd.clone());
     }
 
+    let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
+
     let framework = StandardFramework::new()
         .configure(|c| c
             .owners(owners)
+            .prefix(&default_prefix)
             .dynamic_prefix(|ctx, msg| {
-                let mut data = ctx.data.lock();
-                let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+                let pool = get_pool(&ctx);
 
                 // get guild id
                 if let Some(guild_id) = msg.guild_id() {
                     // get guild config prefix
-                    if let Some(prefix) = pool.get_prefix(guild_id.0) {
-                        return Some(prefix);
+                    if let Ok(config) = get_config(&ctx, &pool, guild_id.0) {
+                        return config.prefix;
                     }
                 }
 
-                // either no guild found or no prefix set for guild, use default
-                let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
-                Some(default_prefix)
+                None
             })
             .blocked_users(blocked_users)
             .allow_whitespace(true)
@@ -139,7 +139,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
 
                 // shouldnt fail but if it does, false negative better than positive?
                 // though false positive might be a lot less likely
-                let config = match pool.get_guild_config(guild.id.0) {
+                let config = match get_config(&ctx, &pool, guild.id.0) {
                     Ok(val) => val,
                     Err(_) => return false,
                 };

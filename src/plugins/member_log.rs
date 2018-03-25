@@ -5,9 +5,10 @@ use serenity::prelude::*;
 
 use database::ConnectionPool;
 use utils::time::now_utc;
+use utils::config::get_config;
 
-pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, member: &Member) {
-    let config = check_res!(pool.get_guild_config(guild_id.0));
+pub fn on_guild_member_addition(ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, member: &Member) {
+    let config = check_res!(get_config(ctx, pool, guild_id.0));
 
     if let Some(log_channel) = config.log_member {
         let channel = ChannelId(log_channel as u64);
@@ -32,8 +33,8 @@ pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id:
     }
 }
 
-pub fn on_guild_member_removal(_ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, user: &User, _: &Option<Member>) {
-    let config = check_res!(pool.get_guild_config(guild_id.0));
+pub fn on_guild_member_removal(ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, user: &User, _: &Option<Member>) {
+    let config = check_res!(get_config(ctx, pool, guild_id.0));
 
     if let Some(log_channel) = config.log_member {
         let channel = ChannelId(log_channel as u64);

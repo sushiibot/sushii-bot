@@ -100,6 +100,11 @@ impl Key for CommandsList {
     type Value = HashMap<String, Arc<CommandOptions>>;
 }
 
+pub struct GuildConfigCache;
+impl Key for GuildConfigCache {
+    type Value = HashMap<u64, models::GuildConfig>;
+}
+
 fn main() {
     dotenv().ok();
     env_logger::init().expect("Failed to initialize env_logger");
@@ -120,6 +125,7 @@ fn main() {
         data.insert::<SerenityShardManager>(Arc::clone(&client.shard_manager));
         data.insert::<Uptime>(Utc::now());
         data.insert::<CommandsList>(commands_list);
+        data.insert::<GuildConfigCache>(HashMap::new());
     }
 
     client.with_framework(framework);

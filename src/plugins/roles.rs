@@ -9,8 +9,9 @@ use std::fmt::Write;
 use regex::{Regex, RegexBuilder};
 
 use database::ConnectionPool;
+use utils::config::get_config;
 
-pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
+pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     // ignore self and bots
     if msg.author.bot {
         return;
@@ -22,7 +23,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     };
 
     // get configs
-    let config = check_res!(pool.get_guild_config(guild.id.0));
+    let config = check_res!(get_config(ctx, pool, guild.id.0));
     let role_config = check_opt!(config.role_config);
     let role_channel = check_opt!(config.role_channel);
 

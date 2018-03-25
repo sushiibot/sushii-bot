@@ -4,12 +4,13 @@ use serenity::model::user::User;
 use serenity::prelude::*;
 
 use database::ConnectionPool;
+use utils::config::get_config;
 
-pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, member: &mut Member) {
+pub fn on_guild_member_addition(ctx: &Context, pool: &ConnectionPool, guild_id: &GuildId, member: &mut Member) {
     let user = member.user.read().clone();
 
     if pool.should_mute(user.id.0, guild_id.0) {
-        let config = check_res!(pool.get_guild_config(guild_id.0));
+        let config = check_res!(get_config(ctx, pool, guild_id.0));
 
         if let Some(role) = config.mute_role {
             let case_id = check_res!(pool.add_mod_action(
@@ -33,14 +34,14 @@ pub fn on_guild_member_addition(_ctx: &Context, pool: &ConnectionPool, guild_id:
 }
 
 pub fn on_guild_member_removal(
-    _ctx: &Context,
+    ctx: &Context,
     pool: &ConnectionPool,
     guild_id: &GuildId,
     user: &User,
     member: &Option<Member>,
 ) {
     if let Some(ref memb) = *member {
-        let config = check_res!(pool.get_guild_config(guild_id.0));
+        let config = check_res!(get_config( ctx, pool, guild_id.0));
 
         // check if mute role set in config
         if let Some(role) = config.mute_role {

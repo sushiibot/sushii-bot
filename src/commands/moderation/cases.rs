@@ -8,6 +8,7 @@ use serenity::CACHE;
 
 use utils::user::get_id;
 use utils::config::get_pool;
+use utils::config::get_config;
 
 use std::fmt::Write;
 
@@ -57,7 +58,7 @@ command!(reason(ctx, msg, args) {
 
     // get the cases
     if let Some(cases) = pool.fetch_mod_actions(guild_id, first_case, second_case) {
-        let config = check_res_msg!(pool.get_guild_config(guild_id));
+        let config = check_res_msg!(get_config(&ctx, &pool, guild_id));
         let channel = match config.log_mod {
             Some(channel) => ChannelId(channel as u64),
             None => return Err(CommandError::from("There doesn't seem to be a mod log channel set.")),

@@ -16,7 +16,7 @@ command!(disable_channel(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
+        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
         
         config.disabled_channels = if let Some(mut disabled_channels) = config.disabled_channels {
             // check if already disabled
@@ -31,7 +31,7 @@ command!(disable_channel(ctx, msg, args) {
             Some(vec![channel as i64])
         };
 
-        pool.save_guild_config(&config);
+        update_config(&ctx, &pool, &config);
 
         let s = get_msg!("info/channel_disabled", channel);
         let _ = msg.channel_id.say(&s);
@@ -53,7 +53,7 @@ command!(enable_channel(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
+        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
         
         config.disabled_channels = if let Some(mut disabled_channels) = config.disabled_channels {
             if let Some(index) = disabled_channels.iter().position(|x| *x == channel as i64) {
@@ -66,7 +66,7 @@ command!(enable_channel(ctx, msg, args) {
             return Err(CommandError::from(get_msg!("error/channel_not_disabled")));
         };
 
-        pool.save_guild_config(&config);
+        update_config(&ctx, &pool, &config);
 
         let s = get_msg!("info/channel_enabled", channel);
         let _ = msg.channel_id.say(&s);
@@ -79,7 +79,7 @@ command!(list_disabled_channels(ctx, msg, _args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
+        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
         
         if let Some(channels) = config.disabled_channels {
             if channels.is_empty() {
