@@ -15,11 +15,11 @@ command!(modlog(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
+        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
 
         config.log_mod = Some(channel as i64);
 
-        pool.save_guild_config(&config);
+        update_config(&ctx, &pool, &config);
 
         let s = get_msg!("info/mod_log_set", channel);
         let _ = msg.channel_id.say(&s);
@@ -41,11 +41,11 @@ command!(msglog(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
+        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
 
         config.log_msg = Some(channel as i64);
 
-        pool.save_guild_config(&config);
+        update_config(&ctx, &pool, &config);
 
         let s = get_msg!("info/message_log_set", channel);
         let _ = msg.channel_id.say(&s);
@@ -67,11 +67,11 @@ command!(memberlog(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(pool.get_guild_config(guild_id.0));
+        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
 
         config.log_member = Some(channel as i64);
 
-        pool.save_guild_config(&config);
+        update_config(&ctx, &pool, &config);
 
         let s = get_msg!("info/member_log_set", channel);
         let _ = msg.channel_id.say(&s);

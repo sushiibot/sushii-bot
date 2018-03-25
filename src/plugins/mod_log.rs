@@ -10,6 +10,7 @@ use serenity::Error;
 use std::env;
 
 use utils::config::get_pool;
+use utils::config::get_config;
 use utils::time::now_utc;
 
 use models::ModAction;
@@ -30,7 +31,7 @@ pub fn on_guild_ban_addition(ctx: &Context, guild: &GuildId, user: &User) {
 
     let (tag, face) = get_user_tag_face(&db_entry);
 
-    let config = check_res!(pool.get_guild_config(guild.0));
+    let config = check_res!(get_config(ctx, &pool, guild.0));
     let reason = get_reason(&config, &db_entry);
 
     if let Some(channel) = config.log_mod {
@@ -58,7 +59,7 @@ pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, user: &User) {
 
     let (tag, face) = get_user_tag_face(&db_entry);
 
-    let config = check_res!(pool.get_guild_config(guild.0));
+    let config = check_res!(get_config(ctx, &pool, guild.0));
     let reason = get_reason(&config, &db_entry);
 
     if let Some(channel) = config.log_mod {
@@ -78,7 +79,7 @@ pub fn on_guild_ban_removal(ctx: &Context, guild: &GuildId, user: &User) {
 pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, member: &Member) {
     let pool = get_pool(ctx);
 
-    let config = check_res!(pool.get_guild_config(member.guild_id.0));
+    let config = check_res!(get_config(ctx, &pool, member.guild_id.0));
 
     // check if there is a mute role
     let mute_role = match config.mute_role {
@@ -125,7 +126,6 @@ pub fn on_guild_member_update(ctx: &Context, member_before: &Option<Member>, mem
 
     let (tag, face) = get_user_tag_face(&db_entry);
 
-    let config = check_res!(pool.get_guild_config(member.guild_id.0));
     let reason = get_reason(&config, &db_entry);
 
     if let Some(channel) = config.log_mod {

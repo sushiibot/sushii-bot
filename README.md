@@ -1,6 +1,6 @@
-# sushii bot
-
 [![Build Status](https://travis-ci.org/drklee3/sushii-bot.svg?branch=master)](https://travis-ci.org/drklee3/sushii-bot)
+
+# sushii bot
 
 ![sushii](assets/sushii.png)
 

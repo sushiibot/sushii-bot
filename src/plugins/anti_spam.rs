@@ -3,8 +3,9 @@ use serenity::prelude::Context;
 use serenity::CACHE;
 
 use database::ConnectionPool;
+use utils::config::get_config;
 
-pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
+pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     if let Some(guild) = msg.guild() {
         let guild = guild.read();
 
@@ -26,7 +27,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         }
 
         // get the config
-        let config = check_res!(pool.get_guild_config(guild.id.0));
+        let config = check_res!(get_config(ctx, pool, guild.id.0));
 
         if msg.mentions.len() > config.max_mention as usize {
             // get the member

@@ -3,8 +3,9 @@ use serenity::prelude::Context;
 
 use database::ConnectionPool;
 use std::env;
+use utils::config::get_config;
 
-pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
+pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     // ignore bots
     if msg.author.bot {
         return;
@@ -16,7 +17,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     };
 
     // returns if no guild or error
-    let config = check_res!(pool.get_guild_config(guild_id));
+    let config = check_res!(get_config(ctx, pool, guild_id));
 
     // check if disabled channel
     if let Some(disabled_channels) = config.disabled_channels {

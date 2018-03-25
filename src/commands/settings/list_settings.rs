@@ -2,6 +2,7 @@ use serenity::framework::standard::CommandError;
 
 use std::env;
 use utils::config::get_pool;
+use utils::config::get_config;
 
 command!(settings(ctx, msg, _args) {
     if let Some(guild) = msg.guild() {
@@ -9,7 +10,7 @@ command!(settings(ctx, msg, _args) {
 
         let pool = get_pool(ctx);
         
-        let config = check_res_msg!(pool.get_guild_config(guild.id.0));
+        let config = check_res_msg!(get_config(&ctx, &pool, guild.id.0));
 
         let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
 

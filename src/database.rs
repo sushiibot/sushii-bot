@@ -138,56 +138,6 @@ impl ConnectionPool {
         }
     }
 
-    /// PREFIX
-
-    /// Shortcut function to get the prefix for a guild
-    pub fn get_prefix(&self, guild_id: u64) -> Option<String> {
-        match self.get_guild_config(guild_id) {
-            Ok(val) => val.prefix,
-            Err(_) => None,
-        }
-    }
-
-    // sets the prefix for a guild
-    pub fn set_prefix(&self, guild_id: u64, new_prefix: &str) -> bool {
-        use schema::guilds::dsl::*;
-
-        let conn = self.connection();
-
-        // fetch event
-        let guild = guilds
-            .filter(id.eq(guild_id as i64))
-            .first::<GuildConfig>(&conn)
-            .ok();
-
-
-        if let Some(guild) = guild {
-            let guild = guild.clone();
-            // check if guild has same prefix
-            if let Some(existing_prefix) = guild.prefix {
-                if new_prefix == existing_prefix {
-                    return false;
-                }
-            }
-        // check if this is a new guild,
-        // make a new config if it is
-        } else if self.new_guild(guild_id).is_err() {
-                return false;
-            }
-
-        // update the guild row
-        if let Err(e) = diesel::update(guilds)
-            .filter(id.eq(guild_id as i64))
-            .set(prefix.eq(new_prefix))
-            .execute(&conn) {
-            
-                warn_discord!("[DB:set_prefix] Error while setting a guild prefix: {}", e);
-                return false;
-        }
-
-        true
-    }
-
     /// EVENTS
 
     /// Logs a counter for each event that is handled
