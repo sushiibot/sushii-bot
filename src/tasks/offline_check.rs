@@ -27,6 +27,8 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                         std::process::exit(1);
                     }
 
+                    debug!("presence updates: previous: {}, current: {}", count, counter.count);
+
                     count = counter.count;
                 }
             }
@@ -41,6 +43,9 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 pool.update_stat("bot", "guilds_count", None, Some(guilds_count as i64));
                 pool.update_stat("bot", "channels_count", None, Some(channels_count as i64));
                 pool.update_stat("bot", "users_count", None, Some(users_count as i64));
+
+                debug!("updated cached bot info: guilds: {}, channels: {}, users: {}",
+                    guilds_count, channels_count, users_count);
             }
 
             thread::sleep(thirty_sec);
