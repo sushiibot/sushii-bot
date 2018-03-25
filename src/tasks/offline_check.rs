@@ -4,6 +4,7 @@ use serenity::model::gateway::Ready;
 use std;
 use std::{thread, time};
 use std::sync::{Once, ONCE_INIT};
+use parking_lot::deadlock;
 
 use database;
 
@@ -29,6 +30,19 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                     debug!("presence updates: previous: {}, current: {}", count, counter.count);
 
                     count = counter.count;
+                }
+            }
+
+            // Check for deadlocks
+            let deadlocks = deadlock::check_deadlock();
+            if !deadlocks.is_empty() {
+                println!("{} deadlocks detected", deadlocks.len());
+                for (i, threads) in deadlocks.iter().enumerate() {
+                    println!("Deadlock #{}", i);
+                    for t in threads {
+                        println!("Thread Id {:#?}", t.thread_id());
+                        println!("{:#?}", t.backtrace());
+                    }
                 }
             }
 
