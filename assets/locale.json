@@ -200,6 +200,8 @@
         "profile_color_not_given": "Please give a color.  You can use a hex or rgb code.  Example: `#74b9ff`, `rgb(116, 185, 255)`",
         "profile_percentage_not_given": "Please give a percentage between 0 and 1.  Example: `0.3`",
         "profile_invalid_color": "Invalid color code, please give a hex or rgba color.  Example: `#74b9ff`, `rgb(116, 185, 255)`",
-        "profile_invalid_percentage": "Invalid percentage.  The value must be between 0 and 1.  Example: `0.3`"
+        "profile_invalid_percentage": "Invalid percentage.  The value must be between 0 and 1.  Example: `0.3`",
+
+        "hug_nobody": "Give me someone to hug :("
     }
 }

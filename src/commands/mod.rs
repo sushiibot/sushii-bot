@@ -9,3 +9,4 @@ pub mod search;
 pub mod tags;
 pub mod fishy;
 pub mod users;
+pub mod text;

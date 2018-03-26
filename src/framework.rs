@@ -442,6 +442,16 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
 
             add_command_group(&mut commands_list, g)
         })
+        .group("Text", |g| {
+            let g = g
+            .command("hug", |c| c
+                .usage("[target]")
+                .desc("Hug someone.")
+                .cmd(commands::text::hug::hug_cmd)
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
         .group("Misc", |g| {
             let g = g
             .command("play", |c| c
