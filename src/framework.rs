@@ -467,7 +467,8 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .desc("Reminds you to do something after some time.")
                 .cmd(commands::misc::reminder)
             )
-            .command("reminder list", |c| c
+            .command("reminders", |c| c
+                .known_as("reminder list")
                 .desc("Shows your pending reminders.")
                 .cmd(commands::misc::reminders)
             );
