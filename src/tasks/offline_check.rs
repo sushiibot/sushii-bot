@@ -19,6 +19,22 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
         thread::spawn(move || loop {
             let thirty_sec = time::Duration::from_secs(30);
 
+            // Check for deadlocks
+            let deadlocks = deadlock::check_deadlock();
+            if !deadlocks.is_empty() {
+                warn_discord!(format!("{} deadlocks detected, check logs!!", deadlocks.len()));
+                println!("{} deadlocks detected", deadlocks.len());
+                for (i, threads) in deadlocks.iter().enumerate() {
+                    println!("Deadlock #{}", i);
+                    for t in threads {
+                        println!("Thread Id {:#?}", t.thread_id());
+                        println!("{:#?}", t.backtrace());
+                    }
+                }
+            }
+
+
+            // check if presences updated
             if let Ok(events) = pool.get_events() {
                 if let Some(counter) = events.iter().find(|x| x.name == "PRESENCE_UPDATE") {
                     // kill self if presence_updates count haven't changed in past 30 seconds
@@ -30,19 +46,6 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                     debug!("presence updates: previous: {}, current: {}", count, counter.count);
 
                     count = counter.count;
-                }
-            }
-
-            // Check for deadlocks
-            let deadlocks = deadlock::check_deadlock();
-            if !deadlocks.is_empty() {
-                println!("{} deadlocks detected", deadlocks.len());
-                for (i, threads) in deadlocks.iter().enumerate() {
-                    println!("Deadlock #{}", i);
-                    for t in threads {
-                        println!("Thread Id {:#?}", t.thread_id());
-                        println!("{:#?}", t.backtrace());
-                    }
                 }
             }
 
