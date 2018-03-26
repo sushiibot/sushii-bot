@@ -47,5 +47,10 @@ command!(hug_cmd(_ctx, msg, args) {
         format!("{} {}", rng.choose(&HUGS_RIGHT).unwrap(), target)
     };
 
+    // clean hug from everyone and here mentions just in case
+    let hug = hug
+        .replace("@everyone", "@\u{200b}everyone")
+        .replace("@here", "@\u{200b}here");
+
     let _ = msg.channel_id.say(&hug);
 });
