@@ -49,7 +49,7 @@
         "galleries_none": "This guild has no gallery channels.",
         "gallery_deleted": "Gallery has been deleted.",
 
-        "fm_help": "Valid subcommands are `toptracks`, `topartists`, `topalbums`, and `loved`. You find more information here: <https://sushii.xyz/commands#cmd_fm>",
+        "fm_help": "Valid subcommands are `toptracks`, `topartists`, `topalbums`, and `loved`. \nYou find more information here: <https://sushii.xyz/commands#cmd_fm>",
         "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
         "fm_no_loved_tracks": "You have no loved tracks. :broken_heart:",
 
