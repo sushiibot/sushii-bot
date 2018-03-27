@@ -2,7 +2,7 @@ use serenity::framework::standard::CommandError;
 
 use rand::{thread_rng, Rng};
 
-const HUGS_LEFT: &'static [&'static str] = &[
+const HUGS_LEFT: &[&str] = &[
     "ლ(・ヮ・ლ)",
     "⊂(・﹏・⊂)",
     "⊂(・ヮ・⊂)",
@@ -14,7 +14,7 @@ const HUGS_LEFT: &'static [&'static str] = &[
     "⊂(´・ω・｀⊂)",
 ];
 
-const HUGS_RIGHT: &'static [&'static str] = &[
+const HUGS_RIGHT: &[&str]  = &[
     "⊂(◉‿◉)つ",
     "(つ◉益◉)つ",
     "(っಠ‿ಠ)っ",
@@ -42,9 +42,9 @@ command!(hug_cmd(_ctx, msg, args) {
     
     // alternate between right and left?
     let hug = if msg.id.0 % 2 == 0 {
-        format!("{} {}", target, rng.choose(&HUGS_LEFT).unwrap())
+        format!("{} {}", target, rng.choose(HUGS_LEFT).unwrap())
     } else {
-        format!("{} {}", rng.choose(&HUGS_RIGHT).unwrap(), target)
+        format!("{} {}", rng.choose(HUGS_RIGHT).unwrap(), target)
     };
 
     // clean hug from everyone and here mentions just in case

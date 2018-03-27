@@ -66,12 +66,12 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             .owners(owners)
             .prefix(&default_prefix)
             .dynamic_prefix(|ctx, msg| {
-                let pool = get_pool(&ctx);
+                let pool = get_pool(ctx);
 
                 // get guild id
                 if let Some(guild_id) = msg.guild_id() {
                     // get guild config prefix
-                    if let Ok(config) = get_config(&ctx, &pool, guild_id.0) {
+                    if let Ok(config) = get_config(ctx, &pool, guild_id.0) {
                         return config.prefix;
                     }
                 }
@@ -139,7 +139,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
 
                 // shouldnt fail but if it does, false negative better than positive?
                 // though false positive might be a lot less likely
-                let config = match get_config(&ctx, &pool, guild.id.0) {
+                let config = match get_config(ctx, &pool, guild.id.0) {
                     Ok(val) => val,
                     Err(_) => return false,
                 };

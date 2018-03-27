@@ -6,13 +6,13 @@ use utils::config::get_config;
 use utils::config::update_config;
 
 command!(prefix(ctx, msg, args) {
-    let pool = get_pool(&ctx);
+    let pool = get_pool(ctx);
 
     // check for MANAGE_SERVER permissions
 
     if let Some(guild) = msg.guild() {
         let guild = guild.read();
-        let mut config = check_res_msg!(get_config(&ctx, &pool, guild.id.0));
+        let mut config = check_res_msg!(get_config(ctx, &pool, guild.id.0));
 
         let pref = match args.single::<String>() {
             Ok(val) => val,
@@ -43,7 +43,7 @@ command!(prefix(ctx, msg, args) {
 
             config.prefix = Some(pref.clone());
 
-            update_config(&ctx, &pool, &config);
+            update_config(ctx, &pool, &config);
 
             let _ = msg.channel_id.say(get_msg!("info/prefix_set", &pref));
         } else {
