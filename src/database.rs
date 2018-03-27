@@ -1459,7 +1459,7 @@ impl ConnectionPool {
                 id: user.id.0 as i64,
                 avatar: &user.face(),
                 user_name: &user.name,
-                discriminator: user.discriminator as i32,
+                discriminator: i32::from(user.discriminator),
             };
 
             diesel::insert_into(cache_users)

@@ -24,11 +24,11 @@ command!(inviteguard(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
+        let mut config = check_res_msg!(get_config(ctx, &pool, guild_id.0));
 
         config.invite_guard = Some(status);
 
-        update_config(&ctx, &pool, &config);
+        update_config(ctx, &pool, &config);
 
         let _ = msg.channel_id.say(&s);
     } else {
@@ -48,10 +48,10 @@ command!(max_mentions(ctx, msg, args) {
 
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(get_config(&ctx, &pool, guild.id.0));
+        let mut config = check_res_msg!(get_config(ctx, &pool, guild.id.0));
         config.max_mention = max_mention;
 
-        update_config(&ctx, &pool, &config);
+        update_config(ctx, &pool, &config);
 
         let s = get_msg!("info/max_mention_set", max_mention);
         let _ = msg.channel_id.say(&s);

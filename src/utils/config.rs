@@ -38,7 +38,7 @@ pub fn get_config(ctx: &Context, pool: &database::ConnectionPool, guild_id: u64)
 
 pub fn update_config(ctx: &Context, pool: &database::ConnectionPool, config: &GuildConfig) {
     // save pool to db
-    pool.save_guild_config(&config);
+    pool.save_guild_config(config);
 
     // update config cache
     let mut data = ctx.data.lock();

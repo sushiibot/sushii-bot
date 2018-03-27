@@ -117,10 +117,10 @@ command!(roles_set(ctx, msg, args) {
     if let Some(guild_id) = msg.guild_id() {
         let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(get_config(&ctx, &pool, guild_id.0));
+        let mut config = check_res_msg!(get_config(ctx, &pool, guild_id.0));
         config.role_config = Some(serde_json::Value::from(role_config));
 
-        update_config(&ctx, &pool, &config);
+        update_config(ctx, &pool, &config);
 
         let _ = msg.channel_id.say(get_msg!("info/role_config_set"));
     } else {
@@ -145,7 +145,7 @@ command!(roles_channel(ctx, msg, args) {
 
         config.role_channel = Some(channel as i64);
 
-        update_config(&ctx, &pool, &config);
+        update_config(ctx, &pool, &config);
 
         let s = get_msg!("info/role_channel_set", channel);
         let _ = msg.channel_id.say(&s);
@@ -188,10 +188,10 @@ command!(mute_role(ctx, msg, args) {
         if let Some(id) = role_id {
             let pool = get_pool(ctx);
 
-            let mut config = check_res_msg!(get_config(&ctx, &pool, guild.id.0));
+            let mut config = check_res_msg!(get_config(ctx, &pool, guild.id.0));
             config.mute_role = Some(id as i64);
 
-            update_config(&ctx, &pool, &config);
+            update_config(ctx, &pool, &config);
 
             let s = get_msg!("info/mute_role_set", id);
             let _ = msg.channel_id.say(&s);

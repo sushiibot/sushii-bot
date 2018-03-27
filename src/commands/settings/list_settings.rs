@@ -10,7 +10,7 @@ command!(settings(ctx, msg, _args) {
 
         let pool = get_pool(ctx);
         
-        let config = check_res_msg!(get_config(&ctx, &pool, guild.id.0));
+        let config = check_res_msg!(get_config(ctx, &pool, guild.id.0));
 
         let default_prefix = env::var("DEFAULT_PREFIX").expect("Expected DEFAULT_PREFIX in the environment.");
 
