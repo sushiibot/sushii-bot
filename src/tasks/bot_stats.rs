@@ -15,7 +15,9 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
 
     INIT.call_once(|| {
         thread::spawn(move || loop {
+            // sleep before checking, allows some time for guild lazy loading
             let five_min = time::Duration::from_secs(300);
+            thread::sleep(five_min);
 
             // Update stats for bot, probably should rename this file or something
             {
@@ -31,8 +33,6 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 debug!("updated cached bot info: guilds: {}, channels: {}, users: {}",
                     guilds_count, channels_count, users_count);
             }
-
-            thread::sleep(five_min);
         });
     });
 }
