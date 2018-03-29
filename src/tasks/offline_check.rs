@@ -22,8 +22,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
             // Check for deadlocks
             let deadlocks = deadlock::check_deadlock();
             if !deadlocks.is_empty() {
-                warn_discord!(format!("{} deadlocks detected, check logs!!", deadlocks.len()));
-                println!("{} deadlocks detected", deadlocks.len());
+                warn_discord!("{} deadlocks detected", deadlocks.len());
                 for (i, threads) in deadlocks.iter().enumerate() {
                     println!("Deadlock #{}", i);
                     for t in threads {
