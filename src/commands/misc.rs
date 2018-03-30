@@ -176,6 +176,11 @@ command!(reminders(ctx, msg, _args) {
     let current_reminders = pool.get_reminders(msg.author.id.0);
 
     if let Some(current_reminders) = current_reminders {
+        if current_reminders.is_empty() {
+            let _ = msg.channel_id.say("You have no reminders.");
+            return Ok(());
+        }
+
         let mut s = format!("You have {} reminders:\n```rust\n", current_reminders.len());
 
         // get current timestamp
