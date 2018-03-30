@@ -61,49 +61,19 @@ mod tasks;
 mod handler;
 mod database;
 mod framework;
+mod keys;
 
 use serenity::prelude::*;
-use serenity::client::bridge::gateway::ShardManager;
-use serenity::framework::standard::CommandOptions;
-
-use parking_lot::Mutex;
-use std::sync::Arc;
-
-use chrono::DateTime;
 use chrono::Utc;
-
-use std::collections::HashMap;
-use std::env;
+use std::{
+    env,
+    sync::Arc,
+    collections::HashMap,
+};
 use dotenv::dotenv;
-
-use typemap::Key;
 use database::ConnectionPool;
 use framework::get_framework;
-
-
-impl Key for ConnectionPool {
-    type Value = ConnectionPool;
-}
-
-pub struct SerenityShardManager;
-impl Key for SerenityShardManager {
-    type Value = Arc<Mutex<ShardManager>>;
-}
-
-pub struct Uptime;
-impl Key for Uptime {
-    type Value = DateTime<Utc>;
-}
-
-pub struct CommandsList;
-impl Key for CommandsList {
-    type Value = HashMap<String, Arc<CommandOptions>>;
-}
-
-pub struct GuildConfigCache;
-impl Key for GuildConfigCache {
-    type Value = HashMap<u64, models::GuildConfig>;
-}
+use keys::*;
 
 fn main() {
     dotenv().ok();
