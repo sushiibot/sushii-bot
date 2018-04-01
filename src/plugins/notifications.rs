@@ -28,16 +28,23 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 continue;
             }
 
-            let cache = CACHE.read();
+            let guild_name;
+            let channel_name;
 
             {
+                let cache = CACHE.read();
+
                 // check if in channel / guild that the user doesn't belong in 
                 let channel = match cache.guild_channel(msg.channel_id) {
                     Some(channel) => channel,
                     None => return,
                 };
 
-                let permissions = match channel.read().permissions_for(notification.user_id as u64) {
+                let channel = channel.read();
+
+                channel_name = channel.name.clone();
+
+                let permissions = match channel.permissions_for(notification.user_id as u64) {
                     Ok(perms) => perms,
                     Err(_) => return,
                 };
@@ -49,9 +56,13 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
                 // check if user is in guild
                 if let Some(guild) = cache.guild(guild_id) {
-                    if !guild.read().members.contains_key(&UserId(notification.user_id as u64)) {
+                    let guild = guild.read();
+                    guild_name = guild.name.clone();
+                    if !guild.members.contains_key(&UserId(notification.user_id as u64)) {
                         return;
                     }
+                } else {
+                    return;
                 }
             }
 
@@ -66,7 +77,8 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             let user = UserId(notification.user_id as u64);
 
             if let Ok(channel) = user.create_dm_channel() {
-                let desc = format!(":speech_left: Your notification `{}` was triggered in {}", notification.keyword, msg.channel_id.mention());
+                let desc = format!(":speech_left: {} mentioned `{}` in #{} ({}) in {}",
+                   msg.author.tag(), notification.keyword, channel_name, msg.channel_id.mention(), guild_name);
 
                 // maybe switch to use Channel::messages() instead?
                 let mut messages = pool.get_messages(msg.channel_id.0, 3);
