@@ -56,28 +56,25 @@ command!(ban(ctx, msg, args) {
 
     // log the ban in the database
     let pool = get_pool(ctx);
+    let count = users.len();
     let mut s = String::new();
-
-    let _ = write!(s, "```ruby\n");
-
-    let _ = write!(s, "Attempted to ban {} users:\n\n", users.len());
 
     for u in users {
         // fetch the user for tag
         let user = match UserId(u).get() {
             Ok(val) => val,
             Err(e) => {
-                let _ = write!(s, "{} - Error: Failed to fetch user: {}\n", u, &e);
+                let _ = write!(s, ":x: {} - Error: Failed to fetch user: {}\n", u, &e);
                 continue;
             }
         };
 
         // format a tag (id) string for the user
-        let user_tag_id = format!("{} ({})", user.tag(), user.id.0);
+        let user_tag_id = format!("`{} ({})`", user.tag(), user.id.0);
 
         // check if already banned in server ban list or in current currently
         if bans.contains(&u) {
-            let _ = write!(s, "{} - Error: User is already banned\n", user_tag_id);
+            let _ = write!(s, ":x: {} - Error: User is already banned\n", user_tag_id);
             continue;
         }
 
@@ -87,7 +84,7 @@ command!(ban(ctx, msg, args) {
             Ok(val) => val.case_id,
             Err(_) => {
                 let e = "Something went wrong with the database.  Try this again?";
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, e);
+                let _ = write!(s, ":x: {} - Error: {}\n", &user_tag_id, e);
                 continue;
             }
         };
@@ -103,31 +100,33 @@ command!(ban(ctx, msg, args) {
         match ban_result {
             Err(Error::Model(InvalidPermissions(permissions))) => {
                 let e = format!("I don't have permission to ban this user, requires: `{:?}`.", permissions);
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                let _ = write!(s, ":question: {} - Error: {}\n", &user_tag_id, &e);
                 pool.remove_mod_action(guild.id.0, &user, case_id);
             },
             Err(Error::Model(DeleteMessageDaysAmount(num))) => {
                 let e = format!("The number of days worth of messages to delete is over the maximum: ({}).", num);
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                let _ = write!(s, ":x: {} - Error: {}\n", &user_tag_id, &e);
                 pool.remove_mod_action(guild.id.0, &user, case_id);
             }
             Err(_) => {
                 let e = "There was an unknown error trying to ban this user.";
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                let _ = write!(s, ":question: {} - Error: {}\n", &user_tag_id, &e);
                 pool.remove_mod_action(guild.id.0, &user, case_id);
             },
             Ok(_) => {
-                let _ = write!(s, "{} - Successfully banned.\n", &user_tag_id);
+                let _ = write!(s, ":hammer: {} banned.\n", &user_tag_id);
                 // add the ban to the vec to prevent dupe bans
                 bans.push(u);
             },
         }
     }
-
-    let _ = write!(s, "```");
-
     
-    let _ = msg.channel_id.say(&s);
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
+            .title(format!("Attempted to ban {} users", count))
+            .description(&s)
+        )
+    );
 });
 
 command!(unban(ctx, msg, args) {
@@ -177,28 +176,25 @@ command!(unban(ctx, msg, args) {
 
     // log the ban in the database
     let pool = get_pool(ctx);
+    let count = users.len();
     let mut s = String::new();
-
-    let _ = write!(s, "```ruby\n");
-
-    let _ = write!(s, "Attempted to unban {} users:\n\n", users.len());
 
     for u in users {
         // fetch the user for tag
         let user = match UserId(u).get() {
             Ok(val) => val,
             Err(e) => {
-                let _ = write!(s, "{} - Error: Failed to fetch user: {}\n", u, &e);
+                let _ = write!(s, ":x: {} - Error: Failed to fetch user: {}\n", u, &e);
                 continue;
             }
         };
 
         // format a tag (id) string for the user
-        let user_tag_id = format!("{} ({})", user.tag(), user.id.0);
+        let user_tag_id = format!("`{} ({})`", user.tag(), user.id.0);
 
         // check if already banned in server ban list or in current currently
         if !bans.contains(&u) {
-            let _ = write!(s, "{} - Error: User is not banned\n", user_tag_id);
+            let _ = write!(s, ":x: {} - Error: User is not banned\n", user_tag_id);
             continue;
         }
 
@@ -208,7 +204,7 @@ command!(unban(ctx, msg, args) {
             Ok(val) => val.case_id,
             Err(_) => {
                 let e = "Something went wrong with the database.  Try this again?";
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, e);
+                let _ = write!(s, ":x: {} - Error: {}\n", &user_tag_id, e);
                 continue;
             }
         };
@@ -217,26 +213,28 @@ command!(unban(ctx, msg, args) {
         match guild.unban(u) {
             Err(Error::Model(InvalidPermissions(permissions))) => {
                 let e = format!("I don't have permission to unban this user, requires: `{:?}`.", permissions);
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                let _ = write!(s, ":question: {} - Error: {}\n", &user_tag_id, &e);
                 pool.remove_mod_action(guild.id.0, &user, case_id);
             },
             Err(_) => {
                 let e = "There was an unknown error trying to ban this user.";
-                let _ = write!(s, "{} - Error: {}\n", &user_tag_id, &e);
+                let _ = write!(s, ":question: {} - Error: {}\n", &user_tag_id, &e);
                 pool.remove_mod_action(guild.id.0, &user, case_id);
             },
             Ok(_) => {
-                let _ = write!(s, "{} - Successfully unbanned.\n", &user_tag_id);
+                let _ = write!(s, ":white_check_mark: {} unbanned.\n", &user_tag_id);
                 // remove the ban from the vec
                 let index = bans.iter().position(|x| x == &u).unwrap();
                 bans.remove(index);
             },
         }
     }
-
-    let _ = write!(s, "```");
-
     
-    let _ = msg.channel_id.say(&s);
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
+            .title(format!("Attempted to unban {} users", count))
+            .description(&s)
+        )
+    );
 });
 
