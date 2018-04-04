@@ -3,6 +3,7 @@ use serenity::framework::standard::CommandError;
 use std::env;
 use utils::config::get_pool;
 use utils::config::get_config;
+use utils::config::update_config;
 
 command!(settings(ctx, msg, _args) {
     if let Some(guild) = msg.guild() {
@@ -82,5 +83,72 @@ command!(settings(ctx, msg, _args) {
         );
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
+    }
+});
+
+
+command!(clear_setting(ctx, msg, args) {
+    if let Some(guild) = msg.guild() {
+        let guild = guild.read();
+
+        let pool = get_pool(ctx);
+        
+        let mut config = check_res_msg!(get_config(ctx, &pool, guild.id.0));
+
+        let setting = match args.single::<String>() {
+            Ok(val) => val,
+            Err(_) => return Err(CommandError::from("error/clear_setting_not_given"))
+        };
+
+        match setting.as_ref() {
+            "joinmsg" | "join_msg" => {
+                config.join_msg = None
+            },
+            "joinreact" | "join_react" => {
+                config.join_react = None
+            },
+            "leavemsg" | "leave_msg" => {
+                config.leave_msg = None
+            },
+            "msgchannel" | "msg_channel" => {
+                config.msg_channel = None
+            },
+            "rolechannel" | "role_channel" => {
+                config.role_channel = None
+            },
+            "inviteguard" | "invite_guard" => {
+                config.invite_guard = None
+            },
+            "msglog" | "log_msg" => {
+                config.log_msg = None
+            },
+            "modlog" | "log_mod" => {
+                config.log_mod = None
+            },
+            "memberlog" | "log_member" => {
+                config.log_member = None
+            },
+            "muterole" | "mute_role" => {
+                config.mute_role = None
+            },
+            "prefix" => {
+                config.prefix = None
+            },
+            "maxmention" | "max_mention" => {
+                return Err(CommandError::from(get_msg!("error/clear_setting_cannot_clear")))
+            },
+            "disabledchannels" | "disabled_channels" => {
+                config.disabled_channels = None
+            },
+            _ => {
+                return Err(CommandError::from(get_msg!("error/clear_setting_invalid")));
+            }
+        }
+
+        update_config(ctx, &pool, &config);
+
+        let _ = msg.channel_id.say(&get_msg!("info/setting_cleared", setting));
+    } else {
+        return Err(CommandError::from(get_msg!("error/no_guild")))
     }
 });

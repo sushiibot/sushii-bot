@@ -88,7 +88,8 @@
         "rank_set_graphbgcolor": "Your level graph background color has been updated.",
         "rank_set_leveldarkness": "Your level level darkness has been updated.",
 
-        "leaderboard": "You can find the leaderboard here: <https://sushii.xyz/leaderboard/{}>"
+        "leaderboard": "You can find the leaderboard here: <https://sushii.xyz/leaderboard/{}>",
+        "setting_cleared": "Cleared setting: {}"
     },
     "error": {
         "unknown_error": "Something has gone wrong :(  Try this again maybe?",
@@ -202,6 +203,9 @@
         "profile_invalid_color": "Invalid color code, please give a hex or rgba color.  Example: `#74b9ff`, `rgb(116, 185, 255)`",
         "profile_invalid_percentage": "Invalid percentage.  The value must be between 0 and 1.  Example: `0.3`",
 
-        "hug_nobody": "Give me someone to hug :("
+        "hug_nobody": "Give me someone to hug :(",
+        "clear_setting_not_given": "Please  give a setting option to clear.",
+        "clear_setting_invalid": "Invalid setting.",
+        "clear_setting_cannot_clear": "You cannot clear this setting."
     }
 }
