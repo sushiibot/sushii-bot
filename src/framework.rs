@@ -397,6 +397,11 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .desc("Lists the disabled channels.")
                 .required_permissions(Permissions::MANAGE_GUILD)
                 .cmd(commands::settings::disable_channel::list_disabled_channels)
+            )
+            .command("clearsetting", |c| c
+                .desc("Clears a guild setting.")
+                .required_permissions(Permissions::MANAGE_GUILD)
+                .cmd(commands::settings::list_settings::clear_setting)                
             );
 
             add_command_group(&mut commands_list, g)
