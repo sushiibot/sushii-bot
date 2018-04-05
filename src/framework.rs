@@ -522,6 +522,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .cmd(commands::tags::tag_search)
             )
             .command("tag delete", |c| c
+                .known_as("tag remove")
                 .usage("[tag name]")
                 .desc("Deletes a tag.")
                 .cmd(commands::tags::tag_delete)
