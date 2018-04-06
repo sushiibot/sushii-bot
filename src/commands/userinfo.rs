@@ -5,8 +5,10 @@ use serenity::utils::Colour;
 
 use inflector::Inflector;
 
+use chrono_humanize::HumanTime;
 use utils::user::get_id;
 use utils::config::get_pool;
+use utils::time::now_utc;
 
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
@@ -16,13 +18,14 @@ command!(userinfo(ctx, msg, args) {
     };
 
     let default_color = Colour::default();
+    let now = now_utc();
 
-    println!("got args");
+    debug!("got args");
     
     if let Some(guild) = msg.guild() {
         let (member, presence) = {
             let guild = guild.read();
-            println!("read guild");
+            debug!("read guild");
 
             let member = guild.member(user);
 
@@ -31,28 +34,46 @@ command!(userinfo(ctx, msg, args) {
             (member, presence)
         };
 
-        println!("found member");
+        debug!("found member");
 
         if let Ok(member) = member {
             let user = {
                 member.user.read().clone()
             };
-            println!("read user");
+            debug!("read user");
 
             let pool = get_pool(ctx);
             let last_message = pool.get_user_last_message(user.id.0);
 
-            println!("got lastmsg");
+            debug!("got lastmsg");
+
+            let created = {
+                let created = user.created_at();
+
+                let diff = created.signed_duration_since(now);
+                // precise humanized time 
+                let ht = HumanTime::from(diff);
+
+                format!("{}\n{:#}", created.format("%Y-%m-%d %H:%M:%S UTC"), ht)
+            };
+
+            let joined = if let Some(joined_date) = member.joined_at {
+                let diff = joined_date.naive_utc().signed_duration_since(now);
+                let ht = HumanTime::from(diff);
+                Some(format!("{}\n{:#}", joined_date.format("%Y-%m-%d %H:%M:%S UTC"), ht))
+            } else {
+                None
+            };
 
             if let Err(e) = msg.channel_id.send_message(|m| 
                 m.embed(|e| {
                     let mut e = e.field("ID", user.id, true);
 
 
-                    e = e.field("Created At", user.created_at().format("%Y-%m-%d %H:%M:%S UTC"), true);
+                    e = e.field("Created At", &created, true);
 
-                    if let Some(joined_date) = member.joined_at {
-                        e = e.field("Joined At", joined_date.naive_utc().format("%Y-%m-%d %H:%M:%S UTC"), true);
+                    if let Some(joined) = joined {
+                        e = e.field("Joined At", &joined, true);
                     }
 
                     if let Some(last_msg) = last_message {
@@ -82,7 +103,7 @@ command!(userinfo(ctx, msg, args) {
                         e = e.field("Status", "Offline", false);
                     }
 
-                    println!("got status");
+                    debug!("got status");
 
 
                     // AUTHOR - nick - tag [bot]
@@ -101,26 +122,26 @@ command!(userinfo(ctx, msg, args) {
                         author_name = format!("{} [BOT]", author_name);
                     }
 
-                    println!("got user name");
+                    debug!("got user name");
 
                     e = e.author(|a| a
                         .name(&author_name)
                         .icon_url(&user.face())
                     );
 
-                    println!("author");
+                    debug!("author");
 
                     e = e.thumbnail(&user.face());
 
-                    println!("thumbnail");
+                    debug!("thumbnail");
 
                     // roles
                     let roles = if let Some(mut roles) = member.roles().clone() {
-                        println!("found roles");
+                        debug!("found roles");
                         
                         // sort roles by position
                         roles.sort_by(|a, b| b.position.cmp(&a.position));
-                        println!("sorted roles");
+                        debug!("sorted roles");
             
                         // set the color of embed to highest role non-default color
                         if let Some(color) = roles
@@ -131,7 +152,7 @@ command!(userinfo(ctx, msg, args) {
                             e = e.color(color);
                         }
                             
-                        println!("role color");
+                        debug!("role color");
                         
 
                         // convert roles to string
@@ -148,7 +169,7 @@ command!(userinfo(ctx, msg, args) {
                         "N/A".to_owned()
                     };
 
-                    println!("got roles");
+                    debug!("got roles");
 
                     e = e.field("Roles", roles, false);
 
@@ -159,7 +180,7 @@ command!(userinfo(ctx, msg, args) {
                 warn!("Error while sending userinfo message: {}", e);
             }
 
-            println!("sent message");
+            debug!("sent message");
         } else {
             // user not found
             return Err(CommandError::from("I cant find that user."));
