@@ -166,10 +166,19 @@ command!(history(ctx, msg, args) {
         }
 
         for item in &user_history {
-            let _ = write!(s, "`[Case #{}]` {} by <@{}> for {}\n", 
-                item.case_id, item.action,
-                item.executor_id.map_or(current_user_id, |x| x as u64),
-                item.reason.clone().unwrap_or_else(|| "N/A".to_owned()));
+            if let Some(ref r) = item.reason {
+                let _ = write!(s, "`[Case #{}]` {} by <@{}> for `{}`\n", 
+                    item.case_id,
+                    item.action,
+                    item.executor_id.map_or(current_user_id, |x| x as u64),
+                    r);
+            } else {
+                let _ = write!(s, "`[Case #{}]` {} by <@{}>\n", 
+                    item.case_id,
+                    item.action,
+                    item.executor_id.map_or(current_user_id, |x| x as u64));
+            }
+            
         }
 
         let _ = msg.channel_id.send_message(|m| m
