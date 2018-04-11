@@ -302,10 +302,16 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .cmd(commands::moderation::ban::unban)
             )
             .command("mute", |c| c
-                .usage("[mention or id]")
+                .usage("[mention or id] (reason)")
                 .desc("Mutes a member.")
                 .required_permissions(Permissions::BAN_MEMBERS)
                 .cmd(commands::moderation::mute::mute)
+            )
+            .command("unmute", |c| c
+                .usage("[mention or id] (reason)")
+                .desc("Unmutes a member.")
+                .required_permissions(Permissions::BAN_MEMBERS)
+                .cmd(commands::moderation::mute::unmute)
             )
             .command("prune", |c| c
                 .usage("[# of messages]")
