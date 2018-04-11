@@ -207,8 +207,8 @@
             "info": {
                 "muted": "Muted member {} ({})",
                 "muted_with_reason": "Muted member {} ({}) for `{}`",
-                "unmuted": "Muted member {} ({})",
-                "unmuted_with_reason": "Muted member {} ({}) for `{}`"
+                "unmuted": "Unmuted member {} ({})",
+                "unmuted_with_reason": "Unmuted member {} ({}) for `{}`"
             },
             "error": {
                 "no_role": "There isn't a mute role set.",
