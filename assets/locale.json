@@ -32,8 +32,6 @@
 
         "max_mention_set": "The maximum mention limit was set to `{}`",
 
-        "member_muted": "Muted member {} ({})",
-        "member_muted_with_reason": "Muted member {} ({}) for `{}`",
         "weather_saved_location": "Saved your location.  You won't have to pass a location argument to get the weather of this location.",
         "rep_given": "You gave {} a rep.",
 
@@ -97,7 +95,6 @@
         "no_channel_given": "No channel given.",
         "no_config_given": "No configuration provided.",
         "no_role_config": "There isn't a role config set.",
-        "no_mute_role": "There isn't a mute role set.",
         "no_user_given": "Please give a user id or mention.",
         "no_webhook_given": "Please give a webhook url.",
         "no_reminder_given": "Please give a time and reminder.",
@@ -125,7 +122,6 @@
 
         "failed_get_user": "Failed to fetch the user.",
         "failed_get_member": "Failed to fetch the member.",
-        "failed_mute_member": "Failed to add the mute role to the member.  Maybe I don't have permission.",
         "failed_get_bans": "Failed to fetch server bans.",
         "failed_get_messages": "Failed to fetch messages.",
         "failed_delete_messages": "Failed to delete messages.",
@@ -133,8 +129,6 @@
         "failed_url_request": "Failed to fetch url data.",
 
         "cases_user_history_not_found": "No past cases for this user were found.",
-
-        "already_muted": "This member is already muted.",
 
         "forecast_fetch_failed": "Failed to fetch the forecast.",
         "google_maps_fetch_failed": "Failed to fetch location data.",
@@ -207,5 +201,22 @@
         "clear_setting_not_given": "Please  give a setting option to clear.",
         "clear_setting_invalid": "Invalid setting.",
         "clear_setting_cannot_clear": "You cannot clear this setting."
+    },
+    "moderation": {
+        "mute": {
+            "info": {
+                "muted": "Muted member {} ({})",
+                "muted_with_reason": "Muted member {} ({}) for `{}`",
+                "unmuted": "Muted member {} ({})",
+                "unmuted_with_reason": "Muted member {} ({}) for `{}`"
+            },
+            "error": {
+                "no_role": "There isn't a mute role set.",
+                "failed_mute": "Failed to add the mute role to the member.  Maybe I don't have permission.",
+                "failed_unmute": "Failed to remove the mute role from the member.  Maybe I don't have permission.",
+                "already_muted": "This member is already muted.",
+                "not_muted": "This member is not muted."
+            }
+        }
     }
 }
