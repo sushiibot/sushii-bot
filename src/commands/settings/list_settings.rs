@@ -97,7 +97,7 @@ command!(clear_setting(ctx, msg, args) {
 
         let setting = match args.single::<String>() {
             Ok(val) => val,
-            Err(_) => return Err(CommandError::from("error/clear_setting_not_given"))
+            Err(_) => return Err(CommandError::from(get_msg!("error/clear_setting_not_given")))
         };
 
         match setting.as_ref() {
