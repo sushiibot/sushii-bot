@@ -51,7 +51,9 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         "vlive",
         "wolframalpha",
         "wa",
-        "trivia"
+        "trivia",
+        "starboard",
+        "sushiiboard",
     ];
 
     let default_cmd = Arc::new(CommandOptions::default());
@@ -475,6 +477,13 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .exec(|_, msg, _| {
                     let url = env::var("PATREON_URL").unwrap_or_else(|_| "N/A".to_owned());
                     let _ = msg.channel_id.say(&format!("You can support me on patreon here: <{}> Thanks! :heart:", url))?;
+                    Ok(())
+                })
+            )
+            .command("invite", |c| c
+                .desc("Gets the link to invite sushii to a server.")
+                .exec(|_, msg, _| {
+                    let _ = msg.channel_id.say(&format!("You can add sushii here: <https://sushii.xyz/invite>!"))?;
                     Ok(())
                 })
             );
