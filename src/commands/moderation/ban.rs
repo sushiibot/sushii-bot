@@ -47,17 +47,17 @@ command!(ban(ctx, msg, args) {
         reason = None;
     }
 
-    let _ = msg.channel_id.broadcast_typing();
+    let count = users.len();
+    let sent_message = msg.channel_id.say(&format!("Attempting to ban {} users...", count));
+
+    // log the ban in the database
+    let pool = get_pool(ctx);
+    let mut s = String::new();
 
     let mut bans = match guild.bans() {
         Ok(val) => val.iter().map(|x| x.user.id.0).collect(),
         Err(_) => Vec::new(),
     };
-
-    // log the ban in the database
-    let pool = get_pool(ctx);
-    let count = users.len();
-    let mut s = String::new();
 
     for u in users {
         // fetch the user for tag
@@ -120,13 +120,23 @@ command!(ban(ctx, msg, args) {
             },
         }
     }
-    
-    let _ = msg.channel_id.send_message(|m| m
-        .embed(|e| e
-            .title(format!("Attempted to ban {} users", count))
-            .description(&s)
-        )
-    );
+
+    if let Ok(mut message) = sent_message {
+        let _ = message.edit(|m| m
+            .content("")
+            .embed(|e| e
+                .title(format!("Attempted to ban {} users", count))
+                .description(&s)
+            )
+        );
+    } else {
+        let _ = msg.channel_id.send_message(|m| m
+            .embed(|e| e
+                .title(format!("Attempted to ban {} users", count))
+                .description(&s)
+            )
+        );
+    };
 });
 
 command!(unban(ctx, msg, args) {
@@ -167,17 +177,17 @@ command!(unban(ctx, msg, args) {
         reason = None;
     }
 
-    let _ = msg.channel_id.broadcast_typing();
+    // log the ban in the database
+    let count = users.len();
+    let sent_message = msg.channel_id.say(&format!("Attempting to unban {} users...", count));
+
+    let pool = get_pool(ctx);
+    let mut s = String::new();
 
     let mut bans: Vec<u64> = match guild.bans() {
         Ok(val) => val.iter().map(|x| x.user.id.0).collect(),
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_bans"))),
     };
-
-    // log the ban in the database
-    let pool = get_pool(ctx);
-    let count = users.len();
-    let mut s = String::new();
 
     for u in users {
         // fetch the user for tag
@@ -230,11 +240,21 @@ command!(unban(ctx, msg, args) {
         }
     }
     
-    let _ = msg.channel_id.send_message(|m| m
-        .embed(|e| e
-            .title(format!("Attempted to unban {} users", count))
-            .description(&s)
-        )
-    );
+    if let Ok(mut message) = sent_message {
+        let _ = message.edit(|m| m
+            .content("")
+            .embed(|e| e
+                .title(format!("Attempted to unban {} users", count))
+                .description(&s)
+            )
+        );
+    } else {
+        let _ = msg.channel_id.send_message(|m| m
+            .embed(|e| e
+                .title(format!("Attempted to unban {} users", count))
+                .description(&s)
+            )
+        );
+    };
 });
 
