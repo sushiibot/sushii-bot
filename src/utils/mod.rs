@@ -10,3 +10,4 @@ pub mod config;
 pub mod info;
 pub mod datadog;
 pub mod html;
+pub mod numbers;

@@ -48,7 +48,6 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         "roleinfo",
         "youtube",
         "yt",
-        "vlive",
         "wolframalpha",
         "wa",
         "trivia",
@@ -577,6 +576,11 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .usage("[word]")
                 .desc("Looks up a word definition on Urban Dictionary.")
                 .cmd(commands::search::urban::urban)
+            )
+            .command("vlive", |c| c
+                .known_as("v")
+                .desc("Searches VLive")
+                .cmd(commands::search::vlive::vlive)
             );
 
             add_command_group(&mut commands_list, g)
