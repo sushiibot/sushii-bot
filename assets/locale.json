@@ -218,5 +218,14 @@
                 "not_muted": "This member is not muted."
             }
         }
+    },
+    "vlive": {
+        "error": {
+            "failed_fetch_data": "Failed to fetch VLive data.",
+            "missing_or_invalid_subcommand": "Valid subcommands are `search`, `channel`, `upcoming`, `latest`, `video`. \nYou find more information here: <https://sushii.xyz/commands#cmd_vlive>",
+            "missing_query": "Please give a search option.",
+            "no_search_results": "Couldn't find this channel. This must be an exact match (case in-sensitive).",
+            "invalid_channel": "Invalid channel."
+        }
     }
 }
