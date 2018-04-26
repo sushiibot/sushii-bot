@@ -10,10 +10,11 @@ command!(vlive(_ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("vlive/error/missing_or_invalid_subcommand"))),
     };
 
-    let query = match args.single::<String>() {
-        Ok(val) => val,
-        Err(_) => return Err(CommandError::from(get_msg!("vlive/error/missing_query"))),
-    };
+    let query = args.full();
+        
+    if query.is_empty() {
+        return Err(CommandError::from(get_msg!("vlive/error/missing_query")));
+    }
 
     let _ = msg.channel_id.broadcast_typing();
 
