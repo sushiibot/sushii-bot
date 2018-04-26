@@ -1,6 +1,6 @@
 [package]
 name = "sushii"
-version = "0.1.12"
+version = "0.1.13"
 authors = ["drklee3 <drklee3@users.noreply.github.com>"]
 
 [dependencies]
