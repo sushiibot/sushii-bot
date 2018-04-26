@@ -222,10 +222,13 @@
     "vlive": {
         "error": {
             "failed_fetch_data": "Failed to fetch VLive data.",
-            "missing_or_invalid_subcommand": "Valid subcommands are `search`, `channel`, `upcoming`, `latest`, `video`. \nYou find more information here: <https://sushii.xyz/commands#cmd_vlive>",
+            "missing_or_invalid_subcommand": "Valid subcommands are `search` and `video`. \nYou find more information here: <https://sushii.xyz/commands#cmd_vlive>",
             "missing_query": "Please give a search option.",
             "no_search_results": "Couldn't find this channel. This must be an exact match (case in-sensitive).",
-            "invalid_channel": "Invalid channel."
+            "invalid_channel": "Invalid channel.",
+            "failed_fetch_or_not_vod": "Failed to fetch VLive video.  Maybe this isn't available or isn't a VOD?",
+            "invalid_video": "Invalid video link.  Must follow the format `vlive.tv/video/xxxx`",
+            "no_videos": "This video is invalid"
         }
     }
 }

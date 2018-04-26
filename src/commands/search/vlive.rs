@@ -2,6 +2,7 @@ use serenity::framework::standard::CommandError;
 use reqwest::Client;
 use vlive::ReqwestVLiveRequester;
 use utils::numbers::comma_number;
+use regex::Regex;
 
 command!(vlive(_ctx, msg, args) {
     let subcommand = match args.single::<String>() {
@@ -20,6 +21,7 @@ command!(vlive(_ctx, msg, args) {
 
     match subcommand.as_ref() {
         "search" => {
+            // channel list, maybe lazy_static this?
             let channels = match client.get_channel_list() {
                 Ok(val) => val,
                 Err(why) => {
@@ -28,17 +30,20 @@ command!(vlive(_ctx, msg, args) {
                     return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_data")));
                 },
             };
-
+            
+            // search channel in list
             let channel = match channels.find_channel(query) {
                 Some(val) => val,
                 None => return Err(CommandError::from(get_msg!("vlive/error/no_search_results"))),
             };
 
+            // get channel code
             let channel_code = match channel.code {
                 Some(val) => val,
                 None => return Err(CommandError::from(get_msg!("vlive/error/invalid_channel"))),
             };
 
+            // fetch decoded channel code
             let channel_code = match client.decode_channel_code(channel_code) {
                 Ok(val) => val,
                 Err(e) => {
@@ -48,6 +53,7 @@ command!(vlive(_ctx, msg, args) {
                 }
             };
 
+            // get channel videos
             let channel_data = match client.get_channel_video_list(channel_code as u32, 10, 1) {
                 Ok(val) => val,
                 Err(e) => {
@@ -86,40 +92,67 @@ command!(vlive(_ctx, msg, args) {
                     e
                 })
             );
-        },/*
-        "upcoming" => {
-            let mut response = match client.definitions(&query[..]) {
-                Ok(response) => response,
-                Err(why) => {
-                    warn_discord!("Err retrieving word '{}': {:?}", query, why);
-
-                    return Err(CommandError::from(get_msg!("error/urban_failed_retrieve")));
-                },
-            };
-
-        },
-        "latest" => {
-            let mut response = match client.definitions(&query[..]) {
-                Ok(response) => response,
-                Err(why) => {
-                    warn_discord!("Err retrieving word '{}': {:?}", query, why);
-
-                    return Err(CommandError::from(get_msg!("error/urban_failed_retrieve")));
-                },
-            };
-
         },
         "video" => {
-            let mut response = match client.definitions(&query[..]) {
-                Ok(response) => response,
-                Err(why) => {
-                    warn_discord!("Err retrieving word '{}': {:?}", query, why);
+            lazy_static! {
+                static ref RE: Regex = Regex::new(r"vlive\.tv/video/(\d+)").unwrap();
+            }
 
-                    return Err(CommandError::from(get_msg!("error/urban_failed_retrieve")));
+            let video_seq = match RE.captures(&query)
+                .and_then(|caps| caps.get(1))
+                .map(|cap| cap.as_str())
+                .and_then(|num| num.parse::<u32>().ok()) {
+                Some(val) => val,
+                None => return Err(CommandError::from(get_msg!("vlive/error/invalid_video"))),
+            };
+
+            let video = match client.get_video(video_seq) {
+                Ok(val) => val,
+                Err(why) => {
+                    warn_discord!("Err searching vlive '{}': {:?}", query, why);
+
+                    return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_or_not_vod")));
                 },
             };
 
-        },*/
+            let best_video = match video.videos.list.first() {
+                Some(val) => val,
+                None => return Err(CommandError::from(get_msg!("vlive/error/no_videos"))),
+            };
+
+            let duration = {
+                let minutes = best_video.duration as u64 / 60;
+                let seconds = best_video.duration as u64 % 60;
+
+                format!("{}min {}sec", minutes, seconds)
+            };
+
+            let eng_sub = video.captions.list
+                .iter()
+                .find(|x| x.language == "en")
+                .map(|x| x.source.clone());
+            
+            let direct_links = if let Some(sub) = eng_sub {
+                format!("[.mp4 Video]({}) - [English .vtt Subtitle]({})",
+                    best_video.source, sub)
+            } else {
+                format!("[.mp4 Video]({}) (No English subtitles)", best_video.source)
+            };
+
+            let _ = msg.channel_id.send_message(|m| m
+                .embed(|e| e
+                    .title(&video.meta.subject)
+                    .url(&video.meta.url)
+                    .image(&video.meta.cover.source)
+                    .field("Duration", &duration, true)
+                    .field("Resolution", &best_video.encoding_option.name, true)
+                    .field("File Size", &format!("{}MB", best_video.size / 1048576), true)
+                    .field("Bitrate", &format!("Video: {}kbps\nAudio: {}kbps",
+                        best_video.bitrate.video, best_video.bitrate.audio), true)
+                    .field("Direct Links", &direct_links, false)
+                )
+            );
+        },
         _ => {
             return Err(CommandError::from(get_msg!("vlive/error/missing_or_invalid_subcommand")));
         }
