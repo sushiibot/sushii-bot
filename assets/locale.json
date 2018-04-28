@@ -202,6 +202,14 @@
         "clear_setting_invalid": "Invalid setting.",
         "clear_setting_cannot_clear": "You cannot clear this setting."
     },
+    "guild": {
+        "roles": {
+            "error": {
+                "no_role_name": "Please give a role name.",
+                "no_role_found": "Couldn't find the role."
+            }
+        }
+    },
     "moderation": {
         "mute": {
             "info": {

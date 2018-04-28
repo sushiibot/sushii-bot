@@ -10,3 +10,4 @@ pub mod tags;
 pub mod fishy;
 pub mod users;
 pub mod text;
+pub mod guild;
