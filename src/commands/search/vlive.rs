@@ -22,7 +22,7 @@ command!(vlive(_ctx, msg, args) {
     let client = Client::new();
 
     match subcommand.as_ref() {
-        "search" => {
+        "search" | "channel" => {
             // channel list, maybe lazy_static this?
             let channels = match client.get_channel_list() {
                 Ok(val) => val,
@@ -34,7 +34,7 @@ command!(vlive(_ctx, msg, args) {
             };
             
             // search channel in list
-            let channel = match channels.find_channel(query) {
+            let channel = match channels.find_partial_channel(query) {
                 Some(val) => val,
                 None => return Err(CommandError::from(get_msg!("vlive/error/no_search_results"))),
             };
