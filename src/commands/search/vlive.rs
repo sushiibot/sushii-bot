@@ -1,8 +1,9 @@
-use serenity::framework::standard::CommandError;
+use regex::Regex;
+use std::fmt::Write;
 use reqwest::Client;
 use vlive::ReqwestVLiveRequester;
 use utils::numbers::comma_number;
-use regex::Regex;
+use serenity::framework::standard::CommandError;
 
 command!(vlive(_ctx, msg, args) {
     let subcommand = match args.single::<String>() {
@@ -107,52 +108,80 @@ command!(vlive(_ctx, msg, args) {
                 None => return Err(CommandError::from(get_msg!("vlive/error/invalid_video"))),
             };
 
-            let video = match client.get_video(video_seq) {
+            let mut video = match client.get_video(video_seq) {
                 Ok(val) => val,
                 Err(why) => {
-                    warn_discord!("Err searching vlive '{}': {:?}", query, why);
+                    warn_discord!("Err searching vlive '{}': {}", query, why);
 
                     return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_or_not_vod")));
                 },
             };
 
-            let best_video = match video.videos.list.first() {
+            if video.videos.list.is_empty() {
+                return Err(CommandError::from(get_msg!("vlive/error/no_videos")));
+            }
+
+            let mut video_links = String::new();
+
+            // sort videos by size
+            video.videos.list.sort_by(|a, b| 
+                b.size.cmp(&a.size)
+            );
+
+            // only use top 3 videos to not go over embed limits
+            video.videos.list.truncate(3);
+
+            for vid in &video.videos.list {
+                let _ = write!(video_links, "[**{}**]({}) ({} MB) - {}kbps video {}kbps audio\n",
+                    vid.encoding_option.name,
+                    vid.source,
+                    vid.size / 1048576,
+                    vid.bitrate.video,
+                    vid.bitrate.audio);
+            }
+
+            if video_links.is_empty() {
+                video_links = "N/A".into();
+            }
+
+            let mut caption_links = String::new();
+            video.captions.list.retain(|ref caption| caption.source.contains("en_US"));
+
+            for cap in &video.captions.list {
+                let _ = write!(caption_links, "[{}]({}) ({})\n",
+                    cap.label,
+                    cap.source,
+                    cap.locale);
+            }
+
+            if caption_links.is_empty() {
+                caption_links = "N/A".into();
+            }
+
+            let first_video = match video.videos.list.first() {
                 Some(val) => val,
                 None => return Err(CommandError::from(get_msg!("vlive/error/no_videos"))),
             };
 
             let duration = {
-                let minutes = best_video.duration as u64 / 60;
-                let seconds = best_video.duration as u64 % 60;
+                let minutes = first_video.duration as u64 / 60;
+                let seconds = first_video.duration as u64 % 60;
 
                 format!("{}min {}sec", minutes, seconds)
             };
 
-            let eng_sub = video.captions.list
-                .iter()
-                .find(|x| x.language == "en")
-                .map(|x| x.source.clone());
-            
-            let direct_links = if let Some(sub) = eng_sub {
-                format!("[.mp4 Video]({}) - [English .vtt Subtitle]({})",
-                    best_video.source, sub)
-            } else {
-                format!("[.mp4 Video]({}) (No English subtitles)", best_video.source)
-            };
-
-            let _ = msg.channel_id.send_message(|m| m
+            if let Err(e) = msg.channel_id.send_message(|m| m
                 .embed(|e| e
                     .title(&video.meta.subject)
                     .url(&video.meta.url)
                     .image(&video.meta.cover.source)
                     .field("Duration", &duration, true)
-                    .field("Resolution", &best_video.encoding_option.name, true)
-                    .field("File Size", &format!("{}MB", best_video.size / 1048576), true)
-                    .field("Bitrate", &format!("Video: {}kbps\nAudio: {}kbps",
-                        best_video.bitrate.video, best_video.bitrate.audio), true)
-                    .field("Direct Links", &direct_links, false)
+                    .field("Video Links", &video_links, false)
+                    .field("Caption Links", &caption_links, false)
                 )
-            );
+            ) {
+                warn!("Error sending vlive embed: {}", e);
+            }
         },
         _ => {
             return Err(CommandError::from(get_msg!("vlive/error/missing_or_invalid_subcommand")));
