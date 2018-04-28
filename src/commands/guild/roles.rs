@@ -1,7 +1,7 @@
-
 use serenity::framework::standard::CommandError;
-
-// use std::fmt::Write;
+use serenity::model::id::RoleId;
+use std::collections::HashMap;
+use std::fmt::Write;
 
 
 command!(roleinfo(_ctx, msg, args) {
@@ -42,6 +42,49 @@ command!(roleinfo(_ctx, msg, args) {
             .field("Position", &role.position.to_string(), true)
             .field("Color", &format!("#{:X}", role.colour.0), true)
             .field("Permissions", &role.permissions.bits().to_string(), true)
+        )
+    );
+});
+
+command!(rolestats(_ctx, msg, _args) {
+    let guild = match msg.guild() {
+        Some(val) => val.read().clone(),
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
+    };
+
+    let mut roles_map = HashMap::new();
+
+    // count each role
+    for role in guild.members.values().flat_map(|x| x.roles.iter()) {
+        if let Some(roleid) = roles_map.get_mut(&role) {
+            *roleid += 1;
+            continue;
+        }
+
+        roles_map.insert(role, 1);
+    }
+
+    // convert hashmap to a vec
+    let mut roles_vec: Vec<(RoleId, u64)> = roles_map
+        .iter()
+        .map(|(&&id, &count)| (id.clone(), count) )
+        .collect();
+
+    roles_vec.sort_by(|a, b| b.1.cmp(&a.1)); // sort by count
+    roles_vec.truncate(10); // limit to 10 roles
+
+    let mut s = String::new();
+
+    for (roleid, count) in roles_vec {
+        if let Some(role) = guild.roles.get(&roleid) {
+            let _ = write!(s, "`{}` - {}\n", count, role.name);
+        }
+    }
+
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
+            .title(format!("Role stats for {}", guild.name))
+            .description(&s)
         )
     );
 });

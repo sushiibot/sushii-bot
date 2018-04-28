@@ -45,7 +45,6 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         "serverinfo",
         "leaderboard",
         "emojiinfo",
-        "roleinfo",
         "youtube",
         "yt",
         "wolframalpha",
@@ -278,6 +277,10 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             .command("roleinfo", |c| c
                 .desc("Gets role info.")
                 .cmd(commands::guild::roles::roleinfo)
+            )
+            .command("rolestats", |c| c
+                .desc("Gets role stats in the server.")
+                .cmd(commands::guild::roles::rolestats)
             );
 
             add_command_group(&mut commands_list, g)
