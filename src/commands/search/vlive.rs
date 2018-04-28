@@ -145,16 +145,21 @@ command!(vlive(_ctx, msg, args) {
             }
 
             let mut caption_links = String::new();
-            video.captions.list.retain(|ref caption| caption.source.contains("en_US"));
 
-            for cap in &video.captions.list {
-                let _ = write!(caption_links, "[{}]({}) ({})\n",
-                    cap.label,
-                    cap.source,
-                    cap.locale);
-            }
+            if let Some(mut captions) = video.captions.clone() {
+                captions.list.retain(|ref caption| caption.source.contains("en_US"));
 
-            if caption_links.is_empty() {
+                for cap in &captions.list {
+                    let _ = write!(caption_links, "[{}]({}) ({})\n",
+                        cap.label,
+                        cap.source,
+                        cap.locale);
+                }
+
+                if caption_links.is_empty() {
+                    caption_links = "N/A".into();
+                }
+            } else {
                 caption_links = "N/A".into();
             }
 
