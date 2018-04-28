@@ -273,6 +273,15 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
 
             add_command_group(&mut commands_list, g)
         })
+        .group("Guild", |g| {
+            let g = g
+            .command("roleinfo", |c| c
+                .desc("Gets role info.")
+                .cmd(commands::guild::roles::roleinfo)
+            );
+
+            add_command_group(&mut commands_list, g)
+        })
         .group("Moderation", |g| {
             let g = g
             .guild_only(true)
