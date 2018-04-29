@@ -41,7 +41,6 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         "upgrades",
         "kitty",
         "cat",
-        "guildinfo",
         "serverinfo",
         "leaderboard",
         "emojiinfo",
@@ -281,6 +280,11 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             .command("rolestats", |c| c
                 .desc("Gets role stats in the server.")
                 .cmd(commands::guild::roles::rolestats)
+            )
+            .command("guildinfo", |c| c
+                .known_as("serverinfo")
+                .desc("Gets guild info.")
+                .cmd(commands::guild::guild_info::guild_info)
             );
 
             add_command_group(&mut commands_list, g)
@@ -593,6 +597,12 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .known_as("v")
                 .desc("Searches VLive")
                 .cmd(commands::search::vlive::vlive)
+            )
+            .command("vlivenotif", |c| c
+                .guild_only(true)
+                .desc("Sets a notification for a VLive channel to a discord channel")
+                .required_permissions(Permissions::MANAGE_MESSAGES)
+                .cmd(commands::search::vlive::vlivenotif)
             );
 
             add_command_group(&mut commands_list, g)
