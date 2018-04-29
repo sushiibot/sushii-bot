@@ -1519,6 +1519,61 @@ impl ConnectionPool {
             Err(e) => warn_discord!("[DB:update_stat] Error while updating statistic: {}", e),
         };
     }
+
+    pub fn add_vlive_channel(&self, vlive_channel: i32, vlive_code: &str, vlive_name: &str, discord_channel: u64) {
+        use schema::vlive_channels;
+
+        let conn = self.connection();
+
+        let new_vlive_channel = NewVliveChannel {
+            channel_seq: vlive_channel,
+            channel_code: vlive_code,
+            channel_name: vlive_name,
+            discord_channel: discord_channel as i64,
+        };
+
+        if let Err(e) = diesel::insert_into(vlive_channels::table)
+            .values(&new_vlive_channel)
+            .execute(&conn) {
+
+            warn_discord!("[DB:add_vlive_channel] Failed to insert vlive channel: {}", e);
+        }
+    }
+
+    /// Get all the vlive channels.  This may have duplicate vlive channels for different discord channels
+    pub fn get_vlive_channels(&self) -> Result<Vec<VliveChannel>, Error> {
+        use schema::vlive_channels::dsl::*;
+        let conn = self.connection();
+
+        vlive_channels
+            .load(&conn)
+    }
+
+    pub fn add_vlive_video(&self, channel: i32, video: i32) {
+        use schema::vlive_videos;
+        let conn = self.connection();
+        
+        let new_video = NewVliveVideo {
+            channel_seq: channel,
+            video_seq: video,
+        };
+
+        if let Err(e) = diesel::insert_into(vlive_videos::table)
+            .values(&new_video)
+            .execute(&conn) {
+
+            warn_discord!("[DB:add_vlive_video] Failed to insert vlive video: {}", e);
+        }
+    }
+
+    pub fn get_vlive_videos(&self, channel: i32) -> Result<Vec<VliveVideo>, Error> {
+        use schema::vlive_videos::dsl::*;
+        let conn = self.connection();
+        
+        vlive_videos
+            .filter(channel_seq.eq(channel))
+            .load(&conn)
+    }
 }
 
 
