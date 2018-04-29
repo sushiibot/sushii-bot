@@ -1,6 +1,8 @@
 use regex::Regex;
 use std::fmt::Write;
 use reqwest::Client;
+use serenity::utils::parse_channel;
+use utils::config::get_pool;
 use vlive::ReqwestVLiveRequester;
 use utils::numbers::comma_number;
 use serenity::framework::standard::CommandError;
@@ -46,7 +48,7 @@ command!(vlive(_ctx, msg, args) {
             };
 
             // fetch decoded channel code
-            let channel_code = match client.decode_channel_code(channel_code) {
+            let channel_seq = match client.decode_channel_code(channel_code) {
                 Ok(val) => val,
                 Err(e) => {
                     warn_discord!("Error decoding channel: {}", e);
@@ -56,7 +58,7 @@ command!(vlive(_ctx, msg, args) {
             };
 
             // get channel videos
-            let channel_data = match client.get_channel_video_list(channel_code as u32, 10, 1) {
+            let channel_data = match client.get_channel_video_list(channel_seq as u32, 10, 1) {
                 Ok(val) => val,
                 Err(e) => {
                     warn_discord!("Error decoding channel: {}", e);
@@ -193,3 +195,88 @@ command!(vlive(_ctx, msg, args) {
         }
     }
 });
+
+command!(vlivenotif(ctx, msg, args) {
+    let discord_channel = match args.single::<String>() {
+        Ok(val) => parse_channel(&val).unwrap_or(0),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
+    };
+
+    if discord_channel == 0 {
+        return Err(CommandError::from(get_msg!("error/invalid_channel")));
+    }
+
+    let query = args.full();
+
+    if query.is_empty() {
+        return Err(CommandError::from(get_msg!("vlive/error/missing_channel")));
+    }
+
+    let _ = msg.channel_id.broadcast_typing();
+
+    let client = Client::new();
+
+    let channels = match client.get_channel_list() {
+        Ok(val) => val,
+        Err(why) => {
+            warn_discord!("Err searching vlive '{}': {:?}", query, why);
+
+            return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_data")));
+        },
+    };
+    
+    // search channel in list
+    let channel = match channels.find_partial_channel_or_code(query) {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("vlive/error/no_search_results"))),
+    };
+
+    // get channel code
+    let channel_code = match channel.code {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("vlive/error/invalid_channel"))),
+    };
+
+    // fetch decoded channel seq
+    let channel_seq = match client.decode_channel_code(channel_code) {
+        Ok(val) => val,
+        Err(e) => {
+            warn_discord!("Error decoding channel: {}", e);
+
+            return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_data")));
+        }
+    };
+
+    // get channel videos
+    let channel_data = match client.get_channel_video_list(channel_seq as u32, 10, 1) {
+        Ok(val) => val,
+        Err(e) => {
+            warn_discord!("Error decoding channel: {}", e);
+
+            return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_data")));
+        }
+    };
+
+    let pool = get_pool(ctx);
+    // check if already has channel
+
+    // add to db
+    pool.add_vlive_channel(channel_seq as i32,
+        &channel_data.channel_info.channel_code,
+        &channel_data.channel_info.channel_name,
+        discord_channel
+    );
+
+    // add all current videos to db
+    for video in channel_data.video_list {
+        pool.add_vlive_video(channel_seq as i32, video.video_seq as i32);
+    }
+
+    let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification", channel_data.channel_info.channel_name));
+});
+
+/*
+command!(vlivenotif(ctx, msg, args) {
+
+});
+*/

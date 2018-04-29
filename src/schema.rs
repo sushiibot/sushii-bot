@@ -190,6 +190,22 @@ table! {
     }
 }
 
+table! {
+    vlive_channels (channel_seq, discord_channel) {
+        channel_seq -> Int4,
+        channel_code -> Text,
+        channel_name -> Text,
+        discord_channel -> Int8,
+    }
+}
+
+table! {
+    vlive_videos (channel_seq, video_seq) {
+        channel_seq -> Int4,
+        video_seq -> Int4,
+    }
+}
+
 joinable!(cache_channels -> cache_guilds (guild_id));
 
 allow_tables_to_appear_in_same_query!(
@@ -210,4 +226,6 @@ allow_tables_to_appear_in_same_query!(
     stats,
     tags,
     users,
+    vlive_channels,
+    vlive_videos,
 );

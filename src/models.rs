@@ -450,3 +450,34 @@ pub struct NewStat<'a> {
     pub count: i64,
     pub category: &'a str,
 }
+
+#[derive(Queryable, Clone, Debug)]
+pub struct VliveVideo {
+    pub channel_seq: i32,
+    pub video_seq: i32,
+}
+
+#[derive(Insertable, Debug)]
+#[table_name = "vlive_videos"]
+pub struct NewVliveVideo {
+    pub channel_seq: i32,
+    pub video_seq: i32,
+}
+
+#[derive(Queryable, Clone, Debug)]
+pub struct VliveChannel {
+    pub channel_seq: i32,
+    pub channel_code: String,
+    pub channel_name: String,
+    pub discord_channel: i64,
+}
+
+#[derive(Insertable, Debug)]
+#[table_name = "vlive_channels"]
+pub struct NewVliveChannel<'a> {
+    pub channel_seq: i32,
+    pub channel_code: &'a str,
+    pub channel_name: &'a str,
+    pub discord_channel: i64,
+}
+
