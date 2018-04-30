@@ -52,7 +52,10 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                     }
                 };
 
-                let is_channel_plus = channel_data.channel_info.channel_plus_type == ChannelType::PREMIUM;
+                let is_channel_plus = match channel_data.channel_info.channel_plus_type {
+                    ChannelType::PREMIUM => true,
+                    _ => false,
+                };
 
                 let old_videos = match pool.get_vlive_videos(channel_seq) {
                     Ok(val) => val,
