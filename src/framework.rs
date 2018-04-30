@@ -566,6 +566,12 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .usage("[tag name] [new content]")
                 .desc("Edits a tag's content.")
                 .cmd(commands::tags::tag_edit)
+            )
+            .command("tag import", |c| c
+                .usage("[json] or attachment")
+                .desc("Imports tags from JSON.")
+                .owners_only(true)
+                .cmd(commands::tags::tag_import)
             );
 
             add_command_group(&mut commands_list, g)
