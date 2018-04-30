@@ -195,6 +195,7 @@ table! {
         channel_seq -> Int4,
         channel_code -> Text,
         channel_name -> Text,
+        guild_id -> Int8,
         discord_channel -> Int8,
     }
 }

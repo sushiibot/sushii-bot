@@ -598,11 +598,23 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .desc("Searches VLive")
                 .cmd(commands::search::vlive::vlive)
             )
-            .command("vlivenotif", |c| c
+            .command("vlivenotif add", |c| c
                 .guild_only(true)
                 .desc("Sets a notification for a VLive channel to a discord channel")
                 .required_permissions(Permissions::MANAGE_MESSAGES)
-                .cmd(commands::search::vlive::vlivenotif)
+                .cmd(commands::search::vlive::vlivenotif_add)
+            )
+            .command("vlivenotif list", |c| c
+                .guild_only(true)
+                .desc("Lists guild VLive notifications")
+                .required_permissions(Permissions::MANAGE_MESSAGES)
+                .cmd(commands::search::vlive::vlivenotif_list)
+            )
+            .command("vlivenotif delete", |c| c
+                .guild_only(true)
+                .desc("Deletes a guild VLive notification")
+                .required_permissions(Permissions::MANAGE_MESSAGES)
+                .cmd(commands::search::vlive::vlivenotif_delete)
             );
 
             add_command_group(&mut commands_list, g)
@@ -659,6 +671,11 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .desc("Lists the servers sushii is in.")
                 .owners_only(true)
                 .cmd(commands::owner::listservers)
+            )
+            .command("say", |c| c
+                .desc("Make sushii say something in a channel.")
+                .owners_only(true)
+                .cmd(commands::owner::say)
             );
 
             add_command_group(&mut commands_list, g)
