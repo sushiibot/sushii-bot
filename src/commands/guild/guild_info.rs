@@ -1,7 +1,7 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::user::OnlineStatus;
 
-command!(guild_info(_ctx, msg, args) {
+command!(guild_info(_ctx, msg, _args) {
     // get the guild
     let guild = match msg.guild() {
         Some(val) => val.read().clone(),
