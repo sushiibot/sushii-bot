@@ -51,12 +51,6 @@
         "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
         "fm_no_loved_tracks": "You have no loved tracks. :broken_heart:",
 
-        "tag_added": "Added a tag named `{}` with response `{}`.",
-        "tag_edited_content": "Edited the tag `{}` with new response `{}`.",
-        "tag_renamed": "Renamed the tag `{}` to `{}`.",
-        "tag_deleted": "Deleted the tag `{}`.",
-        "tag_list": ":mailbox_with_mail: Sent you a DM with the tag list.",
-
         "patron_added": "Added a new patron.",
         "patron_removed": "Removed a patron.",
         "patron_emoji_set": "Set the emoji to {}.",
@@ -171,21 +165,6 @@
         "fm_fetch_error": "Something went wrong fetching last.fm data.",
         "fm_invalid_period": "Invalid period, you can choose one of the following: `overall, 7day, 1month, 3month, 6month, 12month` By default overall is used.",
 
-        "tag_command_conflict": "This tag name conflicts with a core bot command, please choose another name.",
-        "tag_no_name_given": "Please give a tag name.",
-        "tag_no_new_name_given": "Please give a new tag name.",
-        "tag_no_content_given": "Please give tag content.",
-        "tag_no_search_given": "Please give a tag search.",
-        "tag_search_query_too_short": "Please give a tag search greater than 3 characters.",
-        "tag_already_exists": "This tag already exists.  Try another name.",
-        "tag_none": "There doesn't seem to be any tags in this server.",
-        "tag_not_found": "Couldn't find a tag named `{}`",
-        "tags_not_found": "Couldn't find any tags.",
-        "tag_no_permission": "This tag doesn't belong to you.",
-        "tag_not_found_or_not_owner": "This tag doesn't belong to you or it doesn't exist.",
-        "tag_content_unchanged": "New tag response is unchanged.",
-        "tag_name_unchanged": "New tag name is unchanged.",
-
         "urban_failed_retrieve": "Failed to retrieve definition.",
 
         "profile_image_server_failed": "Failed to generate profile, try again later.",
@@ -201,6 +180,32 @@
         "clear_setting_not_given": "Please  give a setting option to clear.",
         "clear_setting_invalid": "Invalid setting.",
         "clear_setting_cannot_clear": "You cannot clear this setting."
+    },
+    "tags": {
+        "added": "Added a tag named `{}` with response `{}`.",
+        "edited_content": "Edited the tag `{}` with new response `{}`.",
+        "renamed": "Renamed the tag `{}` to `{}`.",
+        "deleted": "Deleted the tag `{}`.",
+        "list": ":mailbox_with_mail: Sent you a DM with the tag list.",
+        "import_started": "Started tag import.",
+        "import_existing": "Finished tag import, {} existing tags were not modified: {}",
+        "import_finished": "Finished tag import.",
+        "error": {
+            "command_conflict": "This tag name conflicts with a core bot command, please choose another name.",
+            "no_name_given": "Please give a tag name.",
+            "no_new_name_given": "Please give a new tag name.",
+            "no_content_given": "Please give tag content.",
+            "no_search_given": "Please give a tag search.",
+            "search_query_too_short": "Please give a tag search greater than 3 characters.",
+            "already_exists": "This tag already exists.  Try another name.",
+            "none": "There doesn't seem to be any tags in this server.",
+            "not_found": "Couldn't find a tag named `{}`",
+            "no_tags": "Couldn't find any tags.",
+            "no_permission": "This tag doesn't belong to you.",
+            "not_found_or_not_owner": "This tag doesn't belong to you or it doesn't exist.",
+            "content_unchanged": "New tag response is unchanged.",
+            "name_unchanged": "New tag name is unchanged."
+        }
     },
     "guild": {
         "roles": {
