@@ -196,14 +196,19 @@ command!(vlive(_ctx, msg, args) {
     }
 });
 
-command!(vlivenotif(ctx, msg, args) {
+command!(vlivenotif_add(ctx, msg, args) {
+    let guild_id = match msg.guild_id() {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
+    };
+
     let discord_channel = match args.single::<String>() {
         Ok(val) => parse_channel(&val).unwrap_or(0),
         Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
     };
 
     if discord_channel == 0 {
-        return Err(CommandError::from(get_msg!("error/invalid_channel")));
+        return Err(CommandError::from(get_msg!("vlive/error/invalid_channel")));
     }
 
     let query = args.full();
@@ -264,7 +269,8 @@ command!(vlivenotif(ctx, msg, args) {
     pool.add_vlive_channel(channel_seq as i32,
         &channel_data.channel_info.channel_code,
         &channel_data.channel_info.channel_name,
-        discord_channel
+        guild_id.0,
+        discord_channel,
     );
 
     // add all current videos to db
@@ -275,8 +281,106 @@ command!(vlivenotif(ctx, msg, args) {
     let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification", channel_data.channel_info.channel_name));
 });
 
-/*
-command!(vlivenotif(ctx, msg, args) {
 
+command!(vlivenotif_list(ctx, msg, _args) {
+    let guild_id = match msg.guild_id() {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
+    };
+
+    let pool = get_pool(ctx);
+
+    let channels = match pool.get_guild_vlive_channels(guild_id.0) {
+        Ok(val) => val,
+        Err(e) => {
+            warn_discord!("Error while listing vlive channels: {}", e);
+
+            return Err(CommandError::from(get_msg!("vlive/error/failed_list")));
+        }
+    };
+
+    if channels.is_empty() {
+        let _ = msg.channel_id.say(get_msg!("vlive/info/no_notifications"));
+        return Ok(());
+    }
+
+    let mut s = String::new();
+
+    for channel in channels {
+        let _ = writeln!(s, "<#{}> - [{}](http://channels.vlive.tv/{})",
+            channel.discord_channel, channel.channel_name, channel.channel_code);
+    }
+
+    let _ = msg.channel_id.send_message(|m| m
+        .embed(|e| e
+            .title("VLive notifications")
+            .description(&s)
+            .colour(0x54f7ff)
+        )
+    );
 });
-*/
+
+command!(vlivenotif_delete(ctx, msg, args) {
+    let pool = get_pool(ctx);
+
+    let discord_channel = match args.single::<String>() {
+        Ok(val) => val.parse::<u64>().ok().or_else(|| parse_channel(&val)).unwrap_or(0),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
+    };
+
+    if discord_channel == 0 {
+        return Err(CommandError::from(get_msg!("vlive/error/invalid_channel")));
+    }
+
+    let query = args.full();
+
+    if query.is_empty() {
+        return Err(CommandError::from(get_msg!("vlive/error/missing_channel")));
+    }
+
+    let _ = msg.channel_id.broadcast_typing();
+
+    let client = Client::new();
+
+    let channels = match client.get_channel_list() {
+        Ok(val) => val,
+        Err(why) => {
+            warn_discord!("Err searching vlive '{}': {:?}", query, why);
+
+            return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_data")));
+        },
+    };
+    
+    // search channel in list
+    let channel = match channels.find_partial_channel_or_code(query) {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("vlive/error/no_search_results"))),
+    };
+
+    // get channel code
+    let channel_code = match channel.code {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("vlive/error/invalid_channel"))),
+    };
+
+    // fetch decoded channel seq
+    let channel_seq = match client.decode_channel_code(channel_code) {
+        Ok(val) => val,
+        Err(e) => {
+            warn_discord!("Error decoding channel: {}", e);
+
+            return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_data")));
+        }
+    };
+
+    match pool.delete_vlive_channel(channel_seq as i32, discord_channel) {
+        Ok(()) => {
+            let _ = msg.channel_id.say(get_msg!("vlive/info/deleted_channel", channel.name));
+        },
+        Err(e) => {
+            warn_discord!("Error deleting vlive channel: {}", e);
+
+            let _ = msg.channel_id.say(get_msg!("vlive/error/failed_delete_channel"));
+        },
+    }
+});

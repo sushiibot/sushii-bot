@@ -234,13 +234,22 @@
             "missing_query": "Please give a search option.",
             "missing_channel": "Please give a VLive channel name.  This can be a partial channel name match **or** a channel code (Example: `FE619` in <http://channels.vlive.tv/FE619>)",
             "no_search_results": "Couldn't find this channel. This can be a partial match (case in-sensitive).",
-            "invalid_channel": "Invalid channel.",
+            "invalid_channel": "Invalid channel, please give a Discord channel to send VLive notifications to.",
             "failed_fetch_or_not_vod": "Failed to fetch VLive video.  Something went wrong or maybe this isn't available, or is a paid video?",
             "invalid_video": "Invalid video link.  Must follow the format `vlive.tv/video/xxxx`",
-            "no_videos": "This video is invalid"
+            "no_videos": "This video is invalid",
+            "failed_list": "Failed to fetch VLive channels, try this again?",
+            "failed_delete_channel": "Failed to delete VLive channel, try this again?"
         },
         "info": {
-            "added_notification": "Added a VLive notification for **{}**."
+            "added_notification": "Added a VLive notification for **{}**.",
+            "no_notifications": "There are no VLive notifications for this server.",
+            "deleted_channel": "Deleted VLive channel **{}**"
+        }
+    },
+    "owner": {
+        "say": {
+            "empty_content": "Message content can't be empty."
         }
     }
 }

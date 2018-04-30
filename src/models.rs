@@ -469,6 +469,7 @@ pub struct VliveChannel {
     pub channel_seq: i32,
     pub channel_code: String,
     pub channel_name: String,
+    pub guild_id: i64,
     pub discord_channel: i64,
 }
 
@@ -478,6 +479,7 @@ pub struct NewVliveChannel<'a> {
     pub channel_seq: i32,
     pub channel_code: &'a str,
     pub channel_name: &'a str,
+    pub guild_id: i64,
     pub discord_channel: i64,
 }
 

@@ -1520,7 +1520,19 @@ impl ConnectionPool {
         };
     }
 
-    pub fn add_vlive_channel(&self, vlive_channel: i32, vlive_code: &str, vlive_name: &str, discord_channel: u64) {
+    pub fn get_guild_vlive_channels(&self, guild: u64) -> Result<Vec<VliveChannel>, Error> {
+        use schema::vlive_channels::dsl::*;
+
+        let conn = self.connection();
+
+        vlive_channels
+            .filter(guild_id.eq(guild as i64))
+            .order(channel_name.desc())
+            .load(&conn)
+    }
+
+    pub fn add_vlive_channel(&self,
+            vlive_channel: i32, vlive_code: &str, vlive_name: &str, guild: u64, discord_channel: u64) {
         use schema::vlive_channels;
 
         let conn = self.connection();
@@ -1529,6 +1541,7 @@ impl ConnectionPool {
             channel_seq: vlive_channel,
             channel_code: vlive_code,
             channel_name: vlive_name,
+            guild_id: guild as i64,
             discord_channel: discord_channel as i64,
         };
 
@@ -1538,6 +1551,20 @@ impl ConnectionPool {
 
             warn_discord!("[DB:add_vlive_channel] Failed to insert vlive channel: {}", e);
         }
+    }
+
+    /// Delete a vlive channel / discord channel
+    pub fn delete_vlive_channel(&self, vlive_channel: i32, discord_chan: u64) -> Result<(), Error> {
+        use schema::vlive_channels::dsl::*;
+        let conn = self.connection();
+
+
+        diesel::delete(vlive_channels)
+            .filter(channel_seq.eq(vlive_channel))
+            .filter(discord_channel.eq(discord_chan as i64))
+            .execute(&conn)?;
+
+        Ok(())
     }
 
     /// Get all the vlive channels.  This may have duplicate vlive channels for different discord channels
@@ -1560,6 +1587,7 @@ impl ConnectionPool {
 
         if let Err(e) = diesel::insert_into(vlive_videos::table)
             .values(&new_video)
+            .on_conflict_do_nothing()
             .execute(&conn) {
 
             warn_discord!("[DB:add_vlive_video] Failed to insert vlive video: {}", e);
