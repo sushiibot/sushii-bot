@@ -1,6 +1,8 @@
 use std::error::Error;
 use std::io::Read;
 use std::fmt::Write;
+use serenity::utils::parse_channel;
+use serenity::model::id::ChannelId;
 use serenity::framework::standard::CommandError;
 use serenity::CACHE;
 use reqwest;
@@ -143,4 +145,24 @@ command!(listservers(_ctx, msg, _args) {
     for message in messages {
         let _ = msg.channel_id.say(&message);
     }
+});
+
+command!(say(_ctx, msg, args) {
+    let discord_channel = match args.single::<String>() {
+        Ok(val) => val.parse::<u64>().ok().or(parse_channel(&val)).unwrap_or(0),
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
+    };
+
+    if discord_channel == 0 {
+        return Err(CommandError::from(get_msg!("error/invalid_channel")));
+    }
+
+    let content = args.full();
+
+    if content.is_empty() {
+        return Err(CommandError::from(get_msg!("owner/say/empty_content")))
+    }
+
+    ChannelId(discord_channel).say(&content)?;
+    let _ = msg.react("✅");
 });
