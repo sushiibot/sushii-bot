@@ -85,12 +85,15 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 let channel_color = u64::from_str_radix(&channel_data.channel_info.representative_color.replace("#", ""), 16);
                 
                 for video in new_videos {
+                    // save video to db
+                    // saving channel_seq kind of useless? could just save
+                    // video_seq since they're unique anyways
+                    pool.add_vlive_video(channel_seq, video.video_seq as i32);
+
                     // ignore non channel+ videos for channel+ channels
-                    if is_channel_plus && video.channel_plus_public_yn {
+                    if is_channel_plus && !video.channel_plus_public_yn {
                         continue;
                     }
-                    // save video to db
-                    pool.add_vlive_video(channel_seq, video.video_seq as i32);
                     let mut video_data_res = client.get_video(video.video_seq);
 
                     let mut is_subbed = None;
