@@ -11,3 +11,4 @@ pub mod info;
 pub mod datadog;
 pub mod html;
 pub mod numbers;
+pub mod arg_types;
