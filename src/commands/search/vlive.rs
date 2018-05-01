@@ -207,6 +207,8 @@ command!(vlivenotif_add(ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
     };
 
+    // TODO: validate if this channel is in this guild
+
     if discord_channel == 0 {
         return Err(CommandError::from(get_msg!("vlive/error/invalid_channel")));
     }
@@ -313,7 +315,10 @@ command!(vlivenotif_list(ctx, msg, _args) {
 
     let _ = msg.channel_id.send_message(|m| m
         .embed(|e| e
-            .title("VLive notifications")
+            .author(|a| a
+                .name("VLive notifications")
+                .icon_url("https://i.imgur.com/NzGrmho.jpg")
+            )
             .description(&s)
             .colour(0x54f7ff)
         )
