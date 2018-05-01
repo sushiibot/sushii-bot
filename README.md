@@ -32,7 +32,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.  sushi
 1. Download the latest version from the [releases](releases) page, currently only supporting x86_64-unknown-linux-gnu.
 2. Allow the file to be executed.
     ```bash
-    $ chmod +x x86_64-unknown-linux-gnu
+    chmod +x x86_64-unknown-linux-gnu
     ```
 3. Create an `.env` file in the same directory and update according to [`.env.example`](.env.example).  All variables must exist except for `BLOCKED_USERS` or the bot will panic.
 
@@ -44,16 +44,16 @@ Work in progress.  Features may be either missing, incomplete, or broken.  sushi
     * [PostgreSQL](https://www.postgresql.org) (9.4+)
     * [Rust / Cargo](http://doc.crates.io)
         ```bash
-        $ curl -sSf https://static.rust-lang.org/rustup.sh | sh
+        curl -sSf https://static.rust-lang.org/rustup.sh | sh
         ```
     * [sushii-image-server](https://github.com/drklee3/sushii-image-server) (Used for rank image generation, etc)
 2. Clone this repository and enter the directory.
     ```bash
-    $ git clone https://github.com/drklee3/sushii-bot.git
-    $ cd sushii-bot
+    git clone https://github.com/drklee3/sushii-bot.git
+    cd sushii-bot
     ```
 3. Edit [`.env.example`](.env.example) and rename to `.env`.  Removing any key or leaving them blank will result in panics.
 4. Build and run the bot.
     ```bash
-    $ cargo run --release
+    cargo run --release
     ```
