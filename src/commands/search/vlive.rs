@@ -6,6 +6,7 @@ use utils::config::get_pool;
 use vlive::ReqwestVLiveRequester;
 use utils::numbers::comma_number;
 use serenity::framework::standard::CommandError;
+use utils::arg_types;
 
 command!(vlive(_ctx, msg, args) {
     let subcommand = match args.single::<String>() {
@@ -202,16 +203,8 @@ command!(vlivenotif_add(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    let discord_channel = match args.single::<String>() {
-        Ok(val) => parse_channel(&val).unwrap_or(0),
-        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
-    };
-
-    // TODO: validate if this channel is in this guild
-
-    if discord_channel == 0 {
-        return Err(CommandError::from(get_msg!("vlive/error/invalid_channel")));
-    }
+    // get discord channel and validate
+    let discord_channel = arg_types::ChannelArg::new(&mut args, msg.guild()).get()?;
 
     let query = args.full();
 
