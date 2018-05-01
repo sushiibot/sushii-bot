@@ -49,6 +49,7 @@ impl<'a> ChannelArg<'a> {
                 .or(parse_channel(&x))
             ) {
             Some(channel) => {
+                // if allow channels outside of this guild
                 if self.allow_external {
                     return Ok(channel);
                 }
@@ -59,9 +60,11 @@ impl<'a> ChannelArg<'a> {
                     if guild.channels.contains_key(&(ChannelId(channel))) {
                         return Ok(channel);
                     }
+
+                    return Err(CommandError::from(self.err_external))
                 }
 
-                Err(CommandError::from(self.err_external))
+                Err(CommandError::from(self.err_invalid))
             },
             None => Err(CommandError::from(self.err_invalid)),
         }
