@@ -1520,6 +1520,7 @@ impl ConnectionPool {
         };
     }
 
+    /// VLIVE
     pub fn get_guild_vlive_channels(&self, guild: u64) -> Result<Vec<VliveChannel>, Error> {
         use schema::vlive_channels::dsl::*;
 

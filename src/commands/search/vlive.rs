@@ -204,7 +204,9 @@ command!(vlivenotif_add(ctx, msg, args) {
     };
 
     // get discord channel and validate
-    let discord_channel = arg_types::ChannelArg::new(&mut args, msg.guild()).get()?;
+    let discord_channel = arg_types::ChannelArg::new(&mut args, msg.guild())
+        .error(get_msg!("vlive/error/invalid_channel"))
+        .get()?;
 
     let query = args.full();
 
@@ -258,7 +260,23 @@ command!(vlivenotif_add(ctx, msg, args) {
     };
 
     let pool = get_pool(ctx);
+
+    let guild_vlive_channels = match pool.get_guild_vlive_channels(guild_id.0) {
+        Ok(val) => val,
+        Err(e) => {
+            warn_discord!("Error fetching guild vlive channels: {}", e);
+
+            return Err(CommandError::from("error/unknown_error"))
+        },
+    };
+
     // check if already has channel
+    if guild_vlive_channels
+        .iter()
+        .any(|x| x.channel_seq == channel_seq as i32 && x.discord_channel as u64 == discord_channel) {
+        
+        return Err(CommandError::from(get_msg!("vlive/error/already_added_channel")));
+    }
 
     // add to db
     pool.add_vlive_channel(channel_seq as i32,
