@@ -197,6 +197,7 @@ table! {
         channel_name -> Text,
         guild_id -> Int8,
         discord_channel -> Int8,
+        mention_role -> Nullable<Int8>,
     }
 }
 

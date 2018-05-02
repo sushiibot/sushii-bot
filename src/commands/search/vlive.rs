@@ -203,16 +203,51 @@ command!(vlivenotif_add(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    // get discord channel and validate
-    let discord_channel = arg_types::ChannelArg::new(&mut args, msg.guild())
-        .error(get_msg!("vlive/error/invalid_channel"))
-        .get()?;
-
     let query = args.full();
 
-    if query.is_empty() {
+    // regex for a discord channel id
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(<#)?\d{17,18}>?").unwrap();
+    }
+
+    let start;
+    let end;
+
+    // search for discord channel id
+    let discord_channel = match RE.find(query) {
+        Some(mat) => {
+            start = mat.start();
+            end = mat.end();
+
+            arg_types::ChannelArg::new()
+                .string(mat.as_str())
+                .guild(msg.guild())
+                .error(get_msg!("vlive/error/invalid_channel"))
+                .get()?
+        },
+        None => return Err(CommandError::from(get_msg!("vlive/error/invalid_channel"))),
+    };
+
+    // string slice before the discord channel, removing spaces in prefix/suffix
+    let vlive_channel_query = &query[..start].trim_matches(' ');
+
+    if vlive_channel_query.is_empty() {
         return Err(CommandError::from(get_msg!("vlive/error/missing_channel")));
     }
+
+    // string slice after discord channel
+    let role_name = &query[end..].trim_matches(' ');
+
+    // only check for role if there is content after the channel
+    let mention_role = if !role_name.is_empty() {
+        Some(arg_types::RoleArg::new()
+            .string(role_name)
+            .guild(msg.guild())
+            .error(get_msg!("vlive/error/invalid_role"))
+            .get()?)
+    } else {
+        None
+    };
 
     let _ = msg.channel_id.broadcast_typing();
 
@@ -228,7 +263,7 @@ command!(vlivenotif_add(ctx, msg, args) {
     };
     
     // search channel in list
-    let channel = match channels.find_partial_channel_or_code(query) {
+    let channel = match channels.find_partial_channel_or_code(vlive_channel_query) {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("vlive/error/no_search_results"))),
     };
@@ -284,6 +319,7 @@ command!(vlivenotif_add(ctx, msg, args) {
         &channel_data.channel_info.channel_name,
         guild_id.0,
         discord_channel,
+        mention_role.clone().map(|x| x.id.0),
     );
 
     // add all current videos to db
@@ -291,7 +327,12 @@ command!(vlivenotif_add(ctx, msg, args) {
         pool.add_vlive_video(channel_seq as i32, video.video_seq as i32);
     }
 
-    let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification", channel_data.channel_info.channel_name));
+    if let Some(role) = mention_role {
+        let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification_with_mention",
+            channel_data.channel_info.channel_name, role.name));
+    } else {
+        let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification", channel_data.channel_info.channel_name));
+    }
 });
 
 

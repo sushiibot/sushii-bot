@@ -1533,7 +1533,7 @@ impl ConnectionPool {
     }
 
     pub fn add_vlive_channel(&self,
-            vlive_channel: i32, vlive_code: &str, vlive_name: &str, guild: u64, discord_channel: u64) {
+            vlive_channel: i32, vlive_code: &str, vlive_name: &str, guild: u64, discord_channel: u64, mention_role: Option<u64>) {
         use schema::vlive_channels;
 
         let conn = self.connection();
@@ -1544,6 +1544,7 @@ impl ConnectionPool {
             channel_name: vlive_name,
             guild_id: guild as i64,
             discord_channel: discord_channel as i64,
+            mention_role: mention_role.map(|x| x as i64),
         };
 
         if let Err(e) = diesel::insert_into(vlive_channels::table)

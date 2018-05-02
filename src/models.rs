@@ -471,6 +471,7 @@ pub struct VliveChannel {
     pub channel_name: String,
     pub guild_id: i64,
     pub discord_channel: i64,
+    pub mention_role: Option<i64>,
 }
 
 #[derive(Insertable, Debug)]
@@ -481,5 +482,6 @@ pub struct NewVliveChannel<'a> {
     pub channel_name: &'a str,
     pub guild_id: i64,
     pub discord_channel: i64,
+    pub mention_role: Option<i64>,
 }
 
