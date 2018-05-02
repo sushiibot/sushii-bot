@@ -245,10 +245,12 @@
             "no_videos": "This video is invalid",
             "failed_list": "Failed to fetch VLive channels, try this again?",
             "failed_delete_channel": "Failed to delete VLive channel, try this again?",
-            "already_added_channel": "The Discord channel already has a notification for this VLive channel."
+            "already_added_channel": "The Discord channel already has a notification for this VLive channel.",
+            "invalid_role": "Invalid role, please give a guild role name or ID."
         },
         "info": {
             "added_notification": "Added a VLive notification for **{}**.",
+            "added_notification_with_mention": "Added a VLive notification for **{}** with mentions for role `{}`.",
             "no_notifications": "There are no VLive notifications for this server.",
             "deleted_channel": "Deleted VLive channel **{}**"
         }
