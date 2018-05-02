@@ -5,6 +5,7 @@ use reqwest::Client;
 use vlive::ReqwestVLiveRequester;
 use vlive::model::channel::ChannelType;
 use utils::numbers::comma_number;
+use models::VliveChannel;
 use chrono::Utc;
 
 use std::{thread, time, vec::Vec};
@@ -76,10 +77,9 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 }
 
                 // get the discord channels to send new videos to
-                let target_channels: Vec<u64> = channels
+                let target_channels: Vec<&VliveChannel> = channels
                     .iter()
                     .filter(|x| x.channel_seq == channel_seq)
-                    .map(|x| x.discord_channel as u64)
                     .collect();
                 
                 let channel_color = u64::from_str_radix(&channel_data.channel_info.representative_color.replace("#", ""), 16);
@@ -126,7 +126,14 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
 
                     // send messages
                     for channel in &target_channels {
-                        let _ = ChannelId(*channel as u64).send_message(|m| m
+                        let mention = if let Some(role) = channel.mention_role {
+                            format!("<@&{}>", role)
+                        } else {
+                            "".into()
+                        };
+
+                        let _ = ChannelId(channel.discord_channel as u64).send_message(|m| m
+                            .content(&mention)
                             .embed(|e| {
                                 let mut e = e
                                     .author(|a| a
