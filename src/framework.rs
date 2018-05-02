@@ -607,19 +607,19 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             .command("vlivenotif add", |c| c
                 .guild_only(true)
                 .desc("Sets a notification for a VLive channel to a discord channel")
-                .required_permissions(Permissions::MANAGE_MESSAGES)
+                .required_permissions(Permissions::MANAGE_GUILD)
                 .cmd(commands::search::vlive::vlivenotif_add)
             )
             .command("vlivenotif list", |c| c
                 .guild_only(true)
                 .desc("Lists guild VLive notifications")
-                .required_permissions(Permissions::MANAGE_MESSAGES)
+                .required_permissions(Permissions::MANAGE_GUILD)
                 .cmd(commands::search::vlive::vlivenotif_list)
             )
             .command("vlivenotif delete", |c| c
                 .guild_only(true)
                 .desc("Deletes a guild VLive notification")
-                .required_permissions(Permissions::MANAGE_MESSAGES)
+                .required_permissions(Permissions::MANAGE_GUILD)
                 .cmd(commands::search::vlive::vlivenotif_delete)
             );
 
