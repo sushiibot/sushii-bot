@@ -193,7 +193,7 @@ command!(vlive(_ctx, msg, args) {
                         .field("Caption Links", &caption_links, false);
                     
                     if is_ch_plus {
-                        e = e.description("**Requires CHANNEL+ subscription** (30 second preview)");
+                        e = e.description("<:channel_plus:441720556212060160> **Requires CHANNEL+ subscription** (30 second preview)");
                     }
 
                     e
