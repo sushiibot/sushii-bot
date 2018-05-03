@@ -72,11 +72,17 @@ command!(tag_add(ctx, msg, args) {
         }
     }
 
-    let tag_content = args.full();
+    let mut tag_content = args.full();
 
     // check if tag content is given or no
     if tag_content.is_empty() {
-        return Err(CommandError::from(get_msg!("tags/error/no_content_given")));
+        if let Some(attachment) = msg.attachments.first() {
+            // empty content but attached image
+            tag_content = &attachment.url;
+        } else {
+            // no content
+            return Err(CommandError::from(get_msg!("tags/error/no_content_given")));
+        }
     }
 
     let pool = get_pool(ctx);
@@ -88,7 +94,7 @@ command!(tag_add(ctx, msg, args) {
             // theres already a tag with this name found
             return Err(CommandError::from(get_msg!("tags/error/already_exists")));
         } else if pool.add_tag(msg.author.id.0, guild_id.0, &tag_name, tag_content) {
-            let _ = msg.channel_id.say(get_msg!("tag/added", &tag_name, &tag_content));
+            let _ = msg.channel_id.say(get_msg!("tags/added", &tag_name, &tag_content));
         } else {
             return Err(CommandError::from(get_msg!("error/unknown_error")));
         }
