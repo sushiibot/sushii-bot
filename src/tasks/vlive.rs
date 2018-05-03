@@ -94,6 +94,12 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                     if is_channel_plus && !video.channel_plus_public_yn {
                         continue;
                     }
+
+                    // also ignore channel+ videos for regular channels
+                    if !is_channel_plus && video.channel_plus_public_yn {
+                        continue;
+                    }
+
                     let mut video_data_res = client.get_video(video.video_seq);
 
                     let mut is_subbed = None;
