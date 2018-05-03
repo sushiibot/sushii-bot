@@ -194,7 +194,7 @@
             "command_conflict": "This tag name conflicts with a core bot command, please choose another name.",
             "no_name_given": "Please give a tag name.",
             "no_new_name_given": "Please give a new tag name.",
-            "no_content_given": "Please give tag content.",
+            "no_content_given": "Please give tag content or attach a file.",
             "no_search_given": "Please give a tag search.",
             "search_query_too_short": "Please give a tag search greater than 3 characters.",
             "already_exists": "This tag already exists.  Try another name.",
