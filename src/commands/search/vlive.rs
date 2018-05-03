@@ -125,6 +125,7 @@ command!(vlive(_ctx, msg, args) {
             }
 
             let mut video_links = String::new();
+            let mut is_ch_plus = false;
 
             // sort videos by size
             video.videos.list.sort_by(|a, b| 
@@ -141,6 +142,9 @@ command!(vlive(_ctx, msg, args) {
                     vid.size / 1048576,
                     vid.bitrate.video,
                     vid.bitrate.audio);
+                if vid.source.contains("&duration=30") {
+                    is_ch_plus = true;
+                }
             }
 
             if video_links.is_empty() {
@@ -179,14 +183,21 @@ command!(vlive(_ctx, msg, args) {
             };
 
             if let Err(e) = msg.channel_id.send_message(|m| m
-                .embed(|e| e
-                    .title(&video.meta.subject)
-                    .url(&video.meta.url)
-                    .image(&video.meta.cover.source)
-                    .field("Duration", &duration, true)
-                    .field("Video Links", &video_links, false)
-                    .field("Caption Links", &caption_links, false)
-                )
+                .embed(|e| {
+                    let mut e = e
+                        .title(&video.meta.subject)
+                        .url(&video.meta.url)
+                        .image(&video.meta.cover.source)
+                        .field("Duration", &duration, true)
+                        .field("Video Links", &video_links, false)
+                        .field("Caption Links", &caption_links, false);
+                    
+                    if is_ch_plus {
+                        e = e.description("**Requires CHANNEL+ subscription** (30 second preview)");
+                    }
+
+                    e
+                })
             ) {
                 warn!("Error sending vlive embed: {}", e);
             }
