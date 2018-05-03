@@ -38,6 +38,6 @@ git = "https://github.com/zeyla/serenity"
 branch = "master"
 
 [dependencies.vlive]
-version = "0.1.4"
+version = "0.1.5"
 git = "https://github.com/drklee3/vlive-rs"
 branch = "master"
