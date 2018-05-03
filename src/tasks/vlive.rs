@@ -168,7 +168,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                                 }
 
                                 if video.channel_plus_public_yn {
-                                    e = e.description("**Requires CHANNEL+ subscription**");
+                                    e = e.description("<:channel_plus:441720556212060160> **Requires CHANNEL+ subscription**");
                                 }
 
                                 e
