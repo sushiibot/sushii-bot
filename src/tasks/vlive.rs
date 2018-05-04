@@ -138,6 +138,12 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                             "".into()
                         };
 
+                        let live_emoji_or_vod = if video.video_type == "LIVE" {
+                            "<:live:441734958025801730>"
+                        } else {
+                            "[VOD]"
+                        };
+
                         let _ = ChannelId(channel.discord_channel as u64).send_message(|m| m
                             .content(&mention)
                             .embed(|e| {
@@ -147,7 +153,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                                         .icon_url(&channel_data.channel_info.channel_profile_image)
                                         .url(&channel_data.channel_info.url())
                                     )
-                                    .title(&format!("[{}] **{}**", video.video_type, video.title))
+                                    .title(&format!("{} {}", live_emoji_or_vod, video.title))
                                     .url(&video.url())
                                     .image(&video.thumbnail)
                                     .field("Plays", &comma_number(video.play_count.into()), true)
