@@ -212,7 +212,7 @@ command!(stats(ctx, msg) {
             .title(&format!("sushii v{}", bot_version))
             .url("https://sushii.xyz")
             .field("Author", &owner_tag, true)
-            .field("Library", "[serenity-rs](https://github.com/zeyla/serenity/) v0.5.2", true)
+            .field("Library", "[serenity-rs](https://github.com/zeyla/serenity/) v0.5.3", true)
             .field("Guilds", &guilds_count.to_string(), true)
             .field("Channels", &channels_count.to_string(), true)
             .field("Users (Cached)", &users_count.to_string(), true)
