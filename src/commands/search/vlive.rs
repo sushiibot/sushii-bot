@@ -372,8 +372,13 @@ command!(vlivenotif_list(ctx, msg, _args) {
     let mut s = String::new();
 
     for channel in channels {
-        let _ = writeln!(s, "<#{}> - [{}](http://channels.vlive.tv/{})",
-            channel.discord_channel, channel.channel_name, channel.channel_code);
+        if let Some(role) = channel.mention_role {
+            let _ = writeln!(s, "<#{}> - [{}](http://channels.vlive.tv/{}) (mentions <@&{}>)",
+                channel.discord_channel, channel.channel_name, channel.channel_code, role);
+        } else {
+            let _ = writeln!(s, "<#{}> - [{}](http://channels.vlive.tv/{})",
+                channel.discord_channel, channel.channel_name, channel.channel_code);
+        }
     }
 
     let _ = msg.channel_id.send_message(|m| m
