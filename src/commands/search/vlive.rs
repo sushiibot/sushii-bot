@@ -340,9 +340,10 @@ command!(vlivenotif_add(ctx, msg, args) {
 
     if let Some(role) = mention_role {
         let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification_with_mention",
-            channel_data.channel_info.channel_name, role.name));
+            channel_data.channel_info.channel_name, discord_channel, role.name));
     } else {
-        let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification", channel_data.channel_info.channel_name));
+        let _ = msg.channel_id.say(get_msg!("vlive/info/added_notification",
+            channel_data.channel_info.channel_name, discord_channel));
     }
 });
 
