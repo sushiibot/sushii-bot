@@ -249,8 +249,8 @@
             "invalid_role": "Invalid role, please give a guild role name or ID."
         },
         "info": {
-            "added_notification": "Added a VLive notification for **{}**.",
-            "added_notification_with_mention": "Added a VLive notification for **{}** with mentions for role `{}`.",
+            "added_notification": "Added a VLive notification for **{}** in <#{}>.",
+            "added_notification_with_mention": "Added a VLive notification for **{}** in <#{}> with mentions for role `{}`.",
             "no_notifications": "There are no VLive notifications for this server.",
             "deleted_channel": "Deleted VLive channel **{}**"
         }
