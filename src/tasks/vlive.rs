@@ -150,11 +150,12 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                                 let mut e = e
                                     .author(|a| a
                                         .name(&format!("{} - New VLive", channel_data.channel_info.channel_name))
-                                        .icon_url(&channel_data.channel_info.channel_profile_image)
+                                        .icon_url("https://i.imgur.com/NzGrmho.jpg")
                                         .url(&channel_data.channel_info.url())
                                     )
                                     .title(&format!("{} {}", live_emoji_or_vod, video.title))
                                     .url(&video.url())
+                                    .thumbnail(&channel_data.channel_info.channel_profile_image)
                                     .image(&video.thumbnail)
                                     .field("Plays", &comma_number(video.play_count.into()), true)
                                     .field("Hearts", &comma_number(video.like_count.into()), true)
