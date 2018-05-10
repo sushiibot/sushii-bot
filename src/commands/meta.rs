@@ -133,7 +133,9 @@ command!(stats(ctx, msg) {
     let cache = CACHE.read();
     let guilds_count = cache.guilds.len();
     let channels_count = cache.channels.len();
-    let users_count = cache.users.len();
+    let users_count = cache.guilds
+        .values()
+        .fold(0, |acc, x| acc + x.read().member_count);
 
     let current_time = Utc::now();
     let start_time = {
@@ -215,7 +217,7 @@ command!(stats(ctx, msg) {
             .field("Library", "[serenity-rs](https://github.com/zeyla/serenity/) v0.5.3", true)
             .field("Guilds", &guilds_count.to_string(), true)
             .field("Channels", &channels_count.to_string(), true)
-            .field("Users (Cached)", &users_count.to_string(), true)
+            .field("Users", &users_count.to_string(), true)
             .field("Bot Threads", process.num_threads.to_string(), true)
             .field("Bot Uptime", &uptime_humanized, false)
             .field("Bot Memory", &memory, true)
