@@ -24,7 +24,9 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 let cache = CACHE.read();
                 let guilds_count = cache.guilds.len();
                 let channels_count = cache.channels.len();
-                let users_count = cache.users.len();
+                let users_count = cache.guilds
+                    .values()
+                    .fold(0, |acc, x| acc + x.read().member_count);
 
                 pool.update_stat("bot", "guilds_count", None, Some(guilds_count as i64));
                 pool.update_stat("bot", "channels_count", None, Some(channels_count as i64));
