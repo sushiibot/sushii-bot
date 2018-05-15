@@ -243,6 +243,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .cmd(commands::notifications::list_notifications)
             )
             .command("notification delete", |c| c
+                .known_as("notification remove")
                 .desc("Deletes a notification")
                 .cmd(commands::notifications::delete_notification)
             );
