@@ -48,7 +48,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 let channel_data = match client.get_channel_video_list(channel_seq as u32, 10, 1) {
                     Ok(val) => val,
                     Err(e) => {
-                        warn_discord!("Error decoding channel: {}", e);
+                        warn!("Error decoding channel: {}", e);
                         continue; // skip errored
                     }
                 };
