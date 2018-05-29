@@ -221,10 +221,10 @@ impl ConnectionPool {
                 .filter(user_id.eq(id_user as i64))
                 .filter(guild_id.eq(id_guild as i64))
                 .set((
-                    msg_all_time.eq(user.msg_all_time + 1),
-                    msg_month.eq(new_interval_user.msg_month + 1),
-                    msg_week.eq(new_interval_user.msg_week + 1),
-                    msg_day.eq(new_interval_user.msg_day + 1),
+                    msg_all_time.eq(user.msg_all_time + 5),
+                    msg_month.eq(new_interval_user.msg_month + 5),
+                    msg_week.eq(new_interval_user.msg_week + 5),
+                    msg_day.eq(new_interval_user.msg_day + 5),
                     last_msg.eq(now),
                 ))
                 .execute(&conn)?;
@@ -235,10 +235,10 @@ impl ConnectionPool {
                     let new_level_obj = NewUserLevel {
                         user_id: id_user as i64,
                         guild_id: id_guild as i64,
-                        msg_all_time: 1,
-                        msg_month: 1,
-                        msg_week: 1,
-                        msg_day: 1,
+                        msg_all_time: 5,
+                        msg_month: 5,
+                        msg_week: 5,
+                        msg_day: 5,
                         last_msg: &now,
                     };
 
