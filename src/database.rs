@@ -216,15 +216,19 @@ impl ConnectionPool {
 
             let new_interval_user = level_interval(&user);
 
+            // calculate diff to nearest multiple of 5
+            let to_add_extra = user.msg_all_time % 5;
+            let to_add = 5 - to_add_extra;
+
             // found a user object
             diesel::update(levels)
                 .filter(user_id.eq(id_user as i64))
                 .filter(guild_id.eq(id_guild as i64))
                 .set((
-                    msg_all_time.eq(user.msg_all_time + 5),
-                    msg_month.eq(new_interval_user.msg_month + 5),
-                    msg_week.eq(new_interval_user.msg_week + 5),
-                    msg_day.eq(new_interval_user.msg_day + 5),
+                    msg_all_time.eq(user.msg_all_time + to_add),
+                    msg_month.eq(new_interval_user.msg_month + to_add),
+                    msg_week.eq(new_interval_user.msg_week + to_add),
+                    msg_day.eq(new_interval_user.msg_day + to_add),
                     last_msg.eq(now),
                 ))
                 .execute(&conn)?;
