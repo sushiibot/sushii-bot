@@ -135,7 +135,7 @@ command!(tag_list(ctx, msg, _args) {
 	    }
 	
 	    if !msg.is_private() {
-	        let _ = msg.channel_id.say(get_msg!("tag/list"));
+	        let _ = msg.channel_id.say(get_msg!("tags/list"));
 	    }
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));
@@ -239,7 +239,7 @@ command!(tag_delete(ctx, msg, args) {
         }
 
         if pool.delete_tag(guild_id.0, &tag_name) {
-            let _ = msg.channel_id.say(get_msg!("tag/deleted", tag_name));
+            let _ = msg.channel_id.say(get_msg!("tags/deleted", tag_name));
         } else {
             return Err(CommandError::from(get_msg!("tags/error/not_found_or_not_owner")));
         }
@@ -285,7 +285,7 @@ command!(tag_rename(ctx, msg, args) {
 
         // edit only name
         if pool.edit_tag(guild_id.0, &tag_name, &tag_new_name, &current.content) {
-            let _ = msg.channel_id.say(get_msg!("tag/renamed", &tag_name, &tag_new_name));
+            let _ = msg.channel_id.say(get_msg!("tags/renamed", &tag_name, &tag_new_name));
         } else {
             return Err(CommandError::from(get_msg!("tags/error/not_found_or_not_owner")));
         }
@@ -327,7 +327,7 @@ command!(tag_edit(ctx, msg, args) {
         }
 
         if pool.edit_tag(guild_id.0, &tag_name, &tag_name, tag_content) {
-            let _ = msg.channel_id.say(get_msg!("tag/edited_content", &tag_name, &tag_content));
+            let _ = msg.channel_id.say(get_msg!("tags/edited_content", &tag_name, &tag_content));
         } else {
             return Err(CommandError::from(get_msg!("tags/error/not_found_or_not_owner")));
         }
