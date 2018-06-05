@@ -18,7 +18,7 @@ macro_rules! get_msg {
             use utils::locale::LOCALE;
 
             let default = format!(
-                "Unknown error or info message, please fix in local.json `({})`",
+                "Unknown error or info message, please fix in locale.json `({})`",
                 $ptr
             );
 
