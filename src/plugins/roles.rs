@@ -18,12 +18,12 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     }
 
     let guild = match msg.guild() {
-        Some(val) => val.read().clone(),
+        Some(val) => val,
         None => return,
     };
 
     // get configs
-    let config = check_res!(get_config(ctx, pool, guild.id.0));
+    let config = check_res!(get_config(ctx, pool, guild.read().id.0));
     let role_config = check_opt!(config.role_config);
     let role_channel = check_opt!(config.role_channel);
 
@@ -34,7 +34,10 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     // searching for multiple role assignments
     lazy_static! {
-        static ref RE: Regex = RegexBuilder::new(r"(-|\+)([\w ]*)").case_insensitive(true).build().unwrap();
+        static ref RE: Regex = RegexBuilder::new(r"(-|\+)([\w ]*)")
+            .case_insensitive(true)
+            .build()
+            .unwrap();
     }
 
     // actions and role search strings for further parsing
@@ -79,7 +82,7 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         return;
     }
 
-    let member = match guild.member(msg.author.id) {
+    let member = match guild.read().member(msg.author.id) {
         Ok(val) => val,
         Err(e) => {
             warn!("[PLUGIN:roles] Failed to fetch guild member: {}", e);
