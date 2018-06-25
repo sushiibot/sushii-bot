@@ -7,3 +7,4 @@
 /.gtm/
 *.js
 *.png
+.DS_Store
