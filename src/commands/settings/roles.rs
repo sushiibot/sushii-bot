@@ -6,9 +6,10 @@ use serenity::model::guild::Role;
 use serde_json;
 
 use std::fmt::Write;
+use std::collections::HashSet;
 use utils::config::*;
 
-fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> String {
+fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>, guild_roles: HashSet<u64>) -> String {
     let mut s = String::new();
     for (cat_name, cat_data) in cfg.iter() {
         // check if there's a roles field
@@ -30,10 +31,22 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
                 // check if each role has correct properties
                 for (role_name, role_data) in obj.iter() {
                     // search
-                    if let Some(val) = role_data.get("search") {
-                        if !val.is_string() {
-                            let _ = write!(s, "Field `` for rolsearche `{}` in category `{}` must be a string (Supports RegEx)\n", 
+                    if let Some(val) = role_data.get("searches") {
+                        if !val.is_array() {
+                            let _ = write!(s, "Field `searches` for role `{}` in category `{}` must be an array of strings\n", 
                                 role_name, cat_name);
+                        } else {
+                            if let Some(arr) = val.as_array() {
+                                if arr.is_empty() {
+                                    let _ = write!(s, "Field `searches` for role `{}` in category `{}` cannot be empty\n", 
+                                        role_name, cat_name);
+                                } else {
+                                    if arr.first().and_then(|x| x.as_str()).is_none() {
+                                        let _ = write!(s, "Field `searches` for role `{}` in category `{}` must be an array of strings\n", 
+                                            role_name, cat_name);
+                                    }
+                                }
+                            }
                         }
                     } else {
                         let _ = write!(s, "Role `{}` in category `{}` is missing field `search`\n", 
@@ -42,7 +55,12 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
 
                     // primary
                     if let Some(val) = role_data.get("primary") {
-                        if !val.is_u64() {
+                        if let Some(id) = val.as_u64() {
+                            if !guild_roles.contains(&id) && id != 0 {
+                                let _ = write!(s, "Field `primary` for role `{}` in category `{}` is not a valid role ID\n", 
+                                    role_name, cat_name);
+                            }
+                        } else {
                             let _ = write!(s, "Field `primary` for role `{}` in category `{}` has to be a number (Role ID)\n", 
                                 role_name, cat_name);
                         }
@@ -53,8 +71,13 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
 
                     // secondary
                     if let Some(val) = role_data.get("secondary") {
-                        if !val.is_u64() {
-                            let _ = write!(s, "Field `secondary` for role `{}` in category `{}` has to be a number (Role ID), set to 0 to disable\n", 
+                        if let Some(id) = val.as_u64() {
+                            if !guild_roles.contains(&id) && id != 0 {
+                                let _ = write!(s, "Field `secondary` for role `{}` in category `{}` is not a valid role ID\n", 
+                                    role_name, cat_name);
+                            }
+                        } else {
+                            let _ = write!(s, "Field `secondary` for role `{}` in category `{}` has to be a number (Role ID)\n", 
                                 role_name, cat_name);
                         }
                     } else {
@@ -75,6 +98,10 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>) -> St
 
 command!(roles_set(ctx, msg, args) {
     let mut raw_json = args.full().to_owned();
+    let guild = match msg.guild() {
+        Some(val) => val,
+        None => return Err(CommandError::from(get_msg!("error/no_guild"))),
+    };
 
     // check if it starts with a code block
     if raw_json.starts_with("```") && raw_json.ends_with("```") {
@@ -103,7 +130,14 @@ command!(roles_set(ctx, msg, args) {
         Err(e) => return Err(CommandError::from(e)),
     };
 
-    let validated = validate_roles_config(&role_config);
+    let guild_roles: HashSet<u64> = guild
+        .read()
+        .roles
+        .keys()
+        .map(|role_id| role_id.0)
+        .collect();
+
+    let validated = validate_roles_config(&role_config, guild_roles);
     let errs = if validated.len() > 1950 {
         format!("{}\n... and more", &validated[..1950])
     } else {
@@ -114,18 +148,14 @@ command!(roles_set(ctx, msg, args) {
         return Err(CommandError::from(errs));
     }
 
-    if let Some(guild_id) = msg.guild_id() {
-        let pool = get_pool(ctx);
+    let pool = get_pool(ctx);
 
-        let mut config = check_res_msg!(get_config(ctx, &pool, guild_id.0));
-        config.role_config = Some(serde_json::Value::from(role_config));
+    let mut config = check_res_msg!(get_config(ctx, &pool, guild.read().id.0));
+    config.role_config = Some(serde_json::Value::from(role_config));
 
-        update_config(ctx, &pool, &config);
+    update_config(ctx, &pool, &config);
 
-        let _ = msg.channel_id.say(get_msg!("info/role_config_set"));
-    } else {
-        return Err(CommandError::from(get_msg!("error/no_guild")));
-    }
+    let _ = msg.channel_id.say(get_msg!("info/role_config_set"));
 });
 
 command!(roles_channel(ctx, msg, args) {
