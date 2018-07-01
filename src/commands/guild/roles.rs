@@ -11,7 +11,7 @@ command!(roleinfo(_ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    let search = args.full();
+    let search = args.rest();
 
     if search.is_empty() {
         return Err(CommandError::from(get_msg!("guild/roles/error/no_role_name")));
