@@ -33,8 +33,8 @@ urbandictionary = "0.3.0"
 clippy = { version = "*", optional = true }
 
 [dependencies.serenity]
-version = "0.5.3"
-git = "https://github.com/zeyla/serenity"
+version = "0.5.4"
+git = "https://github.com/serenity-rs/serenity"
 branch = "master"
 
 [dependencies.vlive]

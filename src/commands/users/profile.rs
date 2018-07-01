@@ -151,7 +151,7 @@ command!(profile(ctx, msg, args) {
 
     let value = if action_type == "color" || action_type == "percent" || action_type == "text" {
         let _ = args.skip();
-        let val = args.full();
+        let val = args.rest();
         if val.is_empty() {
             None
         } else {

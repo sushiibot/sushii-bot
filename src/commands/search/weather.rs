@@ -59,7 +59,7 @@ command!(weather(ctx, msg, args) {
             }
         }
 
-        let location = args.full().replace(' ', "+");
+        let location = args.rest().replace(' ', "+");
 
         let url = GOOGLE_MAPS_URL.replace("{ADDRESS}", &location).replace("{KEY}", &google_maps_key);
 

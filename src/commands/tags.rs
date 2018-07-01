@@ -72,7 +72,7 @@ command!(tag_add(ctx, msg, args) {
         }
     }
 
-    let mut tag_content = args.full();
+    let mut tag_content = args.rest();
 
     // check if tag content is given or no
     if tag_content.is_empty() {
@@ -303,7 +303,7 @@ command!(tag_edit(ctx, msg, args) {
             Err(_) => return Err(CommandError::from(get_msg!("tags/error/no_name_given"))),
         };
 
-        let tag_content = args.full();
+        let tag_content = args.rest();
 
         // check if tag content is given or no
         if tag_content.is_empty() {
@@ -359,7 +359,7 @@ command!(tag_import(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    let mut raw_json = args.full().to_string();
+    let mut raw_json = args.rest().to_string();
 
     // try reading file
     if raw_json.is_empty() && msg.attachments.len() > 0 {
