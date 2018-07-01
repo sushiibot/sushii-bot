@@ -156,7 +156,7 @@
         "notification_global_already_exists": "You already have this global notification set.",
         "notification_already_exists": "You already have this notification set",
 
-        "roles_invalid_action": "Invalid role action, use `+[role]` or `-[role]`",
+        "roles_invalid_action": "Invalid role action, use `+role` or `-role`. Say `reset` to reset your roles.",
         "roles_invalid_target": "Invalid role.",
 
         "fm_user_not_found": "User not found.",

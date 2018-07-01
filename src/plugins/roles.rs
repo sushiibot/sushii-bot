@@ -79,6 +79,7 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     // none found, exit
     if !found && !should_reset {
+        let _ = msg.channel_id.say(get_msg!("error/roles_invalid_action"));
         return;
     }
 
