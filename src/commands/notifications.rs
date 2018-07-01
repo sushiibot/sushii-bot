@@ -5,7 +5,7 @@ use std::fmt::Write;
 use utils::config::get_pool;
 
 command!(add_notification(ctx, msg, args) {
-    let mut keyword = args.full().to_lowercase();
+    let mut keyword = args.rest().to_lowercase();
 
     if keyword.is_empty() {
         return Err(CommandError("Missing keyword".to_owned()));
@@ -164,7 +164,7 @@ command!(list_notifications(ctx, msg, _args) {
 });
 
 command!(delete_notification(ctx, msg, args) {
-    let mut keyword_or_id = args.full().to_owned();
+    let mut keyword_or_id = args.rest().to_owned();
 
     if keyword_or_id.is_empty() {
         return Err(CommandError::from("Missing keyword or ID."));

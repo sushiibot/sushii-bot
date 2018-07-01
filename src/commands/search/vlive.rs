@@ -14,7 +14,7 @@ command!(vlive(_ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("vlive/error/missing_or_invalid_subcommand"))),
     };
 
-    let query = args.full();
+    let query = args.rest();
         
     if query.is_empty() {
         return Err(CommandError::from(get_msg!("vlive/error/missing_query")));
@@ -214,7 +214,7 @@ command!(vlivenotif_add(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    let query = args.full();
+    let query = args.rest();
 
     // regex for a discord channel id
     lazy_static! {
@@ -406,7 +406,7 @@ command!(vlivenotif_delete(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("vlive/error/invalid_channel")));
     }
 
-    let query = args.full();
+    let query = args.rest();
 
     if query.is_empty() {
         return Err(CommandError::from(get_msg!("vlive/error/missing_channel")));

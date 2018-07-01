@@ -16,7 +16,7 @@ struct Response {
 }
 
 command!(play(_ctx, msg, args) {
-    let mut code = args.full().to_owned();
+    let mut code = args.rest().to_owned();
 
     // check if using code block
     if !code.starts_with("```") || !code.ends_with("```") {
@@ -63,7 +63,7 @@ command!(play(_ctx, msg, args) {
 
 
 command!(reminder(ctx, msg, args) {
-    let mut full_msg = args.full().to_owned();
+    let mut full_msg = args.rest().to_owned();
 
 
     if full_msg.is_empty() {

@@ -14,7 +14,7 @@ use std::fmt::Write;
 
 command!(reason(ctx, msg, args) {
     let cases = args.single::<String>()?;
-    let given_reason = args.full();
+    let given_reason = args.rest();
 
     if given_reason.is_empty() {
         return Err(CommandError::from("Please provide a reason."));

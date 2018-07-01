@@ -97,7 +97,7 @@ fn validate_roles_config(cfg: &serde_json::Map<String, serde_json::Value>, guild
 }
 
 command!(roles_set(ctx, msg, args) {
-    let mut raw_json = args.full().to_owned();
+    let mut raw_json = args.rest().to_owned();
     let guild = match msg.guild() {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),

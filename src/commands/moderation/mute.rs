@@ -22,7 +22,7 @@ command!(mute(ctx, msg, args) {
     };
 
     // get the reason
-    let reason_raw = args.full();
+    let reason_raw = args.rest();
     let reason = if !reason_raw.is_empty() {
         Some(&reason_raw[..])
     } else {
@@ -86,7 +86,7 @@ command!(unmute(ctx, msg, args) {
     };
 
     // get the reason
-    let reason_raw = args.full();
+    let reason_raw = args.rest();
     let reason = if !reason_raw.is_empty() {
         Some(&reason_raw[..])
     } else {

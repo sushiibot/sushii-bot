@@ -157,7 +157,7 @@ command!(say(_ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
-    let content = args.full();
+    let content = args.rest();
 
     if content.is_empty() {
         return Err(CommandError::from(get_msg!("owner/say/empty_content")))

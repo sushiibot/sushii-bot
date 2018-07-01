@@ -7,7 +7,7 @@ use utils::config::update_config;
 command!(joinmsg(ctx, msg, args) {
     let pool = get_pool(ctx);
 
-    let message = args.full().to_owned();
+    let message = args.rest().to_owned();
 
     if let Some(guild_id) = msg.guild_id() {
         let guild_id = guild_id.0;
@@ -45,7 +45,7 @@ command!(joinmsg(ctx, msg, args) {
 command!(joinreact(ctx, msg, args) {
     let pool = get_pool(ctx);
 
-    let react = args.full().to_owned();
+    let react = args.rest().to_owned();
 
     if let Some(guild_id) = msg.guild_id() {
         let guild_id = guild_id.0;
@@ -83,7 +83,7 @@ command!(joinreact(ctx, msg, args) {
 command!(leavemsg(ctx, msg, args) {
     let pool = get_pool(ctx);
 
-    let message = args.full().to_owned();
+    let message = args.rest().to_owned();
 
     if let Some(guild_id) = msg.guild_id() {
         let guild_id = guild_id.0;
