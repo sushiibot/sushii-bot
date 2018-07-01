@@ -160,7 +160,7 @@ command!(unban(ctx, msg, args) {
     };
 
     // get the reason
-    let reason_raw = args.full();
+    let reason_raw = args.rest();
     let reason;
 
     let re = Regex::new(r"\d{17,18}[a-zA-Z ]+").unwrap();
