@@ -50,6 +50,9 @@
         "fm_help": "Valid subcommands are `toptracks`, `topartists`, `topalbums`, and `loved`. \nYou find more information here: <https://sushii.xyz/commands#cmd_fm>",
         "fm_saved_username": "Saved your username.  You won't have to pass a username argument to get your last.fm info.",
         "fm_no_loved_tracks": "You have no loved tracks. :broken_heart:",
+        "fm_no_top_tracks": "You have no top tracks.",
+        "fm_no_top_artists": "You have no top artists.",
+        "fm_no_top_albums": "You have no top albums.",
 
         "patron_added": "Added a new patron.",
         "patron_removed": "Removed a patron.",
