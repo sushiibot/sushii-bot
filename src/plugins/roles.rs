@@ -6,7 +6,7 @@ use std::vec::Vec;
 use std::collections::HashMap;
 use std::fmt::Write;
 
-use regex::{Regex, RegexBuilder};
+use regex::{Regex, RegexBuilder, escape};
 
 use database::ConnectionPool;
 use utils::config::get_config;
@@ -79,6 +79,7 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     // none found, exit
     if !found && !should_reset {
+        let _ = msg.channel_id.say(get_msg!("error/roles_invalid_action"));
         return;
     }
 
@@ -141,13 +142,24 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             let roles = check_opt!(cat_data.get("roles").and_then(|x| x.as_object()));
 
             for (role_name, role_data) in roles.iter() {
-                let search = check_opt!(role_data.get("search").and_then(|x| x.as_str()));
+                let searches = check_opt!(role_data.get("searches").and_then(|x| x.as_array()));
                 let primary = check_opt!(role_data.get("primary").and_then(|x| x.as_u64()));
                 let secondary = check_opt!(role_data.get("secondary").and_then(|x| x.as_u64()));
 
+                // vec of regex escaped searches
+                let searches: Vec<String> = searches
+                    .iter()
+                    .map(|search| escape(&search
+                        .as_str()
+                        .unwrap_or_else(|| ""))
+                    )
+                    .filter(|x| x.len() > 0)
+                    .collect();
+
+                let search = format!("({})", searches.join("|"));
                 
                 // compile regex for search
-                let re = match RegexBuilder::new(search).case_insensitive(true).build() {
+                let re = match RegexBuilder::new(&search).case_insensitive(true).build() {
                     Ok(val) => val,
                     Err(e) => {
                         let s = format!("Regex compile error for `{}` in `{}`: {}\nPlease fix in role config.", role_name, cat_name, e);

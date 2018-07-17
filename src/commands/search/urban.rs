@@ -12,7 +12,7 @@ command!(urban(_ctx, msg, args) {
         Err(_) => return Ok(()),
     };
 
-    let query = args.full();
+    let query = args.rest();
 
     let client = Client::new();
 

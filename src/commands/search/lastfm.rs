@@ -329,7 +329,7 @@ fn get_username(ctx: &Context, user: u64) -> Result<String, CommandError> {
 fn set_or_get_username(ctx: &Context, user: u64, args: &mut Args) -> Result<(String, bool), CommandError> {
     let pool = get_pool(ctx);
 
-    let username_or_set = args.full();
+    let username_or_set = args.rest();
     let mut saved = false;
 
     let username = if username_or_set.starts_with("set ") {
