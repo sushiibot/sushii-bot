@@ -100,6 +100,11 @@ fn top_tracks(msg: &Message, data: &Value, period: &str) {
     let default_vec = vec![];
     let tracks = data.pointer("/toptracks/track").and_then(|x| x.as_array()).unwrap_or(&default_vec);
 
+    if tracks.is_empty() {
+        let _ = msg.channel_id.say(get_msg!("info/fm_no_top_tracks"));
+        return;
+    }
+
     let mut s = String::new();
 
     let first_image = tracks.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
@@ -129,6 +134,11 @@ fn top_artists(msg: &Message, data: &Value, period: &str) {
     let default_vec = vec![];
     let artists = data.pointer("/topartists/artist").and_then(|x| x.as_array()).unwrap_or(&default_vec);
 
+    if artists.is_empty() {
+        let _ = msg.channel_id.say(get_msg!("info/fm_no_top_artists"));
+        return;
+    }
+
     let mut s = String::new();
 
     let first_image = artists.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
@@ -154,6 +164,11 @@ fn top_albums(msg: &Message, data: &Value, period: &str) {
     let username = data.pointer("/topalbums/@attr/user").and_then(|x| x.as_str()).unwrap_or("N/A");
     let default_vec = vec![];
     let albums = data.pointer("/topalbums/album").and_then(|x| x.as_array()).unwrap_or(&default_vec);
+
+    if albums.is_empty() {
+        let _ = msg.channel_id.say(get_msg!("info/fm_no_top_albums"));
+        return;
+    }
 
     let mut s = String::new();
 
