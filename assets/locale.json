@@ -262,5 +262,12 @@
         "say": {
             "empty_content": "Message content can't be empty."
         }
+    },
+    "text": {
+        "ship": {
+            "error": {
+                "no_ship_given": "Give a ship"
+            }
+        }
     }
 }
