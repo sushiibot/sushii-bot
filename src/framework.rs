@@ -477,6 +477,11 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .usage("[target]")
                 .desc("Hug someone.")
                 .cmd(commands::text::hug::hug_cmd)
+            )
+            .command("ship", |c| c
+                .usage("[ship]")
+                .desc("Make a ship.")
+                .cmd(commands::text::ship::ship)
             );
 
             add_command_group(&mut commands_list, g)
