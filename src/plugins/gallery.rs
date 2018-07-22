@@ -12,6 +12,11 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         return;
     }
 
+    // ignore bots
+    if msg.author.bot {
+        return;
+    }
+
     lazy_static! {
         static ref RE: Regex = Regex::new(r"(https?://[^\s]+)").unwrap();
     }
@@ -35,8 +40,11 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     if let Some(gallery_urls) = pool.get_gallery_webhook(msg.channel_id.0) {
         let mut json = HashMap::new();
+        let cleaned_string = s
+            .replace("@everyone", "@\u{200b}everyone")
+            .replace("@here", "@\u{200b}here");
 
-        json.insert("content", s);
+        json.insert("content", cleaned_string);
         json.insert("username", msg.author.name.clone());
         json.insert("avatar_url", msg.author.face());
 
