@@ -31,12 +31,19 @@ command!(ship(_ctx, msg, args) {
     }
 
     let mut rng = thread_rng();
+    let count = ship_str.matches("\u{200b}").count();
 
-    let percentage = rng.gen_range(0, 101); // inclusive low, exclusive high
+    let percentage = if count == 1 {
+        100
+    } else if count == 2 {
+        0
+    } else {
+        rng.gen_range(0, 101) // inclusive low, exclusive high
+    };
 
     let length = percentage / 10;
     let emoji = EMOJIS[length];
-    let back = if length == 10 {
+    let back = if length == 10 { // prevent underflow
         0
     } else {
         9 - length
