@@ -19,7 +19,7 @@ command!(urban(_ctx, msg, args) {
     let mut response = match client.definitions(&query[..]) {
         Ok(response) => response,
         Err(why) => {
-            warn_discord!("Err retrieving word '{}': {:?}", query, why);
+            warn_discord!(format!("Err retrieving word '{}': {:?}", query, why));
 
             return Err(CommandError::from(get_msg!("error/urban_failed_retrieve")));
         },
