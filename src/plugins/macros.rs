@@ -21,6 +21,17 @@ macro_rules! exec_on_message_update {
         }}
 }
 
+macro_rules! exec_on_message_delete {
+    ( [$ctx:expr, $channel_id:expr, $msg_id:expr], $( $plugin:ident ),* ) => {{
+            use utils::config::get_pool;
+            let pool = get_pool(&$ctx);
+    
+            $(
+                $plugin::on_message_delete($ctx, &pool, $channel_id, $msg_id);
+            )*
+        }}
+}
+
 macro_rules! exec_on_ready {
     ( [$ctx:expr, $ready:expr], $( $plugin:ident ),* ) => {
         $(

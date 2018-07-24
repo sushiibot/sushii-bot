@@ -1031,6 +1031,17 @@ impl ConnectionPool {
         }
     }
 
+    pub fn get_message(&self, message_id: u64) -> Option<Message> {
+        use schema::messages::dsl::*;
+
+        let conn = self.connection();
+
+        messages
+            .filter(id.eq(message_id as i64))
+            .first(&conn)
+            .ok()
+    }
+
     pub fn get_messages(&self, channel_id: u64, limit: i64) -> Option<Vec<Message>> {
         use schema::messages::dsl::*;
 
