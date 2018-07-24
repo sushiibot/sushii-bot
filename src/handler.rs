@@ -15,6 +15,39 @@ use serde_json::Value;
 use utils::config::get_pool;
 pub struct Handler;
 
+/*
+pub struct Modules(Vec<Box<EventHandler>>);
+
+impl Modules {
+    pub fn new() -> Self {
+        Modules(Vec::new())
+    }
+
+    pub fn add_module<T: EventHandler + 'static>(&mut self, module: T) {
+        self.0.push(Box::new(module))
+    }
+
+    fn propagate<F: Fn(&EventHandler)>(&self, name: &str, f: F) {
+        debug!("Passing {}", name);
+        for handler in &self.0 {
+            f(handler);
+        }
+    }
+}
+
+impl EventHandler for Modules {
+    fn ready(&self, ctx: Context, ready: Ready) {
+        self.propagate("ready", |h| h.ready(ctx, ready));
+    }
+}
+
+pub struct TestEcho;
+impl EventHandler for TestEcho {
+    fn message(&self, _ctx: Context, msg: Message) {
+        let _ = msg.channel_id.say("hello");
+    }
+}*/
+
 impl EventHandler for Handler {
     fn ready(&self, ctx: Context, ready: Ready) {
         info_discord!(format!("READY: Connected as {}", ready.user.tag()));
@@ -217,7 +250,8 @@ impl EventHandler for Handler {
         );
     }
 
-    fn message_delete(&self, ctx: Context, _: ChannelId, _: MessageId) {
+    fn message_delete(&self, ctx: Context, channel_id: ChannelId, msg_id: MessageId) {
+        exec_on_message_delete!([&ctx, &channel_id, &msg_id], message_log);
         update_event(&ctx, "MESSAGE_DELETE");
     }
 
