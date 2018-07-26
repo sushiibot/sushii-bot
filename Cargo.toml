@@ -29,7 +29,6 @@ base64 = "0.9.0"
 dogstatsd = "0.4.0"
 bigdecimal = "0.0.11"
 num-traits = "0.1.40"
-urbandictionary = "0.3.0"
 clippy = { version = "*", optional = true }
 
 [dependencies.serenity]
@@ -40,4 +39,9 @@ branch = "master"
 [dependencies.vlive]
 version = "0.1.5"
 git = "https://github.com/drklee3/vlive-rs"
+branch = "master"
+
+[dependencies.urbandictionary]
+version = "0.3.0"
+git = "https://github.com/zeyla/urbandictionary.rs"
 branch = "master"
