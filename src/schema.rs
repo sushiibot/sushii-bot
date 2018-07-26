@@ -105,6 +105,7 @@ table! {
         guild -> Nullable<Int8>,
         created -> Timestamp,
         content -> Text,
+        bot -> Bool,
     }
 }
 

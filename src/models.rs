@@ -270,6 +270,7 @@ pub struct Message {
     pub guild: Option<i64>,
     pub created: NaiveDateTime,
     pub content: String,
+    pub bot: bool,
 }
 
 #[derive(Insertable, Debug)]
@@ -282,6 +283,7 @@ pub struct NewMessage<'a> {
     pub guild: Option<i64>,
     pub created: NaiveDateTime,
     pub content: &'a str,
+    pub bot: bool,
 }
 
 #[derive(Queryable, Clone, Debug)]
