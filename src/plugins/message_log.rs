@@ -40,6 +40,11 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
             None => return,
         };
 
+        // ignore some lazy load or embed change
+        if *updated_content == msg.content {
+            return;
+        }
+
         let config = check_res!(get_config(ctx, pool, guild_id as u64));
 
         if let Some(channel) = config.log_msg {
