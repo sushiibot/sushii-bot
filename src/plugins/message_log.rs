@@ -12,6 +12,12 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 }
 
 pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &MessageUpdateEvent) {
+    if let Some(ref user) = msg_update.author {
+        if user.bot {
+            return;
+        }
+    }
+
     if let Some(ref content) = msg_update.content {
         // get server config
 
@@ -19,6 +25,10 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
             Some(m) => m,
             None => return,
         };
+
+        if msg.bot {
+            return;
+        }
 
         let guild_id = match msg.guild {
             Some(g) => g,
@@ -50,6 +60,10 @@ pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &Cha
         Some(m) => m,
         None => return,
     };
+
+    if msg.bot {
+        return;
+    }
 
     let guild_id = match msg.guild {
         Some(id) => id,

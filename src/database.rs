@@ -1003,6 +1003,7 @@ impl ConnectionPool {
         let new_message = NewMessage {
             id: msg.id.0 as i64,
             author: msg.author.id.0 as i64,
+            bot: msg.author.bot,
             tag: &msg.author.tag(),
             channel: msg.channel_id.0 as i64,
             guild: msg.guild_id().map(|x| x.0 as i64),
