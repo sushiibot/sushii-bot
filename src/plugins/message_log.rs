@@ -48,9 +48,10 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
         let config = check_res!(get_config(ctx, pool, guild_id as u64));
 
         if let Some(channel) = config.log_msg {
-            let s = format!("`[{}] {} ({})` edited message:\n{}\n->\n{}",
+            let s = format!("`[{}] {} ({})` edited message in <#{}>:\n{}\n->\n{}",
                 msg.created.format("%Y-%m-%d %H:%M:%S UTC"),
-                msg.tag, msg.author, msg.content, updated_content
+                msg.tag, msg.author, msg.channel,
+                msg.content, updated_content
             );
             let _ = ChannelId(channel as u64).say(s);
         }
@@ -79,9 +80,10 @@ pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &Cha
     let config = check_res!(get_config(ctx, pool, guild_id as u64));
 
     if let Some(channel) = config.log_msg {
-        let s = format!("`[{}] {} ({})` deleted message:\n{}",
+        let s = format!("`[{}] {} ({})` deleted message in <#{}>:\n{}",
             msg.created.format("%Y-%m-%d %H:%M:%S UTC"),
-            msg.tag, msg.author, msg.content
+            msg.tag, msg.author, msg.channel,
+            msg.content
         );
         let _ = ChannelId(channel as u64).say(s);
     }
