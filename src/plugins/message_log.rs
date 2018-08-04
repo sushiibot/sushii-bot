@@ -2,6 +2,7 @@ use serenity::model::channel::Message;
 use serenity::model::event::MessageUpdateEvent;
 use serenity::model::id::ChannelId;
 use serenity::model::id::MessageId;
+use serenity::model::id::UserId;
 use serenity::prelude::Context;
 
 use database::ConnectionPool;
@@ -35,25 +36,33 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
             None => return,
         };
 
-        let updated_content = match msg_update.content {
-            Some(ref c) => c,
-            None => return,
-        };
-
         // ignore some lazy load or embed change
-        if *updated_content == msg.content {
+        if *content == msg.content {
             return;
         }
 
         let config = check_res!(get_config(ctx, pool, guild_id as u64));
 
+        let (tag, face) = if let Ok(user) = UserId(msg.author as u64).get() {
+            (user.tag(), user.face())
+        } else {
+            ("N/A".into(), "https://cdn.discordapp.com/embed/avatars/1.png".into())
+        };
+
         if let Some(channel) = config.log_msg {
-            let s = format!("`[{}] {} ({})` edited message in <#{}>:\n{}\n->\n{}",
-                msg.created.format("%Y-%m-%d %H:%M:%S UTC"),
-                msg.tag, msg.author, msg.channel,
-                msg.content, updated_content
+            let _ = ChannelId(channel as u64).send_message(|m| m
+                .embed(|e| e
+                    .title("Message Edited")
+                    .author(|a| a
+                        .name(&format!("{} ({})", tag, msg.author))
+                        .icon_url(&face)
+                    )
+                    .field("Old", &msg.content, false)
+                    .field("New", &content, false)
+                    .field("Channel", &format!("<#{}>", msg.channel), false)                    
+                    .timestamp(msg.created.format("%Y-%m-%dT%H:%M:%S").to_string())
+                )
             );
-            let _ = ChannelId(channel as u64).say(s);
         }
 
         // update database when message is edited
@@ -80,11 +89,23 @@ pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &Cha
     let config = check_res!(get_config(ctx, pool, guild_id as u64));
 
     if let Some(channel) = config.log_msg {
-        let s = format!("`[{}] {} ({})` deleted message in <#{}>:\n{}",
-            msg.created.format("%Y-%m-%d %H:%M:%S UTC"),
-            msg.tag, msg.author, msg.channel,
-            msg.content
+        let (tag, face) = if let Ok(user) = UserId(msg.author as u64).get() {
+            (user.tag(), user.face())
+        } else {
+            ("N/A".into(), "https://cdn.discordapp.com/embed/avatars/1.png".into())
+        };
+
+        let _ = ChannelId(channel as u64).send_message(|m| m
+            .embed(|e| e
+                .title("Message Deleted")
+                .author(|a| a
+                    .name(&format!("{} ({})", tag, msg.author))
+                    .icon_url(&face)
+                )
+                .field("Message Content", msg.content, false)
+                .field("Channel", &format!("<#{}>", msg.channel), false)
+                .timestamp(msg.created.format("%Y-%m-%dT%H:%M:%S").to_string())
+            )
         );
-        let _ = ChannelId(channel as u64).say(s);
     }
 }
