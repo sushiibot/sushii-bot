@@ -7,6 +7,7 @@ use serenity::prelude::Context;
 
 use database::ConnectionPool;
 use utils::config::get_config;
+use utils::time::now_utc;
 
 pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     pool.log_message(msg);
@@ -50,6 +51,8 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
         };
 
         if let Some(channel) = config.log_msg {
+            let now = now_utc();
+
             let _ = ChannelId(channel as u64).send_message(|m| m
                 .embed(|e| e
                     .title("Message Edited")
@@ -60,8 +63,11 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
                     .colour(0x9b59b6)
                     .field("Old", &msg.content, false)
                     .field("New", &content, false)
-                    .field("Channel", &format!("<#{}>", msg.channel), false)                    
-                    .timestamp(msg.created.format("%Y-%m-%dT%H:%M:%S").to_string())
+                    .field("Channel", &format!("<#{}>", msg.channel), false)
+                    .footer(|f| f
+                        .text("Edited at")
+                    )
+                    .timestamp(now.format("%Y-%m-%dT%H:%M:%S").to_string())
                 )
             );
         }
@@ -96,6 +102,8 @@ pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &Cha
             ("N/A".into(), "https://cdn.discordapp.com/embed/avatars/1.png".into())
         };
 
+        let now = now_utc();
+
         let _ = ChannelId(channel as u64).send_message(|m| m
             .embed(|e| e
                 .title("Message Deleted")
@@ -106,7 +114,10 @@ pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &Cha
                 .colour(0xe74c3c)
                 .field("Message Content", msg.content, false)
                 .field("Channel", &format!("<#{}>", msg.channel), false)
-                .timestamp(msg.created.format("%Y-%m-%dT%H:%M:%S").to_string())
+                .footer(|f| f
+                    .text("Deleted at")
+                )
+                .timestamp(now.format("%Y-%m-%dT%H:%M:%S").to_string())
             )
         );
     }
