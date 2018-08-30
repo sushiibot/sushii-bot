@@ -25,12 +25,12 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
 
     // check content for urls
     for mat in RE.find_iter(&msg.content) {
-        let _ = write!(s, "{}", mat.as_str());
+        let _ = write!(s, "{}\n", mat.as_str());
     }
 
     // check attachments for urls
     for img in &msg.attachments {
-        let _ = write!(s, "{}", img.url);
+        let _ = write!(s, "{}\n", img.url);
     }
 
     // return if there's nothing in message to send to gallery
