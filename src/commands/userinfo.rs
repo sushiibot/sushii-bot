@@ -199,7 +199,7 @@ command!(avatar(_ctx, msg, args) {
         None => return Err(CommandError("Invalid mention.".to_owned())),
     };
 
-    if let Ok(user) = UserId(id).get() {
+    if let Ok(user) = UserId(id).to_user() {
         let _ = msg.channel_id.send_message(|m| m
             .embed(|e| e
                 .author(|a| a

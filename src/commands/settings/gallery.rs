@@ -29,7 +29,7 @@ command!(gallery_add(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/invalid_webhook")));
     }
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         pool.add_gallery(channel, guild_id.0, &webhook_url);
@@ -42,7 +42,7 @@ command!(gallery_add(ctx, msg, args) {
 });
 
 command!(gallery_list(ctx, msg, _args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let s = if let Some(galleries) = pool.list_galleries(guild_id.0) {
@@ -81,7 +81,7 @@ command!(gallery_delete(ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("error/invalid_gallery_id"))),
     };
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         if pool.delete_gallery(guild_id.0, gallery_id) {

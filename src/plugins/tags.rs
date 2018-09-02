@@ -11,7 +11,7 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         return;
     }
 
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(val) => val.0,
         None => return,
     };

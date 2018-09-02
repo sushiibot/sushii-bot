@@ -1006,7 +1006,7 @@ impl ConnectionPool {
             bot: msg.author.bot,
             tag: &msg.author.tag(),
             channel: msg.channel_id.0 as i64,
-            guild: msg.guild_id().map(|x| x.0 as i64),
+            guild: msg.guild_id.map(|x| x.0 as i64),
             created: msg.timestamp.naive_utc(),
             content: &msg.content,
         };

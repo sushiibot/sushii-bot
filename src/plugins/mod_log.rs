@@ -148,7 +148,7 @@ fn get_user_tag_face(db_entry: &ModAction) -> (String, String) {
     // get the tag and face of the executor if it exists,
     // if getting the user fails, just fall back to the bot's tag / id
     if let Some(executor) = db_entry.executor_id {
-        if let Ok(user) = UserId(executor as u64).get() {
+        if let Ok(user) = UserId(executor as u64).to_user() {
             (user.tag(), user.face())
         } else {
             let c = &CACHE.read().user;

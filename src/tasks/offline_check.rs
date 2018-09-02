@@ -18,6 +18,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
     INIT.call_once(|| {
         thread::spawn(move || loop {
             let thirty_sec = time::Duration::from_secs(30);
+            thread::sleep(thirty_sec);
 
             // Check for deadlocks
             let deadlocks = deadlock::check_deadlock();
@@ -47,8 +48,6 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                     count = counter.count;
                 }
             }
-
-            thread::sleep(thirty_sec);
         });
     });
 }

@@ -48,10 +48,10 @@ pub fn on_guild_member_removal(ctx: &Context, pool: &ConnectionPool, guild_id: &
 /// Formats a string for join / leave messages, replaces placeholders for
 /// member name, mention, and guild names
 fn format_message(msg: &str, guild: &GuildId, user: &User) -> String {
-    let guild_name = match guild.find() {
+    let guild_name = match guild.to_guild_cached() {
         Some(guild) => guild.read().name.to_owned(),
         None => {
-            match guild.get() {
+            match guild.to_partial_guild() {
                 Ok(guild) => guild.name,
                 Err(_) => "".to_owned(),
             }

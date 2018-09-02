@@ -122,7 +122,7 @@ impl EventHandler for Handler {
     fn guild_create(&self, ctx: Context, guild: Guild, is_new_guild: bool) {
         exec_on_guild_create!([&ctx, &guild, is_new_guild], db_cache);
         if is_new_guild {
-            let owner_tag = match guild.owner_id.get() {
+            let owner_tag = match guild.owner_id.to_user() {
                 Ok(user) => user.tag(),
                 Err(_) => format!("<@{}>", guild.owner_id.0),
             };
@@ -259,11 +259,11 @@ impl EventHandler for Handler {
         update_event(&ctx, "MESSAGE_DELETE_BULK");
     }
 
-    fn reaction_add(&self, ctx: Context, _: Reaction) {
+    fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         update_event(&ctx, "MESSAGE_REACTION_ADD");
     }
 
-    fn reaction_remove(&self, ctx: Context, _: Reaction) {
+    fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
         update_event(&ctx, "MESSAGE_REACTION_REMOVE");
     }
 
@@ -271,8 +271,8 @@ impl EventHandler for Handler {
         update_event(&ctx, "MESSAGE_REACTION_REMOVE_ALL");
     }
 
-    fn message_update(&self, ctx: Context, msg_update: MessageUpdateEvent) {
-        exec_on_message_update!([&ctx, &msg_update], message_log);
+    fn message_update(&self, ctx: Context, old: Option<Message>, new: Message) {
+        exec_on_message_update!([&ctx, &new], message_log);
         update_event(&ctx, "MESSAGE_UPDATE");
     }
 

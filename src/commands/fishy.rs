@@ -50,7 +50,7 @@ command!(fishy(ctx, msg, args) {
         fishies_self = true
     }
 
-    let target_user = match UserId(target).get() {
+    let target_user = match UserId(target).to_user() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };
@@ -93,7 +93,7 @@ fn get_pos_emoji(pos: i64) -> String {
 command!(fishies_top(ctx, msg, args) {
     let pool = get_pool(ctx);
 
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(val) => val.0,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };

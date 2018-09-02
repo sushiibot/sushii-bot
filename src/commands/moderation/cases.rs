@@ -22,7 +22,7 @@ command!(reason(ctx, msg, args) {
 
     let pool = get_pool(ctx);
 
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(id) => id.0,
         None => return Err(CommandError::from("No guild.")),
     };
@@ -138,7 +138,7 @@ command!(reason(ctx, msg, args) {
 });
 
 command!(history(ctx, msg, args) {
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(id) => id.0,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
@@ -148,7 +148,7 @@ command!(history(ctx, msg, args) {
         None => return Err(CommandError::from(get_msg!("error/invalid_user"))),
     };
 
-    let target_user = match UserId(target).get() {
+    let target_user = match UserId(target).to_user() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };

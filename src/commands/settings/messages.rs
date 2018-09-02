@@ -9,7 +9,7 @@ command!(joinmsg(ctx, msg, args) {
 
     let message = args.rest().to_owned();
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let guild_id = guild_id.0;
         let config = check_res_msg!(get_config(ctx, &pool, guild_id));
 
@@ -47,7 +47,7 @@ command!(joinreact(ctx, msg, args) {
 
     let react = args.rest().to_owned();
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let guild_id = guild_id.0;
         let config = check_res_msg!(get_config(ctx, &pool, guild_id));
 
@@ -85,7 +85,7 @@ command!(leavemsg(ctx, msg, args) {
 
     let message = args.rest().to_owned();
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let guild_id = guild_id.0;
         let config = check_res_msg!(get_config(ctx, &pool, guild_id));
 
@@ -128,7 +128,7 @@ command!(msg_channel(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(get_config(ctx, &pool, guild_id.0));

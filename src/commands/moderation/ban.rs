@@ -61,7 +61,7 @@ command!(ban(ctx, msg, args) {
 
     for u in users {
         // fetch the user for tag
-        let user = match UserId(u).get() {
+        let user = match UserId(u).to_user() {
             Ok(val) => val,
             Err(e) => {
                 let _ = write!(s, ":x: {} - Error: Failed to fetch user: {}\n", u, &e);
@@ -191,7 +191,7 @@ command!(unban(ctx, msg, args) {
 
     for u in users {
         // fetch the user for tag
-        let user = match UserId(u).get() {
+        let user = match UserId(u).to_user() {
             Ok(val) => val,
             Err(e) => {
                 let _ = write!(s, ":x: {} - Error: Failed to fetch user: {}\n", u, &e);

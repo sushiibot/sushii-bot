@@ -1,10 +1,13 @@
 use std::error::Error;
 use std::io::Read;
 use std::fmt::Write;
+use serenity::http;
 use serenity::utils::parse_channel;
 use serenity::model::id::ChannelId;
 use serenity::framework::standard::CommandError;
 use serenity::CACHE;
+use serde_json::map::Map;
+use serde_json::value::Value;
 use reqwest;
 use base64;
 
@@ -26,7 +29,7 @@ command!(quit(ctx, msg, _args) {
     close_handle.lock().shutdown_all();
 });
 
-command!(username(ctx, msg, args) {
+command!(username(_ctx, msg, args) {
     let name = match args.single::<String>() {
         Ok(val) => val,
         Err(_) => {
@@ -34,7 +37,11 @@ command!(username(ctx, msg, args) {
         },
     };
 
-    match ctx.edit_profile(|e| e.username(&name)) {
+    let mut m = Map::new();
+    let n = Value::String(name.clone());
+    m.insert("username".into(), n);
+
+    match http::edit_profile(&m) {
         Ok(_) => {
             let _ = msg.channel_id.say(&format!("Changed my username to {}", &name));
         },
@@ -134,7 +141,7 @@ command!(listservers(_ctx, msg, _args) {
     for guild in guilds.values() {
         let guild = guild.read();
 
-        let owner_tag = guild.owner_id.get().map(|x| x.tag()).unwrap_or_else(|_| "N/A".to_owned());
+        let owner_tag = guild.owner_id.to_user().map(|x| x.tag()).unwrap_or_else(|_| "N/A".to_owned());
 
         let _ = write!(s, "{} ({}) - Owner: {} ({}) - Members: {}\n", 
             guild.name, guild.id.0, owner_tag, guild.owner_id.0, guild.member_count);

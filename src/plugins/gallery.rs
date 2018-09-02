@@ -8,7 +8,7 @@ use std::fmt::Write;
 use std::collections::HashMap;
 
 pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
-    if msg.guild_id().is_none() {
+    if msg.guild_id.is_none() {
         return;
     }
 
