@@ -80,6 +80,9 @@ fn main() {
     dotenv().ok();
     env_logger::init().expect("Failed to initialize env_logger");
 
+    // let handler = handler::Modules::new()
+    //     .add_module(handler::TestEcho);
+
     let (framework, commands_list) = get_framework();
 
     let mut client =

@@ -216,6 +216,21 @@
                 "no_role_name": "Please give a role name.",
                 "no_role_found": "Couldn't find the role."
             }
+        },
+        "starboard": {
+            "info": {
+                "current_channel": "The sushiiboard is set to <#{}>.",
+                "updated_channel": "The sushiiboard is now set to <#{}>.",
+                "current_number": "The sushiiboard minimum reaction number is {}",
+                "updated_number": "The sushiiboard minimum reaction number is now set to {}.",
+                "current_emoji": "The sushiiboard emoji is {}",
+                "updated_emoji": "The sushiiboard emoji is now set to {}"
+            },
+            "error": {
+                "invalid_channel": "Invalid channel, please give a Discord channel to send starred messages.",
+                "failed_fetch": "Failed to fetch starboard, try this again?",
+                "failed_update": "Failed to save starboard, try this again?"
+            }
         }
     },
     "moderation": {

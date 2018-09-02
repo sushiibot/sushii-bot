@@ -261,6 +261,11 @@ impl EventHandler for Handler {
 
     fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         update_event(&ctx, "MESSAGE_REACTION_ADD");
+
+        exec_on_reaction_add!(
+            [&ctx, &reaction],
+            starboard
+        );
     }
 
     fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
@@ -271,7 +276,7 @@ impl EventHandler for Handler {
         update_event(&ctx, "MESSAGE_REACTION_REMOVE_ALL");
     }
 
-    fn message_update(&self, ctx: Context, old: Option<Message>, new: Message) {
+    fn message_update(&self, ctx: Context, _old: Option<Message>, new: Message) {
         exec_on_message_update!([&ctx, &new], message_log);
         update_event(&ctx, "MESSAGE_UPDATE");
     }
