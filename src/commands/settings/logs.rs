@@ -12,7 +12,7 @@ command!(modlog(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(get_config(ctx, &pool, guild_id.0));
@@ -38,7 +38,7 @@ command!(msglog(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(get_config(ctx, &pool, guild_id.0));
@@ -64,7 +64,7 @@ command!(memberlog(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/invalid_channel")));
     }
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let mut config = check_res_msg!(get_config(ctx, &pool, guild_id.0));

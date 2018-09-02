@@ -28,7 +28,7 @@ command!(rank(ctx, msg, args) {
         Err(_) => msg.author.id.0,
     };
 
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(guild) => guild.0,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
@@ -63,7 +63,7 @@ command!(rank(ctx, msg, args) {
 
     
 
-    let user = match UserId(id).get() {
+    let user = match UserId(id).to_user() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };
@@ -282,7 +282,7 @@ command!(rep(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/rep_self")));
     }
 
-    let target_user = match UserId(target).get() {
+    let target_user = match UserId(target).to_user() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };
@@ -343,7 +343,7 @@ command!(top_levels(ctx, msg, args) {
         }
     }
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         
         let top = pool.get_top_levels(guild_id.0);
 
@@ -447,7 +447,7 @@ command!(top_levels(ctx, msg, args) {
 command!(top_reps(ctx, msg, args) {
     let pool = get_pool(ctx);
 
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(val) => val.0,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
@@ -490,7 +490,7 @@ command!(top_reps(ctx, msg, args) {
 });
 
 command!(leaderboard(_ctx, msg, _args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let _ = msg.channel_id.say(&get_msg!("info/leaderboard", guild_id));
     } else {
         return Err(CommandError::from(get_msg!("error/no_guild")));

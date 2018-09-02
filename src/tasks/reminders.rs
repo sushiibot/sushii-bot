@@ -17,6 +17,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
     INIT.call_once(|| {
         thread::spawn(move || loop {
             let ten_sec = time::Duration::from_secs(10);
+            thread::sleep(ten_sec);
 
             if let Some(reminders) = pool.get_overdue_reminders() {
                 // loop through reminders
@@ -48,8 +49,6 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                     pool.remove_reminder(remind.id);
                 }
             }
-
-            thread::sleep(ten_sec);
         });
     });
 }

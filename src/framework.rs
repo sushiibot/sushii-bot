@@ -68,7 +68,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 let pool = get_pool(ctx);
 
                 // get guild id
-                if let Some(guild_id) = msg.guild_id() {
+                if let Some(guild_id) = msg.guild_id {
                     // get guild config prefix
                     if let Ok(config) = get_config(ctx, &pool, guild_id.0) {
                         return config.prefix;

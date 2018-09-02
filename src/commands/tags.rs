@@ -15,7 +15,7 @@ command!(tag_info(ctx, msg, args) {
         Err(_) => return Err(CommandError::from(get_msg!("tags/error/no_name_given"))),
     };
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let found_tag = match pool.get_tag(guild_id.0, &tag_name) {
@@ -23,7 +23,7 @@ command!(tag_info(ctx, msg, args) {
             None => return Err(CommandError::from(get_msg!("tags/error/not_found", tag_name))),
         };
 
-        let (user_tag, user_face) = match UserId(found_tag.owner_id as u64).get() {
+        let (user_tag, user_face) = match UserId(found_tag.owner_id as u64).to_user() {
             Ok(val) => {
                 (val.tag(), val.face())
             },
@@ -88,7 +88,7 @@ command!(tag_add(ctx, msg, args) {
     let pool = get_pool(ctx);
 
     // if in guild
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         // check if tag exists
         if pool.get_tag(guild_id.0, &tag_name).is_some() {
             // theres already a tag with this name found
@@ -104,7 +104,7 @@ command!(tag_add(ctx, msg, args) {
 });
 
 command!(tag_list(ctx, msg, _args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
         let tags = match pool.get_tags(guild_id.0) {
             Some(val) => val,
@@ -122,7 +122,8 @@ command!(tag_list(ctx, msg, _args) {
 	
 	    let dm = match msg.author.create_dm_channel() {
 	        Ok(val) => val,
-	        Err(_) => {
+	        Err(e) => {
+                warn_discord!(format!("[TAGS] Failed to send DM: {:?}", e));
 	            let _ = msg.channel_id.say(get_msg!("error/failed_dm"));
 	            return Ok(());
 	        }
@@ -144,7 +145,7 @@ command!(tag_list(ctx, msg, _args) {
 
 
 command!(tag_top(ctx, msg, _args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let top_tags = match pool.get_tags_top(guild_id.0) {
@@ -180,7 +181,7 @@ command!(tag_top(ctx, msg, _args) {
 });
 
 command!(tag_search(ctx, msg, args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let search = match args.single::<String>() {
             Ok(val) => val.to_lowercase(),
             Err(_) => return Err(CommandError::from(get_msg!("tags/error/no_search_given"))),
@@ -219,7 +220,7 @@ command!(tag_search(ctx, msg, args) {
 });
 
 command!(tag_delete(ctx, msg, args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let tag_name = match args.single::<String>() {
             Ok(val) => val.to_lowercase(),
             Err(_) => return Err(CommandError::from(get_msg!("tags/error/no_name_given"))),
@@ -250,7 +251,7 @@ command!(tag_delete(ctx, msg, args) {
 });
 
 command!(tag_rename(ctx, msg, args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let tag_name = match args.single::<String>() {
@@ -295,7 +296,7 @@ command!(tag_rename(ctx, msg, args) {
 });
 
 command!(tag_edit(ctx, msg, args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let tag_name = match args.single::<String>() {
@@ -337,7 +338,7 @@ command!(tag_edit(ctx, msg, args) {
 });
 
 command!(tag_random(ctx, msg, _args) {
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         let pool = get_pool(ctx);
 
         let found_tag = match pool.get_random_tag(guild_id.0) {
@@ -354,7 +355,7 @@ command!(tag_random(ctx, msg, _args) {
 });
 
 command!(tag_import(ctx, msg, args) {
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };

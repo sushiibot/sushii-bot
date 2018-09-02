@@ -37,7 +37,7 @@ command!(profile(ctx, msg, args) {
         Err(_) => "profile".to_owned(),
     };
 
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(guild) => guild.0,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
@@ -371,7 +371,7 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
 
     
 
-    let user = match UserId(id).get() {
+    let user = match UserId(id).to_user() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_get_user"))),
     };

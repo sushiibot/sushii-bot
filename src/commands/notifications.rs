@@ -20,7 +20,7 @@ command!(add_notification(ctx, msg, args) {
         keyword = keyword.replace("global ", "");
         0
     } else {
-        msg.guild_id().map_or(0, |x| x.0)
+        msg.guild_id.map_or(0, |x| x.0)
     };
 
     let pool = get_pool(ctx);
@@ -109,7 +109,7 @@ command!(list_notifications(ctx, msg, _args) {
 
     /*
 
-    if let Some(guild_id) = msg.guild_id() {
+    if let Some(guild_id) = msg.guild_id {
         // get the notifications in this server
         
         let notifications_server: Vec<&Notification> = notifications.iter().filter(|x| guild_id.0 == x.guild_id as u64).collect();
@@ -193,7 +193,7 @@ command!(delete_notification(ctx, msg, args) {
         0
     } else {
         // use guild id or if in DM, use global
-        msg.guild_id().map_or(0, |x| x.0)
+        msg.guild_id.map_or(0, |x| x.0)
     };
 
     let result = if is_keyword {

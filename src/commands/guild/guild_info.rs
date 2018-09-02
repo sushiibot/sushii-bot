@@ -8,7 +8,7 @@ command!(guild_info(_ctx, msg, _args) {
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
 
-    let owner_tag = match guild.owner_id.get() {
+    let owner_tag = match guild.owner_id.to_user() {
         Ok(val) => val.tag(),
         Err(_) => "N/A".into(),
     };

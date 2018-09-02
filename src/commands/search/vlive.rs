@@ -209,7 +209,7 @@ command!(vlive(_ctx, msg, args) {
 });
 
 command!(vlivenotif_add(ctx, msg, args) {
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
@@ -349,7 +349,7 @@ command!(vlivenotif_add(ctx, msg, args) {
 
 
 command!(vlivenotif_list(ctx, msg, _args) {
-    let guild_id = match msg.guild_id() {
+    let guild_id = match msg.guild_id {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("error/no_guild"))),
     };
