@@ -487,3 +487,47 @@ pub struct NewVliveChannel<'a> {
     pub mention_role: Option<i64>,
 }
 
+
+#[derive(Insertable, Queryable, AsChangeset, Clone, Debug)]
+#[table_name = "starboards"]
+pub struct Starboard {
+    pub guild_id: i64,
+    pub channel: i64,
+    pub emoji: String,
+    pub emoji_id: Option<i64>,
+    pub minimum: i32,
+}
+
+#[derive(Insertable, Debug)]
+#[table_name = "starboards"]
+pub struct NewStarboard<'a> {
+    pub guild_id: i64,
+    pub channel: i64,
+    pub emoji: &'a str,
+    pub emoji_id: Option<i64>,
+    pub minimum: i32,
+}
+
+#[derive(Insertable, Queryable, AsChangeset, Clone, Debug)]
+#[table_name = "starboarded"]
+pub struct StarredMessage {
+    pub orig_message_id: i64,
+    pub message_id: i64,
+    pub author_id: i64,
+    pub guild_id: i64,
+    pub channel_id: i64,
+    pub created: NaiveDateTime,
+    pub count: i64,
+}
+
+#[derive(Insertable, Debug)]
+#[table_name = "starboarded"]
+pub struct NewStarredMessage<'a> {
+    pub orig_message_id: i64,
+    pub message_id: i64,
+    pub author_id: i64,
+    pub guild_id: i64,
+    pub channel_id: i64,
+    pub created: &'a NaiveDateTime,
+    pub count: i64,
+}

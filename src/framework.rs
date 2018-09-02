@@ -49,8 +49,6 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         "wolframalpha",
         "wa",
         "trivia",
-        "starboard",
-        "sushiiboard",
     ];
 
     let default_cmd = Arc::new(CommandOptions::default());
@@ -289,6 +287,28 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             );
 
             add_command_group(&mut commands_list, g)
+        })
+        .group("Sushiiboard", |g| {
+            let g = g
+            .guild_only(true)
+            .required_permissions(Permissions::MANAGE_GUILD)
+            .command("sushiboard channel", |c| c
+                .batch_known_as(vec!["sushiiboard channel", "starboard channel"])
+                .desc("Sets the starboard channel")
+                .cmd(commands::guild::starboard::starboard_channel)
+            )
+            .command("sushiboard number", |c| c
+                .batch_known_as(vec!["sushiiboard number", "starboard number"])
+                .desc("Sets the starboard minimum reaction number")
+                .cmd(commands::guild::starboard::starboard_number)
+            )
+            .command("sushiboard emoji", |c| c
+                .batch_known_as(vec!["sushiiboard emoji", "starboard emoji"])
+                .desc("Sets the starboard emoji")
+                .cmd(commands::guild::starboard::starboard_emoji)
+            );
+            
+            add_command_group(&mut commands_list, g)            
         })
         .group("Moderation", |g| {
             let g = g

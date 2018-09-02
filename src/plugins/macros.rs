@@ -1,35 +1,57 @@
 /// macro to run multiple plugins in a loop
 macro_rules! exec_on_message {
     ( [$ctx:expr, $msg:expr], $( $plugin:ident ),* ) => {{
-            use utils::config::get_pool;
-            let pool = get_pool(&$ctx);
-    
-            $(
-                $plugin::on_message($ctx, &pool, $msg);
-            )*
-        }}
+        use utils::config::get_pool;
+        let pool = get_pool(&$ctx);
+
+        $(
+            $plugin::on_message($ctx, &pool, $msg);
+        )*
+    }}
 }
 
 macro_rules! exec_on_message_update {
     ( [$ctx:expr, $msg_update:expr], $( $plugin:ident ),* ) => {{
-            use utils::config::get_pool;
-            let pool = get_pool(&$ctx);
-    
-            $(
-                $plugin::on_message_update($ctx, &pool, $msg_update);
-            )*
-        }}
+        use utils::config::get_pool;
+        let pool = get_pool(&$ctx);
+
+        $(
+            $plugin::on_message_update($ctx, &pool, $msg_update);
+        )*
+    }}
 }
 
 macro_rules! exec_on_message_delete {
     ( [$ctx:expr, $channel_id:expr, $msg_id:expr], $( $plugin:ident ),* ) => {{
-            use utils::config::get_pool;
-            let pool = get_pool(&$ctx);
-    
-            $(
-                $plugin::on_message_delete($ctx, &pool, $channel_id, $msg_id);
-            )*
-        }}
+        use utils::config::get_pool;
+        let pool = get_pool(&$ctx);
+
+        $(
+            $plugin::on_message_delete($ctx, &pool, $channel_id, $msg_id);
+        )*
+    }}
+}
+
+macro_rules! exec_on_reaction_add {
+    ( [$ctx:expr, $reaction:expr], $( $plugin:ident ),* ) => {{
+        use utils::config::get_pool;
+        let pool = get_pool(&$ctx);
+
+        $(
+            $plugin::on_reaction_add($ctx, &pool, $reaction);
+        )*
+    }}
+}
+
+macro_rules! exec_on_reaction_remove {
+    ( [$ctx:expr, $reaction:expr], $( $plugin:ident ),* ) => {{
+        use utils::config::get_pool;
+        let pool = get_pool(&$ctx);
+
+        $(
+            $plugin::on_reaction_remove($ctx, &pool, $reaction);
+        )*
+    }}
 }
 
 macro_rules! exec_on_ready {
@@ -118,3 +140,5 @@ macro_rules! exec_on_guild_update {
         )*
     }
 }
+
+

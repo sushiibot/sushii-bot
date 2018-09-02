@@ -57,6 +57,12 @@ impl<'a> ChannelArg<'a> {
         self
     }
 
+    pub fn allow_external(mut self, should_allow: bool) -> Self {
+        self.allow_external = should_allow;
+
+        self
+    }
+
     /// Custom error message for invalid channels
     pub fn error(mut self, err: String) -> Self {
         self.err_invalid = err;

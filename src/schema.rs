@@ -153,6 +153,28 @@ table! {
 }
 
 table! {
+    starboarded (orig_message_id) {
+        orig_message_id -> Int8,
+        message_id -> Int8,
+        author_id -> Int8,
+        guild_id -> Int8,
+        channel_id -> Int8,
+        created -> Timestamp,
+        count -> Int8,
+    }
+}
+
+table! {
+    starboards (guild_id) {
+        guild_id -> Int8,
+        channel -> Int8,
+        emoji -> Text,
+        emoji_id -> Nullable<Int8>,
+        minimum -> Int4,
+    }
+}
+
+table! {
     stats (stat_name) {
         stat_name -> Text,
         count -> Int8,
@@ -226,6 +248,8 @@ allow_tables_to_appear_in_same_query!(
     mutes,
     notifications,
     reminders,
+    starboarded,
+    starboards,
     stats,
     tags,
     users,

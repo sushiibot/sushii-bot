@@ -1620,6 +1620,52 @@ impl ConnectionPool {
             .filter(channel_seq.eq(channel))
             .load(&conn)
     }
+
+    pub fn get_starboard(&self, id_guild: u64) -> Result<Starboard, Error> {
+        use schema::starboards::dsl::*;
+        let conn = self.connection();
+        
+        starboards
+            .filter(guild_id.eq(id_guild as i64))
+            .first(&conn)
+    }
+
+    pub fn update_starboard(&self, starboard: &Starboard) -> Result<usize, Error> {
+        use schema::starboards;
+        use schema::starboards::dsl::*;
+        let conn = self.connection();
+        
+        diesel::insert_into(starboards::table)
+            .values(starboard)
+            .on_conflict(guild_id)
+            .do_update()
+            .set(starboard)
+            .execute(&conn)
+    }
+    
+    pub fn get_starred_message(&self, msg: u64) -> Option<StarredMessage> {
+        use schema::starboarded::dsl::*;
+        let conn = self.connection();
+        
+        starboarded
+            .filter(orig_message_id.eq(msg as i64))
+            .first(&conn)
+            .ok()
+    }
+
+    pub fn update_starred_message(&self, starred_msg: &StarredMessage) -> Result<usize, Error> {
+        use schema::starboarded;
+        use schema::starboarded::dsl::*;
+        
+        let conn = self.connection();
+        
+        diesel::insert_into(starboarded::table)
+            .values(starred_msg)
+            .on_conflict(orig_message_id)
+            .do_update()
+            .set(starred_msg)
+            .execute(&conn)
+    }
 }
 
 

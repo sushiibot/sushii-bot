@@ -19,3 +19,4 @@ pub mod bot_game;
 pub mod db_cache;
 pub mod pinged;
 pub mod tags;
+pub mod starboard;
