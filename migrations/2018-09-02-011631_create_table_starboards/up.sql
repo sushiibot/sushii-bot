@@ -3,5 +3,5 @@ CREATE TABLE starboards (
     channel BIGINT NOT NULL,
     emoji TEXT NOT NULL DEFAULT '🍣',
     emoji_id BIGINT,
-    minimum INT NOT NULL DEFAULT 1
+    minimum INT NOT NULL DEFAULT 2
 )

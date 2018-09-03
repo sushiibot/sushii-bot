@@ -20,7 +20,7 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
         }
     };
 
-    // ignore bots
+    // ignore messages by bots
     if message.author.bot {
         return;
     }
@@ -40,10 +40,7 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
 
     let starboard = match pool.get_starboard(guild_id) {
         Ok(s) => s,
-        Err(e) => {
-            warn_discord!(format!("[STARBOARD] Failed to get starboard: {:?}", e));
-            return;
-        },
+        Err(e) => return, // silent return, don't want to error on reacts when some guilds don't have it set
     };
 
     // reaction doesn't match, some other emoji
@@ -57,7 +54,6 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
         },
         ReactionType::Unicode(ref emoji) => {
             if *emoji != starboard.emoji {
-                println!("Doesn't match");
                 return;
             }
         },
@@ -78,6 +74,10 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
                 return;
             }
         };
+    
+    if count < starboard.minimum as u64 {
+        return;
+    }
 
     let mut starred_message = match pool.get_starred_message(reaction.message_id.0) {
         Some(m) => m,
@@ -89,13 +89,20 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
                 guild_id: guild_id as i64,
                 channel_id: message.channel_id.0 as i64,
                 created: message.timestamp.naive_utc(),
-                count: count as i64,
+                count: 0,
             }
         }
     };
 
+    // no change, possibly same user removed and re-added so ignore
+    if starred_message.count == count as i64 && count != 0 {
+        return;
+    }
+
+    starred_message.count = count as i64;
+
     // starboard embed not sent yet
-    if starred_message.message_id == 0 && count >= starboard.minimum as u64 {
+    if starred_message.message_id == 0 {
         let sent_starred_message = match ChannelId(starboard.channel as u64).send_message(|m| m
             .embed(|e| {
                 let mut e = e
@@ -106,6 +113,17 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
                 .color(0xffc938)
                 .description(&message.content)
                 .timestamp(message.timestamp.format("%Y-%m-%dT%H:%M:%S").to_string())
+                .field(
+                    "\u{200B}",
+                    &format!(
+                        "<#{}> ([Jump to message](http://discordapp.com/channels/{}/{}/{}))", // guild, channel, message
+                        message.channel_id.0,
+                        starboard.guild_id,
+                        message.channel_id.0,
+                        message.id.0,
+                    ),
+                    true
+                )
                 .footer(|f| f
                     .text(&format!("{} {}", starboard.emoji, starred_message.count))
                 );
@@ -133,7 +151,7 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
         starred_message.message_id = sent_starred_message.id.0 as i64;
     } else {
         // already an embed sent, edit previous one
-        let mut message = match ChannelId(starboard.channel as u64).message(starred_message.orig_message_id as u64) {
+        let mut message = match ChannelId(starboard.channel as u64).message(starred_message.message_id as u64) {
             Ok(msg) => msg,
             Err(e) => {
                 warn_discord!(format!("[STARBOARD] Failed to fetch starred message: {:?}", e));
@@ -146,14 +164,14 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
             None => return, // shouldn't really be empty but oh well?
         };
 
-        // edit author
+        // edit star count
         embed.footer = Some(EmbedFooter {
             text: format!("{} {}", starboard.emoji, starred_message.count),
             icon_url: None,
             proxy_icon_url: None,
         });
 
-        // edit the case message embed
+        // edit the starboarded message embed
         let _ = message.edit(|m| m.embed(|_| CreateEmbed::from(embed.clone())));
     }
 
