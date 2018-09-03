@@ -9,19 +9,7 @@ use database::ConnectionPool;
 
 
 pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reaction) {
-    let message = match reaction.message() {
-        Ok(m) => m,
-        Err(e) => {
-            warn_discord!(format!("[STARBOARD] Failed to fetch reaction message: {:?}", e));
-            return;
-        }
-    };
-
-    // ignore messages by bots
-    if message.author.bot {
-        return;
-    }
-
+    // checks cache first, so minimal api requests
     let guild_id = match reaction.channel_id
         .to_channel()
         .ok()
@@ -35,10 +23,24 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
         None => return,
     };
 
+    // get starboard, db call cheaper than rest api call to get message
     let starboard = match pool.get_starboard(guild_id) {
         Ok(s) => s,
         Err(_) => return, // silent return, don't want to error on reacts when some guilds don't have it set
     };
+
+    let message = match reaction.message() {
+        Ok(m) => m,
+        Err(e) => {
+            warn_discord!(format!("[STARBOARD] Failed to fetch reaction message: {:?}", e));
+            return;
+        }
+    };
+
+    // ignore messages by bots
+    if message.author.bot {
+        return;
+    }
 
     // reaction doesn't match, some other emoji
     match reaction.emoji {
