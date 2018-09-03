@@ -47,6 +47,8 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
                 if id.0 as i64 != emoji_id {
                     return;
                 }
+            } else {
+                return;
             }
         },
         ReactionType::Unicode(ref emoji) => {
