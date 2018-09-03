@@ -268,7 +268,7 @@ impl EventHandler for Handler {
         );
     }
 
-    fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
+    fn reaction_remove(&self, ctx: Context, _reaction: Reaction) {
         update_event(&ctx, "MESSAGE_REACTION_REMOVE");
     }
 

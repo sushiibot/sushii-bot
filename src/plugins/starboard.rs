@@ -1,21 +1,18 @@
-use serenity::model::channel::Message;
 use serenity::model::channel::Reaction;
 use serenity::model::channel::ReactionType;
 use serenity::model::channel::EmbedFooter;
 use serenity::builder::CreateEmbed;
 use serenity::model::id::ChannelId;
 use serenity::prelude::Context;
-use models::Starboard;
 use models::StarredMessage;
-use models::NewStarredMessage;
 use database::ConnectionPool;
 
 
-pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction) {
+pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reaction) {
     let message = match reaction.message() {
         Ok(m) => m,
         Err(e) => {
-            warn_discord!("[STARBOARD] Failed to fetch reaction message");
+            warn_discord!(format!("[STARBOARD] Failed to fetch reaction message: {:?}", e));
             return;
         }
     };
@@ -40,12 +37,12 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
 
     let starboard = match pool.get_starboard(guild_id) {
         Ok(s) => s,
-        Err(e) => return, // silent return, don't want to error on reacts when some guilds don't have it set
+        Err(_) => return, // silent return, don't want to error on reacts when some guilds don't have it set
     };
 
     // reaction doesn't match, some other emoji
     match reaction.emoji {
-        ReactionType::Custom {animated, id, ref name} => {
+        ReactionType::Custom {id, ..} => {
             if let Some(emoji_id) = starboard.emoji_id {
                 if id.0 as i64 != emoji_id {
                     return;
@@ -63,7 +60,7 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
         .iter()
         .find(|reaction| {
             match reaction.reaction_type {
-                ReactionType::Custom {animated, id, ref name} => id.0 == starboard.emoji_id.unwrap_or(0) as u64,
+                ReactionType::Custom {id, ..} => id.0 == starboard.emoji_id.unwrap_or(0) as u64,
                 ReactionType::Unicode(ref emoji) => *emoji == starboard.emoji,
             }
         })
@@ -180,6 +177,8 @@ pub fn on_reaction_add(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction
     }
 }
 
+/*
 pub fn on_reaction_remove(ctx: &Context, pool: &ConnectionPool, reaction: &Reaction) {
 
 }
+*/
