@@ -32,7 +32,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 .read()
                 .guild_channel(msg.channel_id) {
                     Some(c) => c,
-                    None => continue,
+                    None => return, // return ok here, in dms
                 };
             
             let channel_name = channel.read().name.clone();
@@ -52,7 +52,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 .read()
                 .guild(guild_id) {
                     Some(g) => g,
-                    None => continue,
+                    None => return, // return ok here too, in dms
                 };
             
             let guild_name = guild.read().name.clone();
