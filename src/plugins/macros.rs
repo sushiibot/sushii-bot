@@ -43,6 +43,7 @@ macro_rules! exec_on_reaction_add {
     }}
 }
 
+/*
 macro_rules! exec_on_reaction_remove {
     ( [$ctx:expr, $reaction:expr], $( $plugin:ident ),* ) => {{
         use utils::config::get_pool;
@@ -53,6 +54,7 @@ macro_rules! exec_on_reaction_remove {
         )*
     }}
 }
+*/
 
 macro_rules! exec_on_ready {
     ( [$ctx:expr, $ready:expr], $( $plugin:ident ),* ) => {
