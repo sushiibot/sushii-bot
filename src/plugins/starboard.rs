@@ -1,6 +1,5 @@
 use serenity::model::channel::Reaction;
 use serenity::model::channel::ReactionType;
-use serenity::model::channel::EmbedFooter;
 use serenity::builder::CreateEmbed;
 use serenity::model::id::ChannelId;
 use serenity::prelude::Context;
@@ -115,18 +114,18 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
                 .description(&message.content)
                 .timestamp(message.timestamp.format("%Y-%m-%dT%H:%M:%S").to_string())
                 .field(
-                    "\u{200B}",
+                    "\u{200B}", // zws
                     &format!(
-                        "<#{}> ([Jump to message](http://discordapp.com/channels/{}/{}/{}))", // guild, channel, message
-                        message.channel_id.0,
+                        "{} {} <#{}> [[Jump to message](http://discordapp.com/channels/{}/{}/{})]", // guild, channel, message
+                        starboard.emoji, starred_message.count, // emoji, count
+
+                        message.channel_id.0, // channel mention
+
                         starboard.guild_id,
                         message.channel_id.0,
                         message.id.0,
                     ),
                     true
-                )
-                .footer(|f| f
-                    .text(&format!("{} {}", starboard.emoji, starred_message.count))
                 );
 
                 if !message.attachments.is_empty() {
@@ -152,7 +151,7 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
         starred_message.message_id = sent_starred_message.id.0 as i64;
     } else {
         // already an embed sent, edit previous one
-        let mut message = match ChannelId(starboard.channel as u64).message(starred_message.message_id as u64) {
+        let mut starboard_message = match ChannelId(starboard.channel as u64).message(starred_message.message_id as u64) {
             Ok(msg) => msg,
             Err(e) => {
                 warn_discord!(format!("[STARBOARD] Failed to fetch starred message: {:?}", e));
@@ -160,22 +159,41 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
             }
         };
 
-        let mut embed = match message.embeds.get(0) {
+        let mut embed = match starboard_message.embeds.get(0) {
             Some(val) => val.clone(),
             None => return, // shouldn't really be empty but oh well?
         };
 
-        // edit star count
+        // edit star count in footer
+        /*
         embed.footer = Some(EmbedFooter {
             text: format!("{} {}", starboard.emoji, starred_message.count),
             icon_url: None,
             proxy_icon_url: None,
         });
+        */
+
+        // edit star count in field
+        if let Some(field) = embed.fields.first_mut() {
+            field.value = format!(
+                "{} {} <#{}> [[Jump to message](http://discordapp.com/channels/{}/{}/{})]", // guild, channel, message
+                starboard.emoji, starred_message.count, // emoji, count
+
+                message.channel_id.0, // channel mention
+
+                starboard.guild_id,
+                message.channel_id.0,
+                message.id.0,
+            );
+        }
 
         // edit the starboarded message embed
-        let _ = message.edit(|m| m.embed(|_| CreateEmbed::from(embed.clone())));
+        let _ = starboard_message.edit(|m| m.embed(|_| CreateEmbed::from(embed.clone())));
     }
 
+    // TODO: fix "race" condition here, in case fast reacts, starboard message won't be saved in the > min reacts
+    // sends duplicate starboard messages but newest works fine. 
+    // Can't just move to before embed send since it needs the embed message ID
     if let Err(e) = pool.update_starred_message(&starred_message) {
         warn_discord!(format!("[STARBOARD] Failed to update starred message: {:?}", e));
     }
