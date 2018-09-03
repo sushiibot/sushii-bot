@@ -534,6 +534,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         .group("Reminders", |g| {
             let g = g
             .command("remind me", |c| c
+                .batch_known_as(vec!["remind", "remindme", "reminder"])
                 .usage("(in) [time] (to) [description]")
                 .desc("Reminds you to do something after some time.")
                 .cmd(commands::misc::reminder)
