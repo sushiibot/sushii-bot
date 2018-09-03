@@ -28,49 +28,48 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 continue;
             }
 
-            let guild_name;
-            let channel_name;
-
-            {
-                let cache = CACHE.read();
-
-                // check if in channel / guild that the user doesn't belong in 
-                let channel = match cache.guild_channel(msg.channel_id) {
-                    Some(channel) => channel,
-                    None => return,
+            let channel = match CACHE
+                .read()
+                .guild_channel(msg.channel_id) {
+                    Some(c) => c,
+                    None => continue,
                 };
+            
+            let channel_name = channel.read().name.clone();
 
-                let channel = channel.read();
-
-                channel_name = channel.name.clone();
-
-                let permissions = match channel.permissions_for(notification.user_id as u64) {
-                    Ok(perms) => perms,
-                    Err(_) => return,
+            // check if can read channel
+            if !channel
+                .read()
+                .permissions_for(notification.user_id as u64)
+                .map(|permissions| permissions
+                    .read_messages()
+                )
+                .unwrap_or(false) {
+                    continue;
+                }
+            
+            let guild = match CACHE
+                .read()
+                .guild(guild_id) {
+                    Some(g) => g,
+                    None => continue,
                 };
+            
+            let guild_name = guild.read().name.clone();
 
-                // check if user can read messages
-                if !permissions.read_messages() {
-                    return;
+            // check if in guild
+            if !guild
+                .read()
+                .members
+                .contains_key(&UserId(notification.user_id as u64)) {
+                    continue;
                 }
-
-                // check if user is in guild
-                if let Some(guild) = cache.guild(guild_id) {
-                    let guild = guild.read();
-                    guild_name = guild.name.clone();
-                    if !guild.members.contains_key(&UserId(notification.user_id as u64)) {
-                        return;
-                    }
-                } else {
-                    return;
-                }
-            }
 
 
             let lowered = msg.content.to_lowercase();
 
             if is_mid_word(&lowered, &notification.keyword) {
-                return;
+                continue; // should be continue not return to not skip other notifications
             }
 
             // message user
