@@ -126,7 +126,7 @@ command!(reminder(ctx, msg, args) {
         0
     };
 
-    let reminder_content = if let Some(pos) = full_msg.rfind("to ") {
+    let reminder_content = if let Some(pos) = full_msg.find("to ") {
         &full_msg[pos + 3..]
     } else if end_pos == 0 {
         return Err(CommandError::from(get_msg!("error/invalid_reminder")));
