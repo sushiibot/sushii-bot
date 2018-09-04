@@ -126,6 +126,9 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
                         message.id.0,
                     ),
                     true
+                )
+                .footer(|f| f
+                    .text(&format!("ID {}", message.id.0))
                 );
 
                 if !message.attachments.is_empty() {
