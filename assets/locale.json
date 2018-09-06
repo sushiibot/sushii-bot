@@ -148,6 +148,7 @@
         "fishy_bot": "Bots don't need fishies silly.",
 
         "reminder_not_given": "Give me something to remind you with.",
+        "reminder_too_far": "Reminder too far in the future (max 1 year).  Sorry.",
 
         "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
 

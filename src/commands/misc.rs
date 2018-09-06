@@ -147,6 +147,10 @@ command!(reminder(ctx, msg, args) {
         return Err(CommandError("Reminder must be at least 5 seconds from now".to_owned()));
     }
 
+    if offset.num_days() > 365 {
+        return Err(CommandError::from(get_msg!("error/reminder_too_far")));
+    }
+
     if reminder_content.is_empty() {
         return Err(CommandError::from(get_msg!("error/reminder_not_given")))
     }
