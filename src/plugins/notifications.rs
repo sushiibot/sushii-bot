@@ -124,7 +124,16 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                                 false);
                         }
 
-                        e
+                        e.field(
+                            "\u{200B}", // zws
+                            &format!(
+                                "Jump to message:\nhttp://discordapp.com/channels/{}/{}/{}", // guild, channel, message
+                                guild_id,
+                                msg.channel_id.0,
+                                msg.id.0,
+                            ),
+                            true
+                        )
                     })
                 );
 
