@@ -12,14 +12,14 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     pool.log_message(msg);
 }
 
-pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Message) {
-    if msg_update.author.bot {
+pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, _old: &Option<Message>, new: &Message) {
+    if new.author.bot {
         return;
     }
 
     // get server config
 
-    let msg = match pool.get_message(msg_update.id.0) {
+    let msg = match pool.get_message(new.id.0) {
         Some(m) => m,
         None => return,
     };
@@ -34,7 +34,7 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
     };
 
     // ignore some lazy load or embed change
-    if msg_update.content == msg.content {
+    if new.content == msg.content {
         return;
     }
 
@@ -58,7 +58,7 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
                 )
                 .colour(0x9b59b6)
                 .field("Old", &msg.content, false)
-                .field("New", &msg_update.content, false)
+                .field("New", &new.content, false)
                 .field("Channel", &format!("<#{}>", msg.channel), false)
                 .footer(|f| f
                     .text("Edited at")
@@ -69,7 +69,7 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, msg_update: &Mess
     }
 
     // update database when message is edited
-    pool.update_message(msg_update.id.0, &msg_update.content);
+    pool.update_message(new.id.0, &new.content);
 }
 
 pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &ChannelId, msg_id: &MessageId) {
