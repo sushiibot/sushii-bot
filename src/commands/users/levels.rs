@@ -489,7 +489,14 @@ command!(top_reps(ctx, msg, args) {
     }
 });
 
-command!(leaderboard(_ctx, msg, _args) {
+command!(leaderboard(_ctx, msg, args) {
+    if let Ok(arg) = args.single::<String>() {
+        if arg == "global" {
+            let _ = msg.channel_id.say(&get_msg!("info/leaderboard_global"));
+            return Ok(());
+        }
+    }
+
     if let Some(guild_id) = msg.guild_id {
         let _ = msg.channel_id.say(&get_msg!("info/leaderboard", guild_id));
     } else {

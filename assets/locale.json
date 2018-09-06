@@ -84,6 +84,7 @@
         "rank_set_leveldarkness": "Your level level darkness has been updated.",
 
         "leaderboard": "You can find the leaderboard here: <https://sushii.xyz/leaderboard/{}>",
+        "leaderboard_global": "You can find the global leaderboard here: <https://sushii.xyz/leaderboard>",
         "setting_cleared": "Cleared setting: {}"
     },
     "error": {
