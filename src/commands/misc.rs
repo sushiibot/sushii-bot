@@ -7,7 +7,7 @@ use serde_json::value::Value;
 
 use chrono::{DateTime, Utc, Duration};
 use chrono_humanize::HumanTime;
-use database;
+use utils::config::get_pool;
 
 #[derive(Deserialize)]
 struct Response {
@@ -68,6 +68,15 @@ command!(reminder(ctx, msg, args) {
 
     if full_msg.is_empty() {
         return Err(CommandError::from(get_msg!("error/no_reminder_given")));
+    }
+
+    let pool = get_pool(ctx);
+    let current_reminders = pool.get_reminders(msg.author.id.0);
+
+    if let Some(curr_reminders) = current_reminders {
+        if curr_reminders.len() > 200 {
+            return Err(CommandError::from(get_msg!("error/reminder_too_many"))); 
+        }
     }
 
     let mut end_pos = 0;
@@ -155,10 +164,6 @@ command!(reminder(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/reminder_not_given")))
     }
 
-    // throw reminder into the database
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
-
     pool.add_reminder(msg.author.id.0, reminder_content, &remind_date);
 
     let now = now.naive_utc();
@@ -174,8 +179,7 @@ command!(reminder(ctx, msg, args) {
 
 command!(reminders(ctx, msg, _args) {
     // throw reminder into the database
-    let mut data = ctx.data.lock();
-    let pool = data.get_mut::<database::ConnectionPool>().unwrap();
+    let pool = get_pool(ctx);
 
     let current_reminders = pool.get_reminders(msg.author.id.0);
 
