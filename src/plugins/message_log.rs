@@ -1,4 +1,5 @@
 use serenity::model::channel::Message;
+use serenity::model::event::MessageUpdateEvent;
 use serenity::model::id::ChannelId;
 use serenity::model::id::MessageId;
 use serenity::model::id::UserId;
@@ -12,14 +13,11 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     pool.log_message(msg);
 }
 
-pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, _old: &Option<Message>, new: &Message) {
-    if new.author.bot {
-        return;
-    }
-
+pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, _old: &Option<Message>,
+    _new: &Option<Message>, event: &MessageUpdateEvent) {
     // get server config
 
-    let msg = match pool.get_message(new.id.0) {
+    let msg = match pool.get_message(event.id.0) {
         Some(m) => m,
         None => return,
     };
@@ -33,8 +31,13 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, _old: &Option<Mes
         None => return,
     };
 
+    let content = match event.content {
+        Some(ref c) => c.clone(),
+        None => return,
+    };
+
     // ignore some lazy load or embed change
-    if new.content == msg.content {
+    if content == msg.content {
         return;
     }
 
@@ -58,7 +61,7 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, _old: &Option<Mes
                 )
                 .colour(0x9b59b6)
                 .field("Old", &msg.content, false)
-                .field("New", &new.content, false)
+                .field("New", &content, false)
                 .field("Channel", &format!("<#{}>", msg.channel), false)
                 .footer(|f| f
                     .text("Edited at")
@@ -69,7 +72,7 @@ pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, _old: &Option<Mes
     }
 
     // update database when message is edited
-    pool.update_message(new.id.0, &new.content);
+    pool.update_message(event.id.0, &content);
 }
 
 pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &ChannelId, msg_id: &MessageId) {

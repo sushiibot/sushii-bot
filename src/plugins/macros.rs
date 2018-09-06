@@ -11,12 +11,12 @@ macro_rules! exec_on_message {
 }
 
 macro_rules! exec_on_message_update {
-    ( [$ctx:expr, $old:expr, $new:expr], $( $plugin:ident ),* ) => {{
+    ( [$ctx:expr, $old:expr, $new:expr, $event:expr], $( $plugin:ident ),* ) => {{
         use utils::config::get_pool;
         let pool = get_pool(&$ctx);
 
         $(
-            $plugin::on_message_update($ctx, &pool, $old, $new);
+            $plugin::on_message_update($ctx, &pool, $old, $new, $event);
         )*
     }}
 }
