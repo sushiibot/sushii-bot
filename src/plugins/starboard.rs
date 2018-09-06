@@ -116,7 +116,7 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
                 .field(
                     "\u{200B}", // zws
                     &format!(
-                        "{} {} <#{}>\n[Jump to message] http://discordapp.com/channels/{}/{}/{}", // guild, channel, message
+                        "{} {} <#{}> Jump to message:\nhttp://discordapp.com/channels/{}/{}/{}", // guild, channel, message
                         starboard.emoji, starred_message.count, // emoji, count
 
                         message.channel_id.0, // channel mention
@@ -179,7 +179,7 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
         // edit star count in field
         if let Some(field) = embed.fields.first_mut() {
             field.value = format!(
-                "{} {} <#{}> [[Jump to message](http://discordapp.com/channels/{}/{}/{})]", // guild, channel, message
+                "{} {} <#{}> Jump to message:\nhttp://discordapp.com/channels/{}/{}/{}", // guild, channel, message
                 starboard.emoji, starred_message.count, // emoji, count
 
                 message.channel_id.0, // channel mention
