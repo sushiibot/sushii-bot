@@ -64,6 +64,7 @@ mod database;
 mod framework;
 mod keys;
 
+use serenity::CACHE;
 use serenity::prelude::*;
 use chrono::Utc;
 use std::{
@@ -79,9 +80,6 @@ use keys::*;
 fn main() {
     dotenv().ok();
     env_logger::init().expect("Failed to initialize env_logger");
-
-    // let handler = handler::Modules::new()
-    //     .add_module(handler::TestEcho);
 
     let (framework, commands_list) = get_framework();
 
@@ -105,6 +103,7 @@ fn main() {
     client.with_framework(framework);
 
     client.threadpool.set_num_threads(10);
+    CACHE.write().settings_mut().max_messages(5);
 
     if let Err(why) = client.start() {
         error!("Client error: {:?}", why);
