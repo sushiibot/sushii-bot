@@ -149,6 +149,7 @@
 
         "reminder_not_given": "Give me something to remind you with.",
         "reminder_too_far": "Reminder too far in the future (max 1 year).  Sorry.",
+        "reminder_too_many": "You have too many reminders. (max 200)",
 
         "gallery_failed_delete": "Failed to delete gallery, make sure you have a correct gallery ID.",
 
