@@ -83,7 +83,7 @@ command!(reminder(ctx, msg, args) {
 
     lazy_static!{
         static ref RE_D: Regex = Regex::new(r"(\d+)\s*d(\b|ays?)\w*").unwrap();
-        static ref RE_H: Regex = Regex::new(r"(\d+)\s*h(\b|ours?)\w*").unwrap();
+        static ref RE_H: Regex = Regex::new(r"(\d+)\s*h(\b|(ou)?rs?)\w*").unwrap();
         static ref RE_M: Regex = Regex::new(r"(\d+)\s*m(\b|in(ute)?s?)\w*").unwrap();
         static ref RE_S: Regex = Regex::new(r"(\d+)\s*s(\b|ec(ond)?s?)\w*").unwrap();
     }
