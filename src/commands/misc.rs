@@ -72,59 +72,59 @@ command!(reminder(ctx, msg, args) {
 
     let mut end_pos = 0;
 
+    lazy_static!{
+        static ref RE_D: Regex = Regex::new(r"(\d+)\s*d(\b|ays?)\w*").unwrap();
+        static ref RE_H: Regex = Regex::new(r"(\d+)\s*h(\b|ours?)\w*").unwrap();
+        static ref RE_M: Regex = Regex::new(r"(\d+)\s*m(\b|in(ute)?s?)\w*").unwrap();
+        static ref RE_S: Regex = Regex::new(r"(\d+)\s*s(\b|ec(ond)?s?)\w*").unwrap();
+    }
+
     // parse durations for each
-    let re = Regex::new(r"(\d+)\s*d\w*").unwrap();
-    let day = if let Some(caps) = re.captures(&full_msg) {
+    let day = if let Some(caps) = RE_D.captures(&full_msg) {
         end_pos = caps.get(0).unwrap().end();
         
-        let start = caps.get(1).unwrap().start();
-        let end = caps.get(1).unwrap().end();
-        full_msg[start..end].parse::<i64>().unwrap()
+        caps.get(1).unwrap().as_str().parse::<i64>().unwrap()
     } else {
         0
     };
     
-    let re = Regex::new(r"(\d+)\s*h\w*").unwrap();
-    let hour = if let Some(caps) = re.captures(&full_msg){
+    let hour = if let Some(caps) = RE_H.captures(&full_msg){
         let caps_full_end = caps.get(0).unwrap().end();
         if caps_full_end > end_pos {
             end_pos = caps_full_end
         }
 
-        let start = caps.get(1).unwrap().start();
-        let end = caps.get(1).unwrap().end();
-        full_msg[start..end].parse::<i64>().unwrap()
+        caps.get(1).unwrap().as_str().parse::<i64>().unwrap()
     } else {
         0
     };
     
-    let re = Regex::new(r"(\d+)\s*m\w*").unwrap();
-    let min = if let Some(caps) = re.captures(&full_msg) {
+    let min = if let Some(caps) = RE_M.captures(&full_msg) {
         let caps_full_end = caps.get(0).unwrap().end();
         if caps_full_end > end_pos {
             end_pos = caps_full_end
         }
 
-        let start = caps.get(1).unwrap().start();
-        let end = caps.get(1).unwrap().end();
-        full_msg[start..end].parse::<i64>().unwrap()
+        caps.get(1).unwrap().as_str().parse::<i64>().unwrap()
     } else {
         0
     };
     
-    let re = Regex::new(r"(\d+)\s*s\w*").unwrap();
-    let sec = if let Some(caps) = re.captures(&full_msg) {
+    let sec = if let Some(caps) = RE_S.captures(&full_msg) {
         let caps_full_end = caps.get(0).unwrap().end();
         if caps_full_end > end_pos {
             end_pos = caps_full_end
         }
 
-        let start = caps.get(1).unwrap().start();
-        let end = caps.get(1).unwrap().end();
-        full_msg[start..end].parse::<i64>().unwrap()
+        caps.get(1).unwrap().as_str().parse::<i64>().unwrap()
     } else {
         0
     };
+
+    // check if time is given
+    if day == 0 && hour == 0 && min == 0 && sec == 0 {
+        return Err(CommandError::from(get_msg!("error/no_reminder_time_given")));
+    }
 
     let reminder_content = if let Some(pos) = full_msg.find("to ") {
         &full_msg[pos + 3..]

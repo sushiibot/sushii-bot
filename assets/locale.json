@@ -95,6 +95,7 @@
         "no_user_given": "Please give a user id or mention.",
         "no_webhook_given": "Please give a webhook url.",
         "no_reminder_given": "Please give a time and reminder.",
+        "no_reminder_time_given": "Please give a valid reminder time.",
         "no_url_or_attachment_given": "Please give a url or attachment.",
         "no_patron_emoji_given": "Please give a patron emoji.",
         "no_urban_word_given": "Please give a word to look up",
