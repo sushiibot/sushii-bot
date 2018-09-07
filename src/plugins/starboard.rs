@@ -104,6 +104,12 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
     // starboard embed not sent yet
     if starred_message.message_id == 0 {
         let sent_starred_message = match ChannelId(starboard.channel as u64).send_message(|m| m
+            .content(&format!(
+                "http://discordapp.com/channels/{}/{}/{}\n(Jump to message)", // guild, channel, message
+                starboard.guild_id,
+                message.channel_id.0,
+                message.id.0,
+            ))
             .embed(|e| {
                 let mut e = e
                 .author(|a| a
@@ -116,14 +122,9 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
                 .field(
                     "\u{200B}", // zws
                     &format!(
-                        "{} {} <#{}> Jump to message:\nhttp://discordapp.com/channels/{}/{}/{}", // guild, channel, message
+                        "{} {} <#{}>", 
                         starboard.emoji, starred_message.count, // emoji, count
-
                         message.channel_id.0, // channel mention
-
-                        starboard.guild_id,
-                        message.channel_id.0,
-                        message.id.0,
                     ),
                     true
                 )
@@ -179,14 +180,9 @@ pub fn on_reaction_add(_ctx: &Context, pool: &ConnectionPool, reaction: &Reactio
         // edit star count in field
         if let Some(field) = embed.fields.first_mut() {
             field.value = format!(
-                "{} {} <#{}> Jump to message:\nhttp://discordapp.com/channels/{}/{}/{}", // guild, channel, message
+                "{} {} <#{}>", // guild, channel, message
                 starboard.emoji, starred_message.count, // emoji, count
-
                 message.channel_id.0, // channel mention
-
-                starboard.guild_id,
-                message.channel_id.0,
-                message.id.0,
             );
         }
 
