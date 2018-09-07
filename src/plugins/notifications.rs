@@ -83,7 +83,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                 let mut messages = pool.get_messages(msg.channel_id.0, 3);
 
 
-                let _ = channel.id.send_message(|m| m
+                let sent_msg = channel.id.send_message(|m| m
                     .embed(|e| {
                         let mut e = e.color(0xf58b28)
                         .description(desc)
@@ -124,18 +124,20 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                                 false);
                         }
 
-                        e.field(
-                            "\u{200B}", // zws
-                            &format!(
-                                "Jump to message:\nhttp://discordapp.com/channels/{}/{}/{}", // guild, channel, message
-                                guild_id,
-                                msg.channel_id.0,
-                                msg.id.0,
-                            ),
-                            true
-                        )
+                        e
                     })
                 );
+
+                if let Ok(mut sent_msg) = sent_msg {
+                    let _ = sent_msg.edit(|m| m
+                        .content(&format!(
+                            "http://discordapp.com/channels/{}/{}/{}\n(Jump to message)", // guild, channel, message
+                            guild_id,
+                            msg.channel_id.0,
+                            msg.id.0,
+                        ))
+                    );
+                }
 
                 pool.update_stat("notifications", "notifications_triggered", Some(1), None);
             } else {
