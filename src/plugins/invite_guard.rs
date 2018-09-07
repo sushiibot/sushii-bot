@@ -8,12 +8,10 @@ use utils::config::get_config;
 
 pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     if let Some(guild) = msg.guild() {
-        let guild = guild.read();
-
         let current_user_id = CACHE.read().user.id;
 
         // return if bot doesn't have delete perms
-        if !guild.member_permissions(current_user_id).manage_messages() {
+        if !guild.read().member_permissions(current_user_id).manage_messages() {
             return;
         }
 
@@ -23,7 +21,7 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         }
 
         // check the guild config if inviteguard is enabled
-        let invite_guard = match check_res!(get_config(ctx, pool, guild.id.0)).invite_guard {
+        let invite_guard = match check_res!(get_config(ctx, pool, guild.read().id.0)).invite_guard {
             Some(val) => val,
             None => return,
         };
@@ -34,7 +32,7 @@ pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
             }
 
             // allow those with perms to bypass
-            if guild.member_permissions(msg.author.id).manage_guild() {
+            if guild.read().member_permissions(msg.author.id).manage_guild() {
                 return;
             }
 
