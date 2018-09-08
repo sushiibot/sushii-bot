@@ -232,16 +232,17 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
         .group("Notifications", |g| {
             let g = g
             .command("notification add", |c| c
+                .known_as("notif add")
                 .desc("Adds a notification.")
                 .cmd(commands::notifications::add_notification)
             )
             .command("notification list", |c| c
-                .known_as("notifications")
+                .batch_known_as(vec!["notifications", "notifs"])
                 .desc("Lists your set notifications")
                 .cmd(commands::notifications::list_notifications)
             )
             .command("notification delete", |c| c
-                .known_as("notification remove")
+                .batch_known_as(vec!["notification remove", "notif remove"])
                 .desc("Deletes a notification")
                 .cmd(commands::notifications::delete_notification)
             );
