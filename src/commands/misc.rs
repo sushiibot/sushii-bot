@@ -53,6 +53,10 @@ command!(play(_ctx, msg, args) {
             let mut clean = res_obj.stdout.replace("@", "@\u{200B}"); // add zws to possible mentions
             clean = clean.replace("`", "'");                          // replace comment ticks to single quotes
 
+            if clean.len() > 2000 {
+                return Err(CommandError::from("Output too long."));
+            }
+
             let _ = msg.channel_id.say(format!("```rust\n{}\n{}\n```", res_obj.stderr, clean));
         },
         Err(e) => {
