@@ -67,6 +67,13 @@ impl ConnectionPool {
         self.pool.get().unwrap()
     }
 
+    pub fn ping(&self) -> bool {
+        let conn = self.connection();
+        
+        return diesel::sql_query(r#"SELECT 1"#)
+            .execute(&conn).is_ok();
+    }
+
     /// Creates a new config for a guild,
     /// ie when the bot joins a new guild.
     pub fn new_guild(&self, guild_id: u64) -> Result<GuildConfig, Error> {
@@ -1572,17 +1579,17 @@ impl ConnectionPool {
     }
 
     /// Delete a vlive channel / discord channel
-    pub fn delete_vlive_channel(&self, vlive_channel: i32, discord_chan: u64) -> Result<(), Error> {
+    pub fn delete_vlive_channel(&self, vlive_channel: i32, discord_chan: u64) -> Result<usize, Error> {
         use schema::vlive_channels::dsl::*;
         let conn = self.connection();
 
 
-        diesel::delete(vlive_channels)
+        let count = diesel::delete(vlive_channels)
             .filter(channel_seq.eq(vlive_channel))
             .filter(discord_channel.eq(discord_chan as i64))
             .execute(&conn)?;
 
-        Ok(())
+        Ok(count)
     }
 
     /// Get all the vlive channels.  This may have duplicate vlive channels for different discord channels
