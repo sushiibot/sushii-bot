@@ -100,8 +100,8 @@ command!(ping(ctx, msg) {
                 Discord Shard latency (heartbeat ACK): `{} ms`\n\
                 PostgreSQL latency: `{} μs`\n",
                 msg_ms,
+                runner_latency_ms.unwrap_or("N/A".into()),
                 db_ms.unwrap_or("N/A".into()),
-                runner_latency_ms.unwrap_or("N/A".into())
             )
         )
     );
