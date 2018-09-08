@@ -17,32 +17,6 @@ use std::fmt::Write;
 use utils::config::get_pool;
 
 
-command!(latency(ctx, msg) {
-    let data = ctx.data.lock();
-    let shard_manager = match data.get::<SerenityShardManager>() {
-        Some(v) => v,
-        None => return Err(CommandError::from("There was a problem getting the shard manager")),
-    };
-
-    let manager = shard_manager.lock();
-    let runners = manager.runners.lock();
-
-    // Shards are backed by a "shard runner" responsible for processing events
-    // over the shard, so we'll get the information about the shard runner for
-    // the shard this command was sent over.
-    let runner = match runners.get(&ShardId(ctx.shard_id)) {
-        Some(runner) => runner,
-        None => return Err(CommandError::from("No shard found")),
-    };
-
-    let runner_latency = match runner.latency {
-        Some(val) => format!("{:.3} ms", val.as_secs() as f64 / 1000.0 + f64::from(val.subsec_nanos()) * 1e-6),
-        None => "N/A".to_owned(),
-    };
-
-    let _ = msg.channel_id.say(&format!("The shard latency is {}", runner_latency));
-});
-
 struct Timer {
     start: DateTime<Utc>,
 }

@@ -255,10 +255,6 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .desc("Gets the ping.")
                 .cmd(commands::meta::ping)
             )
-            .command("latency", |c| c
-                .desc("Calculates the heartbeat latency between the shard and the gateway.")
-                .cmd(commands::meta::latency)
-            )
             .command("events", |c| c
                 .desc("Shows the number of events handled by the bot.")
                 .cmd(commands::meta::events)
