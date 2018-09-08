@@ -4,8 +4,9 @@ use serenity::client::bridge::gateway::ShardId;
 use SerenityShardManager;
 use Uptime;
 
-use chrono::Utc;
+use chrono::DateTime;
 use chrono::Duration;
+use chrono::Utc;
 use chrono_humanize::HumanTime;
 use std::env;
 
@@ -42,27 +43,94 @@ command!(latency(ctx, msg) {
     let _ = msg.channel_id.say(&format!("The shard latency is {}", runner_latency));
 });
 
-command!(ping(_ctx, msg) {
-    let start = Utc::now();
-    let mut msg = match msg.channel_id.say("Ping!") {
-        Ok(val) => val,
-        Err(e) => {
-            warn!("[CMD:ping] Error sending message: {}", e);
-            
-            return Ok(());
-        },
+struct Timer {
+    start: DateTime<Utc>,
+}
+
+impl Timer {
+    pub fn new() -> Self {
+        Timer {
+            start: Utc::now(),
+        }
+    }
+
+    pub fn elapsed_ms(&self) -> i64 {
+        Utc::now()
+            .signed_duration_since(self.start)
+            .num_milliseconds()
+    }
+
+    pub fn elapsed_micros(&self) -> Option<i64> {
+        Utc::now()
+            .signed_duration_since(self.start)
+            .num_microseconds()
+    }
+
+    pub fn elapsed_ns(&self) -> Option<i64> {
+        Utc::now()
+            .signed_duration_since(self.start)
+            .num_nanoseconds()
+    }
+}
+
+
+command!(ping(ctx, msg) {
+    let timer = Timer::new();
+
+    let mut sent_msg = match msg.channel_id.say("Ping!") {
+        Ok(m) => m,
+        Err(_) => return Ok(()),
     };
 
-    let end = Utc::now();
-    let ms = {
-        let end_ms = i64::from(end.timestamp_subsec_millis());
-        let start_ms = i64::from(start.timestamp_subsec_millis());
+    let msg_ms = timer.elapsed_ms();
 
-        end_ms - start_ms
+    let timer = Timer::new();
+    let pool = get_pool(ctx);
+    pool.ping();
+
+    let db_ms = timer.elapsed_micros()
+                     .map(|ms| ms.to_string());
+    
+
+    // shard latency
+
+    let runner_latency = {
+        let data = ctx.data.lock();
+        let shard_manager = match data.get::<SerenityShardManager>() {
+            Some(v) => v,
+            None => return Err(CommandError::from("There was a problem getting the shard manager")),
+        };
+
+        let manager = shard_manager.lock();
+        let runners = manager.runners.lock();
+
+        // Shards are backed by a "shard runner" responsible for processing events
+        // over the shard, so we'll get the information about the shard runner for
+        // the shard this command was sent over.
+        let runner = match runners.get(&ShardId(ctx.shard_id)) {
+            Some(runner) => runner,
+            None => return Err(CommandError::from("No shard found")),
+        };
+
+        runner.latency
     };
-    let diff = ((end.timestamp() - start.timestamp()) * 1000) + ms;
 
-    let _ = msg.edit(|m| m.content(&format!("Pong! `[{}ms]`", diff)));
+    let runner_latency_ms = runner_latency.map(|x|
+        format!("{:.3}", x.as_secs() as f64 / 1000.0 + f64::from(x.subsec_nanos()) * 1e-6)
+    );
+
+    let _ = sent_msg.edit(|m| m
+        .content(
+            &format!(
+                "Discord Rest API (message send): `{} ms`\n\
+                Discord Shard latency (heartbeat ACK): `{} ms`\n\
+                PostgreSQL latency: `{} μs`\n",
+                msg_ms,
+                db_ms.unwrap_or("N/A".into()),
+                runner_latency_ms.unwrap_or("N/A".into())
+            )
+        )
+    );
 });
 
 command!(events(ctx, msg) {
