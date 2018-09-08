@@ -268,7 +268,8 @@
             "failed_list": "Failed to fetch VLive channels, try this again?",
             "failed_delete_channel": "Failed to delete VLive channel, try this again?",
             "already_added_channel": "The Discord channel already has a notification for this VLive channel.",
-            "invalid_role": "Invalid role, please give a guild role name or ID."
+            "invalid_role": "Invalid role, please give a guild role name or ID.",
+            "delete_invalid": "Invalid VLive or Discord channel to delete."
         },
         "info": {
             "added_notification": "Added a VLive notification for **{}** in <#{}>.",

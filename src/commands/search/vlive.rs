@@ -1,7 +1,6 @@
 use regex::Regex;
 use std::fmt::Write;
 use reqwest::Client;
-use serenity::utils::parse_channel;
 use utils::config::get_pool;
 use vlive::ReqwestVLiveRequester;
 use utils::numbers::comma_number;
@@ -397,18 +396,31 @@ command!(vlivenotif_list(ctx, msg, _args) {
 command!(vlivenotif_delete(ctx, msg, args) {
     let pool = get_pool(ctx);
 
-    let discord_channel = match args.single::<String>() {
-        Ok(val) => val.parse::<u64>().ok().or_else(|| parse_channel(&val)).unwrap_or(0),
-        Err(_) => return Err(CommandError::from(get_msg!("error/no_channel_given"))),
-    };
-
-    if discord_channel == 0 {
-        return Err(CommandError::from(get_msg!("vlive/error/invalid_channel")));
-    }
-
     let query = args.rest();
 
-    if query.is_empty() {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(<#)?\d{17,18}>?").unwrap();
+    }
+
+    let start;
+
+    // search for discord channel id
+    let discord_channel = match RE.find(query) {
+        Some(mat) => {
+            start = mat.start();
+
+            arg_types::ChannelArg::new()
+                .string(mat.as_str())
+                .guild(msg.guild())
+                .error(get_msg!("vlive/error/invalid_channel"))
+                .get()?
+        },
+        None => return Err(CommandError::from(get_msg!("vlive/error/invalid_channel"))),
+    };
+
+    let vlive_channel_query = &query[..start].trim_matches(' ');
+
+    if vlive_channel_query.is_empty() {
         return Err(CommandError::from(get_msg!("vlive/error/missing_channel")));
     }
 
@@ -419,14 +431,14 @@ command!(vlivenotif_delete(ctx, msg, args) {
     let channels = match client.get_channel_list() {
         Ok(val) => val,
         Err(why) => {
-            warn_discord!("Err searching vlive '{}': {:?}", query, why);
+            warn_discord!("Err searching vlive '{}': {:?}", vlive_channel_query, why);
 
             return Err(CommandError::from(get_msg!("vlive/error/failed_fetch_data")));
         },
     };
     
     // search channel in list
-    let channel = match channels.find_partial_channel_or_code(query) {
+    let channel = match channels.find_partial_channel_or_code(vlive_channel_query) {
         Some(val) => val,
         None => return Err(CommandError::from(get_msg!("vlive/error/no_search_results"))),
     };
@@ -448,7 +460,10 @@ command!(vlivenotif_delete(ctx, msg, args) {
     };
 
     match pool.delete_vlive_channel(channel_seq as i32, discord_channel) {
-        Ok(()) => {
+        Ok(count) => {
+            if count == 0 {
+                return Err(CommandError::from(get_msg!("vlive/error/delete_invalid")));
+            }
             let _ = msg.channel_id.say(get_msg!("vlive/info/deleted_channel", channel.name));
         },
         Err(e) => {
