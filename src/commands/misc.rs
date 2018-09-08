@@ -41,7 +41,7 @@ command!(play(_ctx, msg, args) {
 
     // send data
     let client = reqwest::Client::new();
-    let res = client.post("http://play.integer32.com/execute")
+    let res = client.post("https://play.integer32.com/execute")
         .json(&json)
         .send()?.error_for_status();
 
