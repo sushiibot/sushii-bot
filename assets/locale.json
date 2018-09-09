@@ -94,6 +94,7 @@
         "no_config_given": "No configuration provided.",
         "no_role_config": "There isn't a role config set.",
         "no_user_given": "Please give a user id or mention.",
+        "no_user_or_users_given": "Please give user id or mention. Multiple users can be provided by separating ids or mentions with commas.",
         "no_webhook_given": "Please give a webhook url.",
         "no_reminder_given": "Please give a time and reminder.",
         "no_reminder_time_given": "Please give a valid reminder time.",

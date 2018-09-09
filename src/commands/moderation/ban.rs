@@ -11,7 +11,10 @@ use std::fmt::Write;
 
 command!(ban(ctx, msg, args) {
     // get the target
-    let raw_users = args.single::<String>()?;
+    let raw_users = match args.single::<String>() {
+        Ok(r) => r,
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_user_or_users_given"))),
+    };
     let split = raw_users.split(',');
     let mut users = Vec::new();
 
@@ -141,7 +144,10 @@ command!(ban(ctx, msg, args) {
 
 command!(unban(ctx, msg, args) {
     // get the target
-    let raw_users = args.single::<String>()?;
+    let raw_users = match args.single::<String>() {
+        Ok(r) => r,
+        Err(_) => return Err(CommandError::from(get_msg!("error/no_user_or_users_given"))),
+    };
     let split = raw_users.split(',');
     let mut users = Vec::new();
 
