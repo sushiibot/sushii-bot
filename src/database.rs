@@ -642,11 +642,11 @@ impl ConnectionPool {
         let mut rng = thread_rng();
 
         // 1% chance of getting golden fishy == 80-150 fishies?
-        let golden_range = Range::new(1, 60);
+        let golden_range = Range::new(1, 100);
         let is_golden = golden_range.ind_sample(&mut rng) == 1;
 
         let new_fishies: i64 = if is_golden {
-            let between = Range::new(80, 120);
+            let between = Range::new(90, 140);
             between.ind_sample(&mut rng)
         } else if is_self {
             let between = Range::new(5, 20);
