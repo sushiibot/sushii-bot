@@ -377,6 +377,19 @@ fn get_data(url: &str, username: &str, period: &str) -> Result<Value, CommandErr
 }
 
 fn send_embed(msg: &Message, content: Option<&str>, title: &str, username: &str, desc: &str, thumbnail: &str) {
+    let split_desc = desc.split("\n");
+    let mut count = 0;
+    let mut truncated_desc = String::new();
+
+    for line in split_desc {
+        if count + line.len() >= 2000 {
+            break;
+        }
+        
+        truncated_desc = format!("{}\n{}", truncated_desc, line);
+        count = truncated_desc.len();
+    }
+
     let _ = msg.channel_id.send_message(|m| {
         let mut m = m;
 
@@ -391,7 +404,7 @@ fn send_embed(msg: &Message, content: Option<&str>, title: &str, username: &str,
                 .icon_url("https://i.imgur.com/C7u8gqg.jpg")
             )
             .color(0xb90000)
-            .description(&desc)
+            .description(&truncated_desc)
             .thumbnail(thumbnail)
         )
     });
