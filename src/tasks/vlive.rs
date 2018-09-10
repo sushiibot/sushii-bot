@@ -100,6 +100,11 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                         continue;
                     }
 
+                    // ignore v pick
+                    if video.title.starts_with(&format!("[{}]", channel_data.channel_info.channel_name)) {
+                        continue;
+                    }
+
                     let mut video_data_res = client.get_video(video.video_seq);
 
                     let mut is_subbed = None;
