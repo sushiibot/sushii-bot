@@ -413,7 +413,7 @@ pub fn split_message(msg: &str, prepend: Option<&str>, with_code_block: bool) ->
         single_msg.push_str("\n"); // re-add new line at end
 
         // will overflow, move to next msg (in bytes) + 6 just in case?
-        if single_msg.len() + s.len() + 6 > 4000 {
+        if single_msg.len() + s.len() + 6 > 2000 {
             // add closing code block
             if with_code_block {
                 single_msg.push_str("```");
