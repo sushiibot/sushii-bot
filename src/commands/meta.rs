@@ -247,14 +247,22 @@ command!(stats(ctx, msg) {
         "N/A".to_owned()
     };
 
+
     let bot_version = env!("CARGO_PKG_VERSION");
+    let build_number = option_env!("Build.BuildNumber");
+    let agent_name = option_env!("Agent.MachineName");
+    let agent_id = option_env!("Agent.Id");
 
     let owner_tag = env::var("OWNER_TAG").unwrap_or_else(|_| "N/A".to_owned());
 
     let _ = msg.channel_id.send_message(|m|
         m.embed(|e| e
             .color(0x3498db)
-            .title(&format!("sushii v{}", bot_version))
+            .title(&format!(
+                "sushii v{} - Build {} ({} #{})",
+                bot_version, build_number.unwrap_or("N/A"),
+                agent_name.unwrap_or("N/A"), agent_id.unwrap_or("N/A")
+            ))
             .url("https://sushii.xyz")
             .field("Author", &owner_tag, true)
             .field("Library", "[serenity-rs](https://github.com/serenity-rs/serenity) v0.5.8", true)
