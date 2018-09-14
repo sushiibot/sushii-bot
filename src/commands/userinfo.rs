@@ -207,7 +207,7 @@ command!(avatar(_ctx, msg, args) {
                     .url(&user.face())
                 )
                 .color(0x3498db)
-                .image(&user.face())
+                .image(&user.face().replace("webp", "jpg"))
             ));
     } else {
         return Err(CommandError("Can't find user.".to_owned()));
