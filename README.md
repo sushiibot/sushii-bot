@@ -7,13 +7,14 @@
 
 A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.org/) with [serenity-rs](https://github.com/zeyla/serenity).  Uses a [PostgreSQL](https://www.postgresql.org) database along with [diesel-rs](https://github.com/diesel-rs/diesel) and [r2d2-diesel](https://github.com/diesel-rs/r2d2-diesel).
 
-Work in progress.  Features may be either missing, incomplete, or broken.  sushii is not designed to be self hosted and likely won't ever be.
+Work in progress.  Features may be either missing, incomplete, or broken.  sushii is not designed to be self hosted and likely won't ever be, no support will be offered unless you are making a pull request.
 
 ## Features
 
 * Ranking system based on message counts in daily, weekly, monthly, and all time categories
 * User 24 hour activity tracker
 * Profile image generation for displaying rank and activity graph (with [sushii-image-server](https://github.com/drklee3/sushii-image-server))
+* sushiiboard (starboard)
 * Configurable self assigning role system with multiple categories and limits
 * Configurable prefix per guild
 * Moderation action logs and editable action reasons
@@ -30,7 +31,7 @@ Work in progress.  Features may be either missing, incomplete, or broken.  sushi
 
 ## Installation
 
-1. Download the latest version from the [releases](releases) page, currently only supporting x86_64-unknown-linux-gnu.
+1. Download the latest version from the [releases](releases) page or the download an artifact on [Azure Pipelines](https://dev.azure.com/dlee3/dlee3/dlee3%20Team/_build?definitionId=1&_a=summary), currently only supporting Linux. Sushii should work on Windows and other platforms but it is untested and unsupported.
 2. Allow the file to be executed.
     ```bash
     chmod +x x86_64-unknown-linux-gnu
