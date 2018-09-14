@@ -271,6 +271,7 @@ pub struct Message {
     pub created: NaiveDateTime,
     pub content: String,
     pub bot: bool,
+    pub msg: Option<serde_json::Value>,
 }
 
 #[derive(Insertable, Debug)]
@@ -284,6 +285,7 @@ pub struct NewMessage<'a> {
     pub created: NaiveDateTime,
     pub content: &'a str,
     pub bot: bool,
+    pub msg: Option<serde_json::Value>,
 }
 
 #[derive(Queryable, Clone, Debug)]

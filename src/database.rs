@@ -21,6 +21,7 @@ use serenity;
 use serenity::model::guild::Guild;
 use std;
 use std::env;
+use serde_json;
 
 use models::*;
 
@@ -1016,6 +1017,7 @@ impl ConnectionPool {
             guild: msg.guild_id.map(|x| x.0 as i64),
             created: msg.timestamp.naive_utc(),
             content: &msg.content,
+            msg: serde_json::to_value(msg).ok(),
         };
 
         if let Err(e) = diesel::insert_into(messages::table)
