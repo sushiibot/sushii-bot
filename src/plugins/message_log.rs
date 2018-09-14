@@ -5,6 +5,8 @@ use serenity::model::id::MessageId;
 use serenity::model::id::UserId;
 use serenity::prelude::Context;
 
+use serde_json;
+
 use database::ConnectionPool;
 use utils::config::get_config;
 use utils::time::now_utc;
@@ -90,8 +92,25 @@ pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &Cha
         None => return,
     };
 
+    let discord_msg = if let Some(msg) = msg.msg.clone() {
+        serde_json::from_value(msg).ok()
+    } else {
+        None
+    };
+
     // get server config
     let config = check_res!(get_config(ctx, pool, guild_id as u64));
+
+    let attachments = discord_msg
+        .map(|msg: Message| msg.attachments
+            .iter()
+            .map(|attachment| attachment.url.clone())
+            .collect::<Vec<String>>()
+            .join("\n")
+        )
+        .and_then(|attachments| if attachments.is_empty() { None } else { Some(attachments) });
+
+    let content = if msg.content.is_empty() { "N/A".into() } else { msg.content.clone() };
 
     if let Some(channel) = config.log_msg {
         let (tag, face) = if let Ok(user) = UserId(msg.author as u64).to_user() {
@@ -110,7 +129,8 @@ pub fn on_message_delete(ctx: &Context, pool: &ConnectionPool, _channel_id: &Cha
                     .icon_url(&face)
                 )
                 .colour(0xe74c3c)
-                .field("Message Content", msg.content, false)
+                .field("Message Content", content, false)
+                .field("Attachments", attachments.unwrap_or("N/A".into()), false)
                 .field("Channel", &format!("<#{}>", msg.channel), false)
                 .footer(|f| f
                     .text("Deleted at")

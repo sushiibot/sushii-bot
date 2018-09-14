@@ -106,6 +106,7 @@ table! {
         created -> Timestamp,
         content -> Text,
         bot -> Bool,
+        msg -> Nullable<Jsonb>,
     }
 }
 
