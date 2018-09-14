@@ -39,12 +39,6 @@ impl Timer {
             .signed_duration_since(self.start)
             .num_microseconds()
     }
-
-    pub fn elapsed_ns(&self) -> Option<i64> {
-        Utc::now()
-            .signed_duration_since(self.start)
-            .num_nanoseconds()
-    }
 }
 
 
