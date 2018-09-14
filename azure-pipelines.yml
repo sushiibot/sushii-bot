@@ -10,7 +10,28 @@ steps:
 - script: |
     curl -o rustup-init.sh https://sh.rustup.rs -sSf
     sh rustup-init.sh -y
+  displayName: 'Install Rust'
+
+- script: |
+    sudo apt-get install libssl-dev=1.0.2g-1ubuntu4.13 libpq-dev -y --allow-downgrades
+  displayName: 'Install Dependencies'
+
+- script: |
+    echo 'Agent ID $(Agent.Id)'
+    echo 'Agent Name $(Agent.Name)'
+    echo 'Agent MachineName $(Agent.MachineName)'
+    echo 'Agent OS $(Agent.OS)'
+
+    echo 'Build ID $(Build.BuildId)'
+    echo 'Build Number $(Build.BuildNumber)'
+  displayName: 'Print Info'
+
+- script: |
     source $HOME/.cargo/env
-    sudo apt-get install libpq-dev -y
-    cargo build
+    cargo build --release
   displayName: 'Build sushii'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: 'target/release/sushii'
+    artifactName: 'sushii-$(Build.BuildNumber)-$(Agent.OS)'
