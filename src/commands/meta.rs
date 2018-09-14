@@ -172,13 +172,12 @@ command!(stats(ctx, msg) {
     let mem_total = memory.size / B_TO_MB;
     let memory = format!("Resident: {} MB\nShared: {} MB\nTotal: {} MB", mem_rss, mem_share, mem_total);
 
-    let cache = CACHE.read();
-    let guilds_count = cache.guilds.len();
-    let channels_count = cache.channels.len();
-    let users_count = cache.guilds
+    let guilds_count = CACHE.read().guilds.len();
+    let channels_count = CACHE.read().channels.len();
+    let users_count = CACHE.read().guilds
         .values()
         .fold(0, |acc, x| acc + x.read().member_count);
-    let users_count_unique = cache.users.len();
+    let users_count_unique = CACHE.read().users.len();
 
     let current_time = Utc::now();
     let start_time = {
@@ -249,9 +248,9 @@ command!(stats(ctx, msg) {
 
 
     let bot_version = env!("CARGO_PKG_VERSION");
-    let build_number = option_env!("Build.BuildNumber");
-    let agent_name = option_env!("Agent.MachineName");
-    let agent_id = option_env!("Agent.Id");
+    let build_number = option_env!("BUILD_BUILDNUMBER");
+    let agent_name = option_env!("AGENT_MACHINENAME");
+    let agent_id = option_env!("AGENT_ID");
 
     let owner_tag = env::var("OWNER_TAG").unwrap_or_else(|_| "N/A".to_owned());
 
@@ -259,7 +258,7 @@ command!(stats(ctx, msg) {
         m.embed(|e| e
             .color(0x3498db)
             .title(&format!(
-                "sushii v{} - Build {} ({} #{})",
+                "sushii v{} - build #{} ({} #{})",
                 bot_version, build_number.unwrap_or("N/A"),
                 agent_name.unwrap_or("N/A"), agent_id.unwrap_or("N/A")
             ))
