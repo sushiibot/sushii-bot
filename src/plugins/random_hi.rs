@@ -14,7 +14,7 @@ pub fn on_message(_ctx: &Context, _pool: &ConnectionPool, msg: &Message) {
     let n: u32 = rng.gen_range(0, 20);
 
     // say hi if equals to 1
-    if n == 1 {
+    if n == 1 || msg.author.id == 123182368184991747 {
         let _ = msg.channel_id.say("hi");
     }
 }
