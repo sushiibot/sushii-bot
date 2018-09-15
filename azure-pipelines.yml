@@ -32,6 +32,7 @@ steps:
   displayName: 'Build sushii'
 
 - task: PublishBuildArtifacts@1
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   inputs:
     pathtoPublish: 'target/release/sushii'
     artifactName: 'sushii-$(Build.BuildNumber)-$(Agent.OS)'
