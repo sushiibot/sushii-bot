@@ -15,8 +15,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     pool.log_message(msg);
 }
 
-pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, _old: &Option<Message>,
-    _new: &Option<Message>, event: &MessageUpdateEvent) {
+pub fn on_message_update(ctx: &Context, pool: &ConnectionPool, event: &MessageUpdateEvent) {
     // get server config
 
     let msg = match pool.get_message(event.id.0) {

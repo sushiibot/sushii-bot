@@ -32,9 +32,7 @@ num-traits = "0.1.40"
 clippy = { version = "*", optional = true }
 
 [dependencies.serenity]
-version = "0.5.8"
-git = "https://github.com/drklee3/serenity"
-branch = "add-message-update-event"
+version = "0.5.9"
 
 [dependencies.vlive]
 version = "0.1.5"
