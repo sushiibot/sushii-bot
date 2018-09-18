@@ -1,3 +1,5 @@
+use chrono::{DateTime, Utc};
+use chrono_humanize::HumanTime;
 use serenity::framework::standard::CommandError;
 use serenity::model::user::OnlineStatus;
 
@@ -48,6 +50,11 @@ command!(guild_info(_ctx, msg, _args) {
             guild.read().voice_states.len(), states.0, states.1)
     };
 
+    let current_time = Utc::now();
+    let created_at = guild.read().id.created_at();
+    let created_duration = current_time.signed_duration_since(DateTime::<Utc>::from_utc(created_at, Utc));
+    let created_humanized = format!("{:#}", HumanTime::from(created_duration)).replace("in ", "");
+
     let _ = msg.channel_id.send_message(|m| m
         .embed(|e| e
             .author(|a| a
@@ -66,6 +73,7 @@ command!(guild_info(_ctx, msg, _args) {
             .field("Verification Level", &format!("{:?}", guild.read().verification_level), true)
             .field("Presences", &guild_presences, false)
             .field("Voice States", &voice_states, false)
+            .field("Created At", &format!("{}\n{}", created_at.format("%Y-%m-%dT%H:%M:%S"), created_humanized), false)
             .footer(|f| f
                 .text(&format!("Guild ID: {}", &guild.read().id.0))
             )
