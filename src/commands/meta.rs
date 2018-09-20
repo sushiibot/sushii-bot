@@ -258,7 +258,7 @@ command!(stats(ctx, msg) {
             ))
             .url("https://sushii.xyz")
             .field("Author", &owner_tag, true)
-            .field("Library", "[serenity-rs](https://github.com/serenity-rs/serenity) v0.5.8", true)
+            .field("Library", "[serenity-rs](https://github.com/serenity-rs/serenity) v0.5.9", true)
             .field("Guilds", &guilds_count.to_string(), true)
             .field("Channels", &channels_count.to_string(), true)
             .field("Users", &format!("{} Total\n{} Unique (cached)",
