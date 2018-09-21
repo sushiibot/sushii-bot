@@ -4,6 +4,7 @@ use serenity::model::guild::Guild;
 use serenity::model::guild::Role;
 use serenity::model::id::ChannelId;
 use serenity::utils::parse_channel;
+use serenity::utils::parse_role;
 use serenity::framework::standard::Args;
 use serenity::framework::standard::CommandError;
 
@@ -181,13 +182,15 @@ impl<'a> RoleArg<'a> {
             Some(role) => {
                 // check if in guild
                 if let Some(guild) = self.guild {
-                    let role_id = role.parse::<u64>();
+                    let role_id = role.parse::<u64>()
+                        .ok()
+                        .or(parse_role(&role));
                     let guild = guild.read();
 
                     return guild.roles
                         .values()
                         .find(|x| {
-                            if let Ok(role_id) = role_id {
+                            if let Some(role_id) = role_id {
                                 // check if role id matches if given arg is u64
                                 x.id.0 == role_id
                             } else {
