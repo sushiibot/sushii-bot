@@ -80,7 +80,22 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                    msg.author.tag(), notification.keyword, channel_name, msg.channel_id.mention(), guild_name);
 
                 // maybe switch to use Channel::messages() instead?
-                let mut messages = pool.get_messages(msg.channel_id.0, 3);
+                // let mut messages = pool.get_messages(msg.channel_id.0, 3);
+                let mut messages = CACHE
+                    .read()
+                    .messages
+                    .get(&msg.channel_id)
+                    .map(|channel| {
+                        let mut v = channel
+                            .values()
+                            .cloned()
+                            .collect::<Vec<Message>>();
+                        
+                        v.sort_by(|a, b| b.id.0.cmp(&a.id.0));
+                        v.truncate(3);
+
+                        v
+                    });
 
 
                 let sent_msg = channel.id.send_message(|m| m
@@ -112,7 +127,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                                 };
 
 
-                                e = e.field(format!("[{}] {}", message.created.format("%H:%M:%S UTC"), message.tag),
+                                e = e.field(format!("[{}] {}", message.timestamp.format("%H:%M:%S UTC"), message.author.tag()),
                                     format!("> {}", content),
                                     false);
                             }
