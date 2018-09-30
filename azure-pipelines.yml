@@ -48,7 +48,7 @@ steps:
     hostName: sushii@azure
     sshPublicKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCwfoLf8ujLzJvKhZST1JlViWrzVGC/EDVqMhgIGvUDyYvaLxMKhE20pmKMCLZwiZQv2WMrTOX3DpVw3Kr9jVm8JOp0UKw+bT5l/sd9ZfziW4fzOMCv3vsC3XAXGLIVfpTm6GlhwrJMyVtgbfjCx+kDePe5lWVKdLMiYr/tpRzKpA3Nyd3U8OSn5WI48UEBDjeiXE4gYgODvWaOdNN3HmxSGgLMAWF5wNQaqP0W9MpmvtvHrn7uUZHsemK6GPJrtsasCLJgNU53B8v18+vBNE2HRzLP0s1GD6E2to05FjCy7n9aCn287WnDR8U571TyFzA+TWhPVfkJ8diIST2T7HwrXlmg9kob3EcmLobkpWaGqbLmTYPNd26/9dJBY4pX14cxziFdkYgNJz8TQ3ax0MWlEt9txfh28n4jBP+ZPbtvMR+TzNF6nhtaY5zHgztfEubB5M1AVDEnOjhjAT+9BwP2bwG+DEX3jN69N5JbyeObdoNUDziwIHJ9tsJHeKtMi4bRv72nRANEZ6DGFxHZR/KZNMn3U3UTnxZwyExTqK8oxCcl7z2dC1EaUgeEF0JJnzEtGTEs61kuaoVDcJzFVClBTGt8BS5j4SQYdtxoCvWedL/MqsnhHWR/J6bsmE2L7F71vGMI/daMzASwo6J7MXvvG2UY12hw+KsNkB31PFUZdQ== sushii@azure
     #sshPassphrase: # Optional
-    sshKeySecureFile: $(DOWNLOADSECUREFILE_SECUREFILEPATH)
+    sshKeySecureFile: $env:DOWNLOADSECUREFILE_SECUREFILEPATH
 
 - task: CopyFilesOverSSH@0
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
