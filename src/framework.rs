@@ -117,7 +117,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             // react x whenever an error occurs
             let _ = msg.react("❌");
         })
-        .before(|ctx, msg, cmd_name| {
+        .before(|ctx, msg, _cmd_name| {
             if let Some(guild) = msg.guild() {
                 let guild = guild.read();
                 
@@ -161,7 +161,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             }
 
             let now = now_utc();
-            println!("[{}] {}: {} ", now.format("%Y-%m-%d %H:%M:%S UTC"), msg.author.tag(), cmd_name);
+            println!("[{}] {}: {} ", now.format("%Y-%m-%d %H:%M:%S UTC"), msg.author.tag(), msg.content);
             true
         })
         .after(|ctx, msg, _cmd_name, error| {
