@@ -52,7 +52,7 @@ command!(userinfo(ctx, msg, args) {
 
                 // precise humanized time 
                 let mut f = timeago::Formatter::new();
-                f.num_items(3);
+                f.num_items(4);
                 f.ago("");
 
                 let ht = f.convert_chrono(created, now);
@@ -62,7 +62,7 @@ command!(userinfo(ctx, msg, args) {
 
             let joined = if let Some(joined_date) = member.joined_at {
                 let mut f = timeago::Formatter::new();
-                f.num_items(3);
+                f.num_items(4);
                 f.ago("");
 
                 let ht = f.convert_chrono(joined_date, now);
