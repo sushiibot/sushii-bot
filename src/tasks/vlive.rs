@@ -149,7 +149,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                             "[VOD]"
                         };
 
-                        let _ = ChannelId(channel.discord_channel as u64).send_message(|m| m
+                        if let Err(e) = ChannelId(channel.discord_channel as u64).send_message(|m| m
                             .content(&mention)
                             .embed(|e| {
                                 let mut e = e
@@ -185,7 +185,9 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
 
                                 e
                             })
-                        );
+                        ) {
+                            warn_discord!(format!("[VLIVE] Failed to send VLive notification: {:?}", e));
+                        }
                     }
                 }
             }
