@@ -5,10 +5,10 @@ use serenity::utils::Colour;
 
 use inflector::Inflector;
 
-use chrono_humanize::HumanTime;
+use chrono::{DateTime, Utc};
+use timeago;
 use utils::user::get_id;
 use utils::config::get_pool;
-use utils::time::now_utc;
 
 command!(userinfo(ctx, msg, args) {
     // gets the user provided or returns author's id if no user given
@@ -18,7 +18,7 @@ command!(userinfo(ctx, msg, args) {
     };
 
     let default_color = Colour::default();
-    let now = now_utc();
+    let now = Utc::now();
 
     debug!("got args");
     
@@ -48,19 +48,25 @@ command!(userinfo(ctx, msg, args) {
             debug!("got lastmsg");
 
             let created = {
-                let created = user.created_at();
+                let created = DateTime::<Utc>::from_utc(user.created_at(), Utc);
 
-                let diff = created.signed_duration_since(now);
                 // precise humanized time 
-                let ht = HumanTime::from(diff);
+                let mut f = timeago::Formatter::new();
+                f.num_items(3);
+                f.ago("");
 
-                format!("{}\n{:#}", created.format("%Y-%m-%d %H:%M:%S UTC"), ht)
+                let ht = f.convert_chrono(created, now);
+
+                format!("{}\n{}", created.format("%Y-%m-%d %H:%M:%S UTC"), ht)
             };
 
             let joined = if let Some(joined_date) = member.joined_at {
-                let diff = joined_date.naive_utc().signed_duration_since(now);
-                let ht = HumanTime::from(diff);
-                Some(format!("{}\n{:#}", joined_date.format("%Y-%m-%d %H:%M:%S UTC"), ht))
+                let mut f = timeago::Formatter::new();
+                f.num_items(3);
+                f.ago("");
+
+                let ht = f.convert_chrono(joined_date, now);
+                Some(format!("{}\n{}", joined_date.format("%Y-%m-%d %H:%M:%S UTC"), ht))
             } else {
                 None
             };

@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use chrono_humanize::HumanTime;
+use timeago;
 use serenity::framework::standard::CommandError;
 use serenity::model::user::OnlineStatus;
 
@@ -51,9 +51,13 @@ command!(guild_info(_ctx, msg, _args) {
     };
 
     let current_time = Utc::now();
-    let created_at = guild.read().id.created_at();
-    let created_duration = current_time.signed_duration_since(DateTime::<Utc>::from_utc(created_at, Utc));
-    let created_humanized = format!("{:#}", HumanTime::from(created_duration)).replace("in ", "");
+    let created_at = DateTime::<Utc>::from_utc(guild.read().id.created_at(), Utc);
+    
+    let mut f = timeago::Formatter::new();
+    f.num_items(4);
+    f.ago("");
+
+    let created_humanized = f.convert_chrono(created_at, current_time);
 
     let _ = msg.channel_id.send_message(|m| m
         .embed(|e| e

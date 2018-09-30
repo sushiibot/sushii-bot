@@ -6,7 +6,7 @@ use std::fmt::Write;
 use serde_json::value::Value;
 
 use chrono::{DateTime, Utc, Duration};
-use chrono_humanize::HumanTime;
+use timeago;
 use utils::config::get_pool;
 
 #[derive(Deserialize)]
@@ -153,7 +153,6 @@ command!(reminder(ctx, msg, args) {
 
     // get the reminder time, current time + offset time
     let remind_date = now + offset;
-    let remind_date = remind_date.naive_utc();
 
     // check if offset is great enough
     if offset.num_seconds() < 5 {
@@ -168,16 +167,15 @@ command!(reminder(ctx, msg, args) {
         return Err(CommandError::from(get_msg!("error/reminder_not_given")))
     }
 
-    pool.add_reminder(msg.author.id.0, reminder_content, &remind_date);
+    pool.add_reminder(msg.author.id.0, reminder_content, &remind_date.naive_utc());
 
-    let now = now.naive_utc();
-    let since = remind_date.signed_duration_since(
-        now,
-    );
+    let mut f = timeago::Formatter::new();
+    f.num_items(3);
+    f.ago("");
 
-    let ht = HumanTime::from(since);
+    let ht = f.convert_chrono(now, remind_date);
 
-    let s = format!("I'll remind you {:#} (`{}`) to `{}`", ht, remind_date.format("%Y-%m-%d %H:%M:%S UTC"), reminder_content);
+    let s = format!("I'll remind you in {} (`{}`) to `{}`", ht, remind_date.format("%Y-%m-%d %H:%M:%S UTC"), reminder_content);
     let _ = msg.channel_id.say(&s);
 });
 
@@ -196,16 +194,15 @@ command!(reminders(ctx, msg, _args) {
         let mut s = format!("You have {} reminders:\n```rust\n", current_reminders.len());
 
         // get current timestamp
-        let utc: DateTime<Utc> = Utc::now();
-        let now = utc.naive_utc();
+        let now: DateTime<Utc> = Utc::now();
 
         for remind in current_reminders {
-            let since = remind.time_to_remind.signed_duration_since(
-                now
-            );
+            let mut f = timeago::Formatter::new();
+            f.num_items(3);
+            f.ago("");
 
-            let ht = HumanTime::from(since);
-            let _ = write!(s, "{} ({:#})\n    {}\n", remind.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), ht, remind.description);
+            let ht = f.convert_chrono(now, DateTime::<Utc>::from_utc(remind.time_to_remind, Utc));
+            let _ = write!(s, "{} ({})\n    {}\n", remind.time_to_remind.format("%Y-%m-%d %H:%M:%S UTC"), ht, remind.description);
         }
 
         // get current timestamp

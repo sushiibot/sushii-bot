@@ -7,7 +7,7 @@ use Uptime;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
-use chrono_humanize::HumanTime;
+use timeago;
 use std::env;
 
 use psutil;
@@ -181,14 +181,22 @@ command!(stats(ctx, msg) {
             None => return Err(CommandError::from("There was a problem getting the shard manager")),
         }
     };
-    let uptime = current_time.signed_duration_since(start_time);
-    let uptime_humanized = format!("{:#}", HumanTime::from(uptime)).replace("in ", "");
+
+    let mut f = timeago::Formatter::new();
+    f.num_items(4);
+    f.ago("");
+
+    let uptime_humanized = f.convert_chrono(start_time, current_time);
 
     let system_uptime_sec = psutil::system::uptime();
     let system_uptime_duration = Duration::seconds(system_uptime_sec as i64);
-    let system_uptime_diff = current_time - system_uptime_duration;
-    let system_uptime = current_time.signed_duration_since(system_uptime_diff);
-    let system_uptime_humanized = format!("{:#}", HumanTime::from(system_uptime)).replace("in ", "");
+    let system_uptime = current_time + system_uptime_duration;
+
+    let mut f = timeago::Formatter::new();
+    f.num_items(4);
+    f.ago("");
+    
+    let system_uptime_humanized = f.convert_chrono(start_time, system_uptime);
 
     let cpu_num = if let Ok(num) = sys_info::cpu_num() {
         num.to_string()

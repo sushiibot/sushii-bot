@@ -1,7 +1,7 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::id::UserId;
-use chrono::Duration;
-use chrono_humanize::HumanTime;
+use chrono::{DateTime, Duration, Utc};
+use timeago;
 
 use std::fmt::Write;
 use utils::config::get_pool;
@@ -12,12 +12,14 @@ command!(fishy(ctx, msg, args) {
     let pool = get_pool(ctx);
 
     if let Some(last_fishy) = pool.get_last_fishies(msg.author.id.0) {
-        let now = now_utc();
-        let next_rep = last_fishy + Duration::hours(12);
+        let now = DateTime::<Utc>::from_utc(now_utc(), Utc);
+        let next_rep = DateTime::<Utc>::from_utc(last_fishy + Duration::hours(12), Utc);
 
-        let diff = next_rep.signed_duration_since(now);
-        // precise humanized time 
-        let ht = format!("{:#}", HumanTime::from(diff));
+        let mut f = timeago::Formatter::new();
+        f.num_items(3);
+        f.ago("");
+        // precise humanized time
+        let ht = f.convert_chrono(now, next_rep);
 
         if next_rep > now {
             return Err(CommandError::from(get_msg!("error/fishy_too_soon", ht)))

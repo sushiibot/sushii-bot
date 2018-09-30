@@ -32,7 +32,7 @@ extern crate env_logger;
 extern crate reqwest;
 extern crate typemap;
 extern crate chrono;
-extern crate chrono_humanize;
+extern crate timeago;
 extern crate rand;
 extern crate inflector;
 extern crate regex;

@@ -10,8 +10,8 @@ use utils::time::now_utc;
 use utils::html::escape_html;
 
 use num_traits::cast::ToPrimitive;
-use chrono::Duration;
-use chrono_humanize::HumanTime;
+use chrono::{DateTime, Duration, Utc};
+use timeago;
 
 const LEVEL_HTML: &str = include_str!("../../../assets/html/rank.html");
 
@@ -255,12 +255,14 @@ command!(rep(ctx, msg, args) {
     // print next rep time 
     if args.is_empty() {
         if let Some(last_rep) = pool.get_last_rep(msg.author.id.0) {
-            let now = now_utc();
-            let next_rep = last_rep + Duration::hours(12);
+            let now = DateTime::<Utc>::from_utc(now_utc(), Utc);
+            let next_rep = DateTime::<Utc>::from_utc(last_rep + Duration::hours(12), Utc);
 
-            let diff = next_rep.signed_duration_since(now);
-            // precise humanized time 
-            let ht = format!("{:#}", HumanTime::from(diff));
+            let mut f = timeago::Formatter::new();
+            f.num_items(3);
+            f.ago("");
+
+            let ht = f.convert_chrono(now, next_rep);
 
             if next_rep > now {
                 let _ = msg.channel_id.say(&get_msg!("error/rep_too_soon", ht));
@@ -292,12 +294,14 @@ command!(rep(ctx, msg, args) {
     }
 
     if let Some(last_rep) = pool.get_last_rep(msg.author.id.0) {
-        let now = now_utc();
-        let next_rep = last_rep + Duration::hours(12);
+        let now = DateTime::<Utc>::from_utc(now_utc(), Utc);
+        let next_rep = DateTime::<Utc>::from_utc(last_rep + Duration::hours(12), Utc);
 
-        let diff = next_rep.signed_duration_since(now);
-        // precise humanized time 
-        let ht = format!("{:#}", HumanTime::from(diff));
+        let mut f = timeago::Formatter::new();
+        f.num_items(3);
+        f.ago("");
+        
+        let ht = f.convert_chrono(now, next_rep);
 
         if next_rep > now {
             return Err(CommandError::from(get_msg!("error/rep_too_soon", ht)))

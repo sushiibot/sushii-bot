@@ -4,7 +4,8 @@ use serenity::prelude::Context;
 use serenity::model::gateway::Ready;
 use serenity::http;
 
-use chrono_humanize::HumanTime;
+use chrono::{DateTime, Utc};
+use timeago;
 use std::sync::{Once, ONCE_INIT};
 
 use database;
@@ -24,15 +25,18 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                 for remind in reminders {
                     // get user by id
                     if let Ok(user) = http::get_user(remind.user_id as u64) {
-                        let since = remind.time_set.signed_duration_since(
-                            remind.time_to_remind,
-                        );
+                        let mut f = timeago::Formatter::new();
+                        f.num_items(3);
+                        f.ago("");
 
-                        let ht = HumanTime::from(since);
+                        let ht = f.convert_chrono(
+                            DateTime::<Utc>::from_utc(remind.time_to_remind, Utc),
+                            DateTime::<Utc>::from_utc(remind.time_set, Utc),
+                        );
 
                         let s =
                             format!(
-                            "Ding dong! The reminder you set {:#} has expired \n```{}```",
+                            "Ding dong! The reminder you set {} has expired \n```{}```",
                             ht,
                             remind.description,
                         );
