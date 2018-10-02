@@ -36,7 +36,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
 
                         let s =
                             format!(
-                            "Ding dong! The reminder you set {} has expired \n```{}```",
+                            "Ding dong! The reminder you set {} ago has expired \n```{}```",
                             ht,
                             remind.description,
                         );
