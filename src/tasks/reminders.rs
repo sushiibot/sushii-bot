@@ -30,8 +30,8 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
                         f.ago("");
 
                         let ht = f.convert_chrono(
-                            DateTime::<Utc>::from_utc(remind.time_to_remind, Utc),
                             DateTime::<Utc>::from_utc(remind.time_set, Utc),
+                            DateTime::<Utc>::from_utc(remind.time_to_remind, Utc),
                         );
 
                         let s =
