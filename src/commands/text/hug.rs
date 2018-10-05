@@ -33,10 +33,11 @@ const HUGS_RIGHT: &[&str]  = &[
 ];
 
 command!(hug_cmd(_ctx, msg, args) {
-    let target = match args.single::<String>() {
-        Ok(val) => val,
-        Err(_) => return Err(CommandError::from(get_msg!("error/hug_nobody"))),
-    };
+    let target = args.full();
+
+    if target.is_empty() {
+        return Err(CommandError::from(get_msg!("error/hug_nobody")));
+    }
 
     let mut rng = thread_rng();
     
