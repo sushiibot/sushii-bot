@@ -126,14 +126,28 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
                                     message.content.replace(&notification.keyword, &format!("**{}**", notification.keyword))
                                 };
 
+                                let embed_or_image = if message.content.is_empty() {
+                                    if !message.attachments.is_empty() {
+                                        "[image attached]"
+                                    } else if !message.embeds.is_empty() {
+                                        "[embed attached]"
+                                    } else {
+                                        ""
+                                    }
+                                } else {
+                                    ""
+                                };
+
 
                                 e = e.field(format!("[{}] {}", message.timestamp.format("%H:%M:%S UTC"), message.author.tag()),
-                                    format!("> {}", content),
+                                    format!("> {}{}", content, embed_or_image),
                                     false);
                             }
                         } else {
                             let content = msg.content.replace(&notification.keyword, &format!("**{}**", notification.keyword));
 
+                            // don't think embed_or_image needs to be used here since
+                            // only message shown is the triggered message which should have content
                             e = e.field(format!("[{}] {}", msg.timestamp.format("%H:%M:%S UTC"), msg.author.tag()),
                                 format!("> {}", content),
                                 false);
