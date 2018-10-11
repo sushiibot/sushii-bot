@@ -210,7 +210,7 @@ command!(avatar(_ctx, msg, args) {
             .embed(|e| e
                 .author(|a| a
                     .name(&format!("{}'s avatar", user.tag()))
-                    .url(&user.face())
+                    .url(&user.face().replace("webp", "jpg"))
                 )
                 .color(0x3498db)
                 .image(&user.face().replace("webp", "jpg"))
