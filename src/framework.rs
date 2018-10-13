@@ -190,7 +190,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             let g = g
             .guild_only(true)
             .command("rank", |c| c
-                .batch_known_as(vec!["profile", "rakn", "rnak"])
+                .batch_known_as(vec!["profile", "rakn", "rnak", "arnk"])
                 .desc("Shows your rank.")
                 .bucket("profile_bucket")
                 .cmd(commands::users::levels::rank)
