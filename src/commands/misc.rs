@@ -170,7 +170,7 @@ command!(reminder(ctx, msg, args) {
     pool.add_reminder(msg.author.id.0, reminder_content, &remind_date.naive_utc());
 
     let mut f = timeago::Formatter::new();
-    f.num_items(3);
+    f.num_items(4);
     f.ago("");
 
     let ht = f.convert_chrono(now, remind_date);

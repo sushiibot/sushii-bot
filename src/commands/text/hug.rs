@@ -14,7 +14,7 @@ const HUGS_LEFT: &[&str] = &[
     "⊂(´・ω・｀⊂)",
 ];
 
-const HUGS_RIGHT: &[&str]  = &[
+const HUGS_RIGHT: &[&str] = &[
     "⊂(◉‿◉)つ",
     "(つ◉益◉)つ",
     "(っಠ‿ಠ)っ",
