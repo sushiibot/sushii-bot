@@ -9,6 +9,8 @@ use chrono::{DateTime, Utc, Duration};
 use timeago;
 use utils::config::get_pool;
 
+use commands::tags::split_message;
+
 #[derive(Deserialize)]
 struct Response {
     stderr: String,
@@ -191,12 +193,12 @@ command!(reminders(ctx, msg, _args) {
             return Ok(());
         }
 
-        let mut s = format!("You have {} reminders:\n```rust\n", current_reminders.len());
+        let mut s = String::new();
 
         // get current timestamp
         let now: DateTime<Utc> = Utc::now();
 
-        for remind in current_reminders {
+        for remind in &current_reminders {
             let mut f = timeago::Formatter::new();
             f.num_items(3);
             f.ago("");
@@ -211,9 +213,11 @@ command!(reminders(ctx, msg, _args) {
 
         let _ = write!(s, "\nCurrent time: {}\n", now.format("%Y-%m-%d %H:%M:%S UTC"));
 
-        let _ = write!(s, "```");
+        let messages = split_message(&s, Some(&format!("You have {} reminders", current_reminders.len())), true);
 
-        let _ = msg.channel_id.say(&s);
+        for message in messages {
+            let _ = msg.channel_id.say(&message);
+        }
     } else {
         let _ = msg.channel_id.say("You have no reminders set.");
     }
