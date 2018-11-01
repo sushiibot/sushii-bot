@@ -115,7 +115,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
             let _ = msg.channel_id.say(&s);
 
             // react x whenever an error occurs
-            let _ = msg.react("👻");
+            let _ = msg.react("❌");
         })
         .before(|ctx, msg, _cmd_name| {
             if let Some(guild) = msg.guild() {
@@ -177,7 +177,7 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 let _ = msg.channel_id.say(&s);
 
                 // react x whenever an error occurs
-                let _ = msg.react("👻");
+                let _ = msg.react("❌");
             }
         })
         .help(|_, msg, _, _, _| {
