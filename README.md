@@ -9,6 +9,8 @@ A [Discord](https://discordapp.com) bot written in [Rust](https://www.rust-lang.
 
 Work in progress.  Features may be either missing, incomplete, or broken.  sushii is not designed to be self hosted and likely won't ever be, no support will be offered unless you are making a pull request.
 
+Disclaimer: sushii was started as a project to learn Rust so there is definitely a lot of questionable things in the code.  A major refactor to clean up and organize the code is planned but probably won't happen anytime soon.  Read at your own risk.
+
 ## Features
 
 * Ranking system based on message counts in daily, weekly, monthly, and all time categories
