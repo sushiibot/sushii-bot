@@ -57,7 +57,7 @@ command!(rank(ctx, msg, args) {
         .unwrap_or_default();
 
     let content_color = profile_options.get("content_color").and_then(|x| x.as_str())
-        .unwrap_or("46, 213, 115");
+        .unwrap_or("0, 184, 148");
     let content_opacity = profile_options.get("content_opacity").and_then(|x| x.as_str())
         .unwrap_or("1");
 
