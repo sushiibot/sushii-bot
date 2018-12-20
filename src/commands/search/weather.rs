@@ -25,6 +25,8 @@ command!(weather(ctx, msg, args) {
 
     let _ = msg.channel_id.broadcast_typing();
 
+    let client = get_reqwest_client(&ctx);
+
     // check database for a saved location
     if args.is_empty() {
         let saved = match pool.get_weather_location(msg.author.id.0) {
@@ -62,7 +64,7 @@ command!(weather(ctx, msg, args) {
 
         let url = GOOGLE_MAPS_URL.replace("{ADDRESS}", &location).replace("{KEY}", &google_maps_key);
 
-        let mut resp = match client.get(&url) {
+        let mut resp = match client.get(&url).send() {
             Ok(val) => val,
             Err(e) => {
                 error!("Error getting geocode: {}", e);
@@ -102,8 +104,6 @@ command!(weather(ctx, msg, args) {
     // partially derived from 
     // https://github.com/zeyla/nanobot/blob/0b543692e810344a097f4511e90b414d4184140c/src/bot/plugins/misc.rs
     // get darksky data
-
-    let client = get_reqwest_client(&ctx);
 
     let forecast = match client.get_forecast_with_options(&darksky_key, lat, lng, |o| o.unit(Unit::Si).exclude(vec![Block::Hourly, Block::Minutely])) {
         Ok(val) => val,

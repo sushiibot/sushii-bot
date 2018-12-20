@@ -6,7 +6,7 @@ use utils::numbers::comma_number;
 use serenity::framework::standard::CommandError;
 use utils::arg_types;
 
-command!(vlive(_ctx, msg, args) {
+command!(vlive(ctx, msg, args) {
     let subcommand = match args.single::<String>() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("vlive/error/missing_or_invalid_subcommand"))),
@@ -260,7 +260,7 @@ command!(vlivenotif_add(ctx, msg, args) {
 
     let _ = msg.channel_id.broadcast_typing();
 
-    let client = Client::new();
+    let client = get_reqwest_client(&ctx);
 
     let channels = match client.get_channel_list() {
         Ok(val) => val,
@@ -425,7 +425,7 @@ command!(vlivenotif_delete(ctx, msg, args) {
 
     let _ = msg.channel_id.broadcast_typing();
 
-    let client = Client::new();
+    let client = get_reqwest_client(&ctx);
 
     let channels = match client.get_channel_list() {
         Ok(val) => val,

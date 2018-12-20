@@ -42,7 +42,7 @@ command!(fm(ctx, msg, args) {
                 return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
             }
 
-            let data = get_data(FM_TOP_TRACKS_URL, &username, &period)?;
+            let data = get_data(&ctx, FM_TOP_TRACKS_URL, &username, &period)?;
 
             top_tracks(msg, &data, &period);
         },
@@ -55,7 +55,7 @@ command!(fm(ctx, msg, args) {
                 return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
             }
 
-            let data = get_data(FM_TOP_ARTISTS_URL, &username, &period)?;
+            let data = get_data(&ctx, FM_TOP_ARTISTS_URL, &username, &period)?;
 
             top_artists(msg, &data, &period);
         },
@@ -68,21 +68,21 @@ command!(fm(ctx, msg, args) {
                 return Err(CommandError::from(get_msg!("error/fm_invalid_period")));
             }
 
-            let data = get_data(FM_TOP_ALBUMS_URL, &username, &period)?;
+            let data = get_data(&ctx, FM_TOP_ALBUMS_URL, &username, &period)?;
 
             top_albums(msg, &data, &period);
         },
         "loved" => {
             let _ = args.skip();
             let username = get_username(ctx, msg.author.id.0)?;
-            let data = get_data(FM_LOVED_TRACKS_URL, &username, "ayy lmao")?;
+            let data = get_data(&ctx, FM_LOVED_TRACKS_URL, &username, "ayy lmao")?;
 
             loved_tracks(msg, &data);
         },
         // no matches would equal just -fm, show now playing / last track
         "nowplaying" | _ => {
             let (username, saved) = set_or_get_username(ctx, msg.author.id.0, &mut args)?;
-            let data = get_data(FM_RECENT_TRACKS_URL, &username, "yep lol")?;
+            let data = get_data(&ctx, FM_RECENT_TRACKS_URL, &username, "yep lol")?;
             recent_tracks(msg, &data, saved)?;
         }
     };
@@ -357,7 +357,7 @@ fn set_or_get_username(ctx: &Context, user: u64, args: &mut Args) -> Result<(Str
     Ok((username, saved))
 }
 
-fn get_data(url: &str, username: &str, period: &str) -> Result<Value, CommandError> {
+fn get_data(ctx: &Context, url: &str, username: &str, period: &str) -> Result<Value, CommandError> {
     let fm_key = env::var("LASTFM_KEY").expect("Expected LASTFM_KEY to be set in environment");
     let url = url
         .replace("{USER}", username)

@@ -1,5 +1,5 @@
 use serenity::framework::standard::CommandError;
-use utils::config:*;
+use utils::config::*;
 use urbandictionary::ReqwestUrbanDictionaryRequester;
 
 command!(urban(ctx, msg, args) {

@@ -5,8 +5,9 @@ use database::ConnectionPool;
 use regex::Regex;
 use std::fmt::Write;
 use std::collections::HashMap;
+use utils::config::*;
 
-pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
+pub fn on_message(ctx: &Context, pool: &ConnectionPool, msg: &Message) {
     if msg.guild_id.is_none() {
         return;
     }
