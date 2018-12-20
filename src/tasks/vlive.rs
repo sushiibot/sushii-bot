@@ -20,6 +20,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
     let pool = data.get_mut::<database::ConnectionPool>().unwrap().clone();
 
     INIT.call_once(|| {
+        debug!("Spawning vlive thread");
         thread::spawn(move || loop {
             let start = Utc::now();
 

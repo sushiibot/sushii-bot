@@ -16,6 +16,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
     let mut data = ctx.data.lock();
     let pool = data.get_mut::<database::ConnectionPool>().unwrap().clone();
     INIT.call_once(|| {
+        debug!("Spawning reminders thread");
         thread::spawn(move || loop {
             let ten_sec = time::Duration::from_secs(10);
             thread::sleep(ten_sec);

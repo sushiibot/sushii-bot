@@ -16,6 +16,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
     
     let mut count = 0;
     INIT.call_once(|| {
+        debug!("Spawning offline check thread");
         thread::spawn(move || loop {
             let thirty_sec = time::Duration::from_secs(30);
             thread::sleep(thirty_sec);

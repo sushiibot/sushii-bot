@@ -14,6 +14,7 @@ pub fn on_ready(ctx: &Context, _: &Ready) {
     let pool = data.get_mut::<database::ConnectionPool>().unwrap().clone();
 
     INIT.call_once(|| {
+        debug!("Spawning stats thread");
         thread::spawn(move || loop {
             // sleep before checking, allows some time for guild lazy loading
             let five_min = time::Duration::from_secs(300);
