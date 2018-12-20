@@ -13,7 +13,7 @@ steps:
   displayName: 'Install Rust'
 
 - script: |
-    sudo apt-get install libssl-dev=1.0.2g-1ubuntu4.13 libpq-dev -y --allow-downgrades
+    sudo apt-get install libpq-dev -y
   displayName: 'Install Dependencies'
 
 - script: |

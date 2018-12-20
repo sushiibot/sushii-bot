@@ -32,7 +32,7 @@ num-traits = "0.1.40"
 clippy = { version = "*", optional = true }
 
 [dependencies.serenity]
-version = "0.5.9"
+version = "0.5.11"
 
 [dependencies.vlive]
 version = "0.1.5"
@@ -43,3 +43,6 @@ branch = "master"
 version = "0.3.0"
 git = "https://github.com/zeyla/urbandictionary.rs"
 branch = "master"
+
+[patch.crates-io]
+openssl = { git = "https://github.com/ishitatsuyuki/rust-openssl", branch = "0.9.x" }
