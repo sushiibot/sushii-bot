@@ -12,6 +12,7 @@ use std::{
     collections::HashMap,
 };
 use models;
+use reqwest;
 
 
 impl Key for ConnectionPool {
@@ -36,4 +37,9 @@ impl Key for CommandsList {
 pub struct GuildConfigCache;
 impl Key for GuildConfigCache {
     type Value = HashMap<u64, models::GuildConfig>;
+}
+
+pub struct Reqwest;
+impl Key for Reqwest {
+    type Value = Arc<reqwest::Client>; 
 }

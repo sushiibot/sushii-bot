@@ -1,11 +1,10 @@
 use serenity::framework::standard::CommandError;
 use serenity::model::id::UserId;
-use reqwest;
 use std::collections::HashMap;
 use std::fmt::Write;
 use utils;
 use utils::user::*;
-use utils::config::get_pool;
+use utils::config::*;
 use utils::time::now_utc;
 use utils::html::escape_html;
 
@@ -130,7 +129,7 @@ command!(rank(ctx, msg, args) {
     json.insert("height", "400".to_owned());
 
 
-    let client = reqwest::Client::new();
+    let client = get_reqwest_client(&ctx);
     let res = match client.post("http://127.0.0.1:3000/html").json(&json).send() {
         Ok(val) => val.error_for_status(),
         Err(_) => {

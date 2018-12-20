@@ -3,6 +3,9 @@ use database;
 use GuildConfigCache;
 use diesel::result::Error;
 use models::GuildConfig;
+use reqwest;
+use std::sync::Arc;
+use keys::Reqwest;
 
 pub fn get_config_from_context(ctx: &Context, guild_id: u64) -> Result<GuildConfig, Error> {
     let mut data = ctx.data.lock();
@@ -14,6 +17,12 @@ pub fn get_config_from_context(ctx: &Context, guild_id: u64) -> Result<GuildConf
 pub fn get_pool(ctx: &Context) -> database::ConnectionPool {
     let mut data = ctx.data.lock();
     data.get_mut::<database::ConnectionPool>().unwrap().clone()
+}
+
+
+pub fn get_reqwest_client(ctx: &Context) -> Arc<reqwest::Client> {
+    let data = ctx.data.lock();
+    data.get::<Reqwest>().unwrap().clone()
 }
 
 pub fn get_config(ctx: &Context, pool: &database::ConnectionPool, guild_id: u64) -> Result<GuildConfig, Error> {

@@ -1,5 +1,4 @@
 use serenity::framework::standard::CommandError;
-use reqwest;
 use serde_json::Value;
 
 use darksky::DarkskyReqwestRequester;
@@ -9,7 +8,7 @@ use darksky::Block;
 use env;
 
 use utils::time::now_utc;
-use utils::config::get_pool;
+use utils::config::*;
 use hourglass::Timezone;
 
 const GOOGLE_MAPS_URL: &str = "https://maps.googleapis.com/maps/api/geocode/json?address={ADDRESS}&key={KEY}";
@@ -63,7 +62,7 @@ command!(weather(ctx, msg, args) {
 
         let url = GOOGLE_MAPS_URL.replace("{ADDRESS}", &location).replace("{KEY}", &google_maps_key);
 
-        let mut resp = match reqwest::get(&url) {
+        let mut resp = match client.get(&url) {
             Ok(val) => val,
             Err(e) => {
                 error!("Error getting geocode: {}", e);
@@ -104,7 +103,7 @@ command!(weather(ctx, msg, args) {
     // https://github.com/zeyla/nanobot/blob/0b543692e810344a097f4511e90b414d4184140c/src/bot/plugins/misc.rs
     // get darksky data
 
-    let client = reqwest::Client::new();
+    let client = get_reqwest_client(&ctx);
 
     let forecast = match client.get_forecast_with_options(&darksky_key, lat, lng, |o| o.unit(Unit::Si).exclude(vec![Block::Hourly, Block::Minutely])) {
         Ok(val) => val,

@@ -92,12 +92,14 @@ fn main() {
     {
         let mut data = client.data.lock();
         let pool = database::ConnectionPool::new();
+        let reqwest_client = reqwest::Client::new();
 
         data.insert::<ConnectionPool>(pool);
         data.insert::<SerenityShardManager>(Arc::clone(&client.shard_manager));
         data.insert::<Uptime>(Utc::now());
         data.insert::<CommandsList>(commands_list);
         data.insert::<GuildConfigCache>(HashMap::new());
+        data.insert::<Reqwest>(Arc::new(reqwest_client));
     }
 
     client.with_framework(framework);

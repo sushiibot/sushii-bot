@@ -4,11 +4,10 @@ use serenity::model::channel::Message;
 use serenity::prelude::Context;
 
 use std::fmt::Write;
-use reqwest;
 use serde_json::Value;
 use chrono::Utc;
 use chrono::naive::NaiveDateTime;
-use utils::config::get_pool;
+use utils::config::*;
 use utils::user::get_id;
 use utils::html::clean_url;
 use env;
@@ -366,7 +365,8 @@ fn get_data(url: &str, username: &str, period: &str) -> Result<Value, CommandErr
         .replace("{PERIOD}", period);
 
     // fetch data
-    match reqwest::get(&url).and_then(|mut x| x.json()) {
+    let client = get_reqwest_client(&ctx);
+    match client.get(&url).send().and_then(|mut x| x.json()) {
         Ok(val) => Ok(val),
         Err(e) => {
             warn_discord!("[CMD:fm] Failed to fetch last.fm data: {}", e);

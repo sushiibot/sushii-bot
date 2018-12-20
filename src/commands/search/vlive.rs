@@ -1,7 +1,6 @@
 use regex::Regex;
 use std::fmt::Write;
-use reqwest::Client;
-use utils::config::get_pool;
+use utils::config::*;
 use vlive::ReqwestVLiveRequester;
 use utils::numbers::comma_number;
 use serenity::framework::standard::CommandError;
@@ -21,7 +20,7 @@ command!(vlive(_ctx, msg, args) {
 
     let _ = msg.channel_id.broadcast_typing();
 
-    let client = Client::new();
+    let client = get_reqwest_client(&ctx);
 
     match subcommand.as_ref() {
         "search" | "channel" => {

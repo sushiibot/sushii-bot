@@ -1,8 +1,8 @@
 use serenity::framework::standard::CommandError;
-use reqwest::Client;
+use utils::config:*;
 use urbandictionary::ReqwestUrbanDictionaryRequester;
 
-command!(urban(_ctx, msg, args) {
+command!(urban(ctx, msg, args) {
     if args.is_empty() {
         return Err(CommandError::from(get_msg!("error/no_urban_word_given")));
     }
@@ -14,8 +14,7 @@ command!(urban(_ctx, msg, args) {
 
     let query = args.rest();
 
-    let client = Client::new();
-
+    let client = get_reqwest_client(&ctx);
     let mut response = match client.definitions(&query[..]) {
         Ok(response) => response,
         Err(why) => {

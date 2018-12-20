@@ -1,16 +1,16 @@
+use serenity::client::Context;
 use serenity::framework::standard::CommandError;
 use serenity::model::id::UserId;
 use serenity::model::channel::Message;
 
 use serde_json::value::Value;
-use reqwest;
 
 use regex::Regex;
 use std::collections::HashMap;
 
 use utils;
 use utils::user::*;
-use utils::config::get_pool;
+use utils::config::*;
 use utils::html::escape_html;
 
 use models::{User, UserLevelRanked};
@@ -216,7 +216,7 @@ command!(profile(ctx, msg, args) {
 
     let global_xp = pool.get_global_xp(id).and_then(|x| x.to_i64()).unwrap_or(0);
 
-    generate_profile(msg, id, &user_data, &level_data, global_xp, s)?;
+    generate_profile(ctx, msg, id, &user_data, &level_data, global_xp, s)?;
     pool.update_stat("profile", "profiles_generated", Some(1), None);
 });
 
@@ -338,7 +338,7 @@ fn color_preset(val: &str, format: &str) -> Option<String> {
     }
 }
 
-fn generate_profile(msg: &Message, id: u64, user_data: &User,   
+fn generate_profile(ctx: &Context, msg: &Message, id: u64, user_data: &User,   
         level_data: &UserLevelRanked, global_xp: i64, message: Option<String>) -> Result<(), CommandError> {
 
     let user_rep = user_data.rep;
@@ -438,7 +438,7 @@ fn generate_profile(msg: &Message, id: u64, user_data: &User,
     json.insert("height", "400".to_owned());
 
 
-    let client = reqwest::Client::new();
+    let client = get_reqwest_client(&ctx);
     let mut img = match client.post("http://127.0.0.1:3000/html").json(&json).send() {
         Ok(val) => val,
         Err(_) => {

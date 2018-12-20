@@ -282,6 +282,9 @@
     "owner": {
         "say": {
             "empty_content": "Message content can't be empty."
+        },
+        "exec": {
+            "empty_command:": "Command can't be empty."
         }
     },
     "text": {

@@ -6,14 +6,14 @@ use serenity::utils::parse_channel;
 use serenity::model::id::ChannelId;
 use serenity::framework::standard::CommandError;
 use serenity::CACHE;
+use std::process::Command;
 use serde_json::map::Map;
 use serde_json::value::Value;
-use reqwest;
 use base64;
 
 use SerenityShardManager;
 use utils;
-use utils::config::get_pool;
+use utils::config::*;
 
 use commands::tags::split_message;
 
@@ -50,7 +50,7 @@ command!(username(_ctx, msg, args) {
 });
 
 
-command!(set_avatar(_ctx, msg, args) {
+command!(set_avatar(ctx, msg, args) {
     let url = match args.single::<String>().ok().or_else(|| msg.attachments.get(0).map(|x| x.url.clone())) {
         Some(val) => val,
         None => {
@@ -58,7 +58,8 @@ command!(set_avatar(_ctx, msg, args) {
         },
     };
 
-    let mut resp = match reqwest::get(&url) {
+    let client = get_reqwest_client(&ctx);
+    let mut resp = match client.get(&url).send() {
         Ok(val) => val,
         Err(_) => return Err(CommandError::from(get_msg!("error/failed_url_request"))),
     };
@@ -172,4 +173,26 @@ command!(say(_ctx, msg, args) {
 
     ChannelId(discord_channel).say(&content)?;
     let _ = msg.react("✅");
+});
+
+command!(exec(_ctx, msg, args) {
+    let cmd = args.full().split(" ").collect::<Vec<&str>>();
+    if cmd.is_empty() {
+        return Err(CommandError::from(get_msg!("owner/exec/empty_command")));
+    }
+
+    let cmd_binary = cmd[0];
+    let mut child_proc = Command::new(cmd_binary);
+
+    if cmd.len() > 1 {
+        child_proc.args(&cmd[1..]);
+    }
+
+    let output = child_proc.output()?;
+    let s = format!("STDOUT: ```{}```\n\nSTDERR: ```{}```\n\nExit code: `{}`",
+        String::from_utf8(output.stdout)?,
+        String::from_utf8(output.stderr)?,
+        output.status.code().map_or("N/A".into(), |c| c.to_string()));
+
+    let _ = msg.channel_id.say(&s);
 });

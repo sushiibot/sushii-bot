@@ -3,7 +3,6 @@ use serenity::prelude::Context;
 use database::ConnectionPool;
 
 use regex::Regex;
-use reqwest;
 use std::fmt::Write;
 use std::collections::HashMap;
 
@@ -49,7 +48,7 @@ pub fn on_message(_ctx: &Context, pool: &ConnectionPool, msg: &Message) {
         json.insert("avatar_url", msg.author.face());
 
         for url in gallery_urls {
-            let client = reqwest::Client::new();
+            let client = get_reqwest_client(&ctx);
             let res = client
                 .post(&url)
                 .json(&json)

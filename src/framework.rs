@@ -706,6 +706,11 @@ pub fn get_framework() -> (StandardFramework, HashMap<String, Arc<CommandOptions
                 .desc("Make sushii say something in a channel.")
                 .owners_only(true)
                 .cmd(commands::owner::say)
+            )
+            .command("exec", |c| c
+                .desc("Executes a command on the server.")
+                .owners_only(true)
+                .cmd(commands::owner::exec)
             );
 
             add_command_group(&mut commands_list, g)

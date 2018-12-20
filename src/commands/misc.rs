@@ -1,5 +1,4 @@
 use serenity::framework::standard::CommandError;
-use reqwest;
 use regex::Regex;
 use std::fmt::Write;
 
@@ -7,7 +6,7 @@ use serde_json::value::Value;
 
 use chrono::{DateTime, Utc, Duration};
 use timeago;
-use utils::config::get_pool;
+use utils::config::*;
 
 use commands::tags::split_message;
 
@@ -17,7 +16,7 @@ struct Response {
     stdout: String,
 }
 
-command!(play(_ctx, msg, args) {
+command!(play(ctx, msg, args) {
     let mut code = args.rest().to_owned();
 
     // check if using code block
@@ -42,7 +41,7 @@ command!(play(_ctx, msg, args) {
     *json.get_mut("code").unwrap() = Value::String(code);
 
     // send data
-    let client = reqwest::Client::new();
+    let client = get_reqwest_client(&ctx);
     let res = client.post("https://play.integer32.com/execute")
         .json(&json)
         .send()?.error_for_status();
