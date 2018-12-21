@@ -189,10 +189,28 @@ command!(exec(_ctx, msg, args) {
     }
 
     let output = child_proc.output()?;
-    let s = format!("STDOUT: ```{}```\n\nSTDERR: ```{}```\n\nExit code: `{}`",
-        String::from_utf8(output.stdout)?,
-        String::from_utf8(output.stderr)?,
-        output.status.code().map_or("N/A".into(), |c| c.to_string()));
+
+    let stdout = String::from_utf8(output.stdout)?;
+    let stderr = String::from_utf8(output.stderr)?;
+    let status_code = output.status.code();
+
+    let mut s = String::new();
+
+    if !stdout.is_empty() {
+        s.push_str(&format!("STDOUT: ```{}```", stdout));
+    }
+
+    if !stderr.is_empty() {
+        s.push_str(&format!("\nSTDERR: ```{}```", stderr));
+    }
+
+    if let Some(code) = status_code {
+        s.push_str(&format!("\nExit code: `{}`", code));
+    }
+
+    if s.is_empty() {
+        s = "No output.".into();
+    }
 
     let _ = msg.channel_id.say(&s);
 });
