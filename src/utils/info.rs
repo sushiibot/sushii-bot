@@ -10,7 +10,12 @@ pub fn bot_update_info(status: &str) {
     let mut data = HashMap::new();
     data.insert("content", status);
 
-    let client = reqwest::Client::new();
+    // use lazy static as to not create a new client
+    // every time this function is called
+    // (causes thread leak, new thread for every new client)
+    lazy_static! {
+        static ref client: reqwest::Client = reqwest::Client::new();
+    }
     let res = client
         .post(&webhook_url)
         .json(&data)
