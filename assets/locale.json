@@ -185,7 +185,7 @@
         "profile_invalid_percentage": "Invalid percentage.  The value must be between 0 and 1.  Example: `0.3`",
 
         "hug_nobody": "Give me someone to hug :(",
-        "clear_setting_not_given": "Please  give a setting option to clear.",
+        "clear_setting_not_given": "Please give a setting option to clear.",
         "clear_setting_invalid": "Invalid setting.",
         "clear_setting_cannot_clear": "You cannot clear this setting."
     },

@@ -110,7 +110,7 @@ command!(clear_setting(ctx, msg, args) {
             "leavemsg" | "leave_msg" => {
                 config.leave_msg = None
             },
-            "msgchannel" | "msg_channel" => {
+            "joinleavechannel" | "msgchannel" | "msg_channel" => {
                 config.msg_channel = None
             },
             "rolechannel" | "role_channel" => {
