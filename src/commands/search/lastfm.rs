@@ -109,7 +109,7 @@ fn top_tracks(msg: &Message, data: &Value, period: &str) {
     let first_image = tracks.first().and_then(|x| x.pointer("/image/2/#text")).and_then(|x| x.as_str()).unwrap_or("N/A");
 
     for (i, track) in tracks.iter().enumerate() {
-        let playcount = track.pointer("/playcount").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let playcount = track.pointer("/playcount").and_then(|x| x.as_u64()).map(|x| x.to_string()).unwrap_or("N/A".into());
         let title = track.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
         let url = track.pointer("/url").and_then(|x| x.as_str()).unwrap_or("N/A");
         let artist = track.pointer("/artist/name").and_then(|x| x.as_str()).unwrap_or("N/A");
@@ -144,7 +144,7 @@ fn top_artists(msg: &Message, data: &Value, period: &str) {
 
     for (i, artist) in artists.iter().enumerate() {
         let name = artist.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
-        let playcount = artist.pointer("/playcount").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let playcount = artist.pointer("/playcount").and_then(|x| x.as_u64()).map(|x| x.to_string()).unwrap_or("N/A".into());
         let url = artist.pointer("/url").and_then(|x| x.as_str()).unwrap_or("N/A");
 
         let play_plural = if playcount == "1" {
@@ -175,7 +175,7 @@ fn top_albums(msg: &Message, data: &Value, period: &str) {
 
     for (i, album) in albums.iter().enumerate() {
         let name = album.pointer("/name").and_then(|x| x.as_str()).unwrap_or("N/A");
-        let playcount = album.pointer("/playcount").and_then(|x| x.as_str()).unwrap_or("N/A");
+        let playcount = album.pointer("/playcount").and_then(|x| x.as_u64()).map(|x| x.to_string()).unwrap_or("N/A".into());
         let url = album.pointer("/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
         let artist = album.pointer("/artist/name").and_then(|x| x.as_str()).unwrap_or("N/A");
         let artist_url = album.pointer("/artist/url").and_then(|x| x.as_str()).unwrap_or("https://www.last.fm");
