@@ -72,7 +72,7 @@ command!(rank(ctx, msg, args) {
     let mut html = LEVEL_HTML.to_owned();
 
     html = html.replace("{USERNAME}", &escape_html(&user.tag()));
-    html = html.replace("{AVATAR_URL}", &user.face());
+    html = html.replace("{AVATAR_URL}", &user.face().replace(".gif", ".jpg"));
     html = html.replace("{DAILY}", &format_rank(&level_data.msg_day_rank, &level_data.msg_day_total));
     html = html.replace("{WEEKLY}", &format_rank(&level_data.msg_week_rank, &level_data.msg_week_total));
     html = html.replace("{MONTHLY}", &format_rank(&level_data.msg_month_rank, &level_data.msg_month_total));
