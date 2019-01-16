@@ -291,7 +291,11 @@ fn recent_tracks(msg: &Message, data: &Value, saved: bool) -> Result<(), Command
         "Last Track"
     };
 
-    let total_tracks = data.pointer("/recenttracks/@attr/total").and_then(|x| x.as_str()).unwrap_or("N/A");
+    let total_tracks = data
+        .pointer("/recenttracks/@attr/total")
+        .and_then(|x| x.as_u64())
+        .map(|x| x.to_string())
+        .unwrap_or("N/A".into());
 
     let _ = msg.channel_id.send_message(|m| {
         let mut m = m;
