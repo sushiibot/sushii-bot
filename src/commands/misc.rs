@@ -51,14 +51,17 @@ command!(play(ctx, msg, args) {
         Ok(mut val) => {
             let res_obj: Response = val.json()?;
 
-            let mut clean = res_obj.stdout.replace("@", "@\u{200B}"); // add zws to possible mentions
-            clean = clean.replace("`", "'");                          // replace comment ticks to single quotes
+            let mut clean_stdout = res_obj.stdout.replace("@", "@\u{200B}"); // add zws to possible mentions
+            clean_stdout = clean_stdout.replace("`", "'");                   // replace comment ticks to single quotes
 
-            if clean.len() > 2000 {
+            let mut clean_stderr = res_obj.stderr.replace("@", "@\u{200B}");
+            clean_stderr = clean_stderr.replace("`", "'");
+
+            if clean_stdout.len() + clean_stderr.len() > 2000 {
                 return Err(CommandError::from("Output too long."));
             }
 
-            let _ = msg.channel_id.say(format!("```rust\n{}\n{}\n```", res_obj.stderr, clean));
+            let _ = msg.channel_id.say(format!("```rust\n{}\n{}\n```", clean_stderr, clean_stdout));
         },
         Err(e) => {
             let _ = msg.channel_id.say(format!("Error: {}", e));
