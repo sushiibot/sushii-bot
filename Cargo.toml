@@ -41,8 +41,6 @@ branch = "master"
 
 [dependencies.urbandictionary]
 version = "0.3.0"
-git = "https://github.com/zeyla/urbandictionary.rs"
-branch = "master"
 
 [patch.crates-io]
 openssl = { git = "https://github.com/ishitatsuyuki/rust-openssl", branch = "0.9.x" }
