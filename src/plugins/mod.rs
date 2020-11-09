@@ -2,7 +2,6 @@
 pub mod macros;
 
 pub mod levels;
-pub mod random_hi;
 pub mod join_leave_message;
 pub mod mod_log;
 pub mod notifications;

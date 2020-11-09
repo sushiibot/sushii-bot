@@ -237,7 +237,6 @@ impl EventHandler for Handler {
             [&ctx, &msg],
             user_info_activity,
             levels,
-            random_hi,
             invite_guard,
             anti_spam,
             message_log,
