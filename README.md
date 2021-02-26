@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/drklee3/sushii-bot.svg?branch=master)](https://travis-ci.org/drklee3/sushii-bot)
 [![Build Status](https://dev.azure.com/dlee3/dlee3/_apis/build/status/drklee3.sushii-bot)](https://dev.azure.com/dlee3/dlee3/_build/latest?definitionId=1)
 
+⚠ sushii bot is no longer active or maintained, see [sushii 2](https://github.com/sushiibot/sushii-2) for the rewrite.
+
 # sushii bot
 
 ![sushii](assets/sushii.png)
